@@ -1689,6 +1689,11 @@ func init() {
     "evalResult": {
       "type": "object",
       "properties": {
+        "dataRecordsEnabled": {
+          "description": "flag's data records status.",
+          "type": "boolean",
+          "x-omitempty": false
+        },
         "evalContext": {
           "$ref": "#/definitions/evalContext"
         },
