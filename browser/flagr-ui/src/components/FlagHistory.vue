@@ -49,6 +49,7 @@ import { ref, computed, onMounted } from "vue";
 import Axios from "axios";
 import { diffJson, convertChangesToXML } from "diff";
 import { ElMessage } from "element-plus";
+import xss from "xss";
 
 import constants from "@/constants";
 
@@ -97,7 +98,9 @@ function getDiff(newFlag, oldFlag) {
   if (d.length === 1) {
     return "No changes";
   }
-  return convertChangesToXML(d);
+  return xss(convertChangesToXML(d), {
+    whiteList: { ins: [], del: [] },
+  });
 }
 
 onMounted(() => {
