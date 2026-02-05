@@ -10,7 +10,7 @@ test.describe('Flag Config', () => {
   })
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`http://localhost:8080/#/flags/${flagId}`)
+    await page.goto(`/#/flags/${flagId}`)
     await page.waitForSelector('.flag-container', { timeout: 10000 })
   })
 
@@ -36,8 +36,8 @@ test.describe('Flag Config', () => {
 
     // Reload and verify
     await page.reload()
-    await page.waitForSelector('.flag-container')
-    await expect(keyInput).toHaveValue(newKey)
+    await page.waitForSelector('.flag-content input[placeholder="Key"]')
+    await expect(page.locator('.flag-content input[placeholder="Key"]')).toHaveValue(newKey)
   })
 
   test('Edit flag description', async ({ page }) => {

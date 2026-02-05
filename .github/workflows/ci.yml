@@ -73,9 +73,10 @@ jobs:
         with:
           node-version-file: browser/flagr-ui/package.json
       - run: cd browser/flagr-ui && npm ci
+      - run: cd browser/flagr-ui && npm run build
       - run: cd browser/flagr-ui && npx playwright install --with-deps chromium
 
-      - run: cd browser/flagr-ui && npx playwright test
+      - run: cd browser/flagr-ui && npx playwright test --config=e2e/playwright-ci.config.js
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}

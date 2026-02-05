@@ -5,7 +5,7 @@ test.describe('Full E2E Workflow', () => {
     page.on('dialog', dialog => dialog.accept())
 
     // 1. Go to home, create flag
-    await page.goto('http://localhost:8080/')
+    await page.goto('/')
     await page.waitForSelector('.flags-container')
 
     const descInput = page.locator('input[placeholder="Specific new flag description"]')
