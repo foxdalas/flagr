@@ -3,6 +3,7 @@
 ######################################
 FROM node:20-alpine as npm_builder
 WORKDIR /go/src/github.com/openflagr/flagr
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 ADD . .
 ARG FLAGR_UI_POSSIBLE_ENTITY_TYPES=null
 ENV VITE_FLAGR_UI_POSSIBLE_ENTITY_TYPES ${FLAGR_UI_POSSIBLE_ENTITY_TYPES}
