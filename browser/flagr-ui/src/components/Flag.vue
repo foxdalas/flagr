@@ -773,7 +773,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import clone from "lodash.clone";
 import draggable from "vuedraggable";
 import Axios from "axios";
 import JsonEditorVue from "json-editor-vue";
@@ -817,7 +816,7 @@ const DEFAULT_DISTRIBUTION = {
 };
 
 function processSegment(segment) {
-  segment.newConstraint = clone(DEFAULT_CONSTRAINT);
+  segment.newConstraint = structuredClone(DEFAULT_CONSTRAINT);
 }
 
 function processVariant(variant) {
@@ -855,9 +854,9 @@ const flag = ref({
   variants: [],
   notes: ""
 });
-const newSegment = ref(clone(DEFAULT_SEGMENT));
-const newVariant = ref(clone(DEFAULT_VARIANT));
-const newTag = ref(clone(DEFAULT_TAG));
+const newSegment = ref(structuredClone(DEFAULT_SEGMENT));
+const newVariant = ref(structuredClone(DEFAULT_VARIANT));
+const newTag = ref(structuredClone(DEFAULT_TAG));
 const selectedSegment = ref(null);
 const newDistributions = reactive({});
 const operatorOptions = operators;
@@ -921,7 +920,7 @@ function setFlagEnabled(checked) {
 function selectVariant($event, variant) {
   const checked = $event;
   if (checked) {
-    const distribution = Object.assign(clone(DEFAULT_DISTRIBUTION), {
+    const distribution = Object.assign(structuredClone(DEFAULT_DISTRIBUTION), {
       variantKey: variant.key,
       variantID: variant.id
     });
@@ -938,7 +937,7 @@ function editDistribution(segment) {
   Object.keys(newDistributions).forEach(key => delete newDistributions[key]);
 
   segment.distributions.forEach(distribution => {
-    newDistributions[distribution.variantID] = clone(distribution);
+    newDistributions[distribution.variantID] = structuredClone(distribution);
   });
 
   dialogEditDistributionOpen.value = true;
@@ -948,7 +947,7 @@ function saveDistribution(segment) {
   const distributions = Object.values(newDistributions).filter(
     distribution => distribution.percent !== 0
   ).map(distribution => {
-    let dist = clone(distribution)
+    let dist = structuredClone(distribution)
     delete dist.id;
     return dist
   });
@@ -970,7 +969,7 @@ function createVariant() {
     newVariant.value
   ).then(response => {
     let variant = response.data;
-    newVariant.value = clone(DEFAULT_VARIANT);
+    newVariant.value = structuredClone(DEFAULT_VARIANT);
     flag.value.variants.push(variant);
     ElMessage.success("new variant created");
   }, handleErr);
@@ -1035,7 +1034,7 @@ function createTag() {
   Axios.post(`${API_URL}/flags/${flagId.value}/tags`, newTag.value).then(
     response => {
       let tag = response.data;
-      newTag.value = clone(DEFAULT_TAG);
+      newTag.value = structuredClone(DEFAULT_TAG);
       if (!flag.value.tags.map(tag => tag.value).includes(tag.value)) {
         flag.value.tags.push(tag);
         ElMessage.success("new tag created");
@@ -1048,7 +1047,7 @@ function createTag() {
 }
 
 function cancelCreateTag() {
-  newTag.value = clone(DEFAULT_TAG);
+  newTag.value = structuredClone(DEFAULT_TAG);
   tagInputVisible.value = false;
 }
 
@@ -1099,7 +1098,7 @@ function createConstraint(segment) {
   ).then(response => {
     let constraint = response.data;
     segment.constraints.push(constraint);
-    segment.newConstraint = clone(DEFAULT_CONSTRAINT);
+    segment.newConstraint = structuredClone(DEFAULT_CONSTRAINT);
     ElMessage.success("new constraint created");
   }, handleErr);
 }
@@ -1170,7 +1169,7 @@ function createSegment() {
     let segment = response.data;
     processSegment(segment);
     segment.constraints = [];
-    newSegment.value = clone(DEFAULT_SEGMENT);
+    newSegment.value = structuredClone(DEFAULT_SEGMENT);
     flag.value.segments.push(segment);
     ElMessage.success("new segment created");
     dialogCreateSegmentOpen.value = false;

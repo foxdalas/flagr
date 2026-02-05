@@ -6,10 +6,14 @@
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css"
+      integrity="sha384-41TLk51mEPibuqZ3qC5guTOeo30Zt7UUaWLUn0/VdpGRO6b3SXA6AaKxj1mYzgAT"
+      crossorigin="anonymous"
     >
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css"
+      integrity="sha384-zh0CIslj3dQfbkMoSKqNGBVIC4kfFfrHY3lQ+SDPK0PMKQpiaLONuYVFD6KPfE67"
+      crossorigin="anonymous"
     >
 
     <el-row :gutter="10">
@@ -38,7 +42,7 @@
 <script setup>
 import { ref, computed, watch } from "vue";
 import MarkdownIt from "markdown-it";
-import mk from "@iktakahiro/markdown-it-katex";
+import mk from "@vscode/markdown-it-katex";
 import xss from "xss";
 
 const props = defineProps({

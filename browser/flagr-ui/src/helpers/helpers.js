@@ -36,8 +36,15 @@ function handleErr (err) {
   let msg = get(err, 'response.data.message', 'request error')
   ElMessage.error(msg)
   if (get(err, 'response.status') === 401) {
-    let redirectURL = err.response.headers['www-authenticate'].split(`"`)[1]
-    window.location = redirectURL
+    try {
+      let redirectURL = err.response.headers['www-authenticate'].split(`"`)[1]
+      const url = new URL(redirectURL, window.location.origin)
+      if (url.origin === window.location.origin) {
+        window.location = url.href
+      }
+    } catch {
+      // malformed URL — ignore redirect
+    }
   }
 }
 
