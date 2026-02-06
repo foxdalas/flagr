@@ -102,10 +102,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, defineAsyncComponent } from "vue";
 import Axios from "axios";
-import JsonEditorVue from "json-editor-vue";
 import { ElMessage } from "element-plus";
+
+const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
 
 import constants from "@/constants";
 
