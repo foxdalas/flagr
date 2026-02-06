@@ -61,6 +61,11 @@ var NewKinesisRecorder = func() DataRecorder {
 	}
 }
 
+func (k *kinesisRecorder) Close() error {
+	k.producer.Stop()
+	return nil
+}
+
 func (k *kinesisRecorder) NewDataRecordFrame(r models.EvalResult) DataRecordFrame {
 	return DataRecordFrame{
 		evalResult: r,

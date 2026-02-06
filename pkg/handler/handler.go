@@ -6,6 +6,7 @@ import (
 	"github.com/openflagr/flagr/pkg/entity"
 	"github.com/openflagr/flagr/swagger_gen/models"
 	"github.com/openflagr/flagr/swagger_gen/restapi/operations"
+	"github.com/sirupsen/logrus"
 	"github.com/openflagr/flagr/swagger_gen/restapi/operations/constraint"
 	"github.com/openflagr/flagr/swagger_gen/restapi/operations/distribution"
 	"github.com/openflagr/flagr/swagger_gen/restapi/operations/evaluation"
@@ -88,6 +89,11 @@ func setupEvaluation(api *operations.FlagrAPI) {
 	if config.Config.RecorderEnabled {
 		// Try GetDataRecorder to catch fatal errors before we start the evaluation api
 		GetDataRecorder()
+		config.RegisterShutdownCallback(func() {
+			if err := CloseDataRecorder(); err != nil {
+				logrus.WithField("err", err).Error("failed to close data recorder")
+			}
+		})
 	}
 }
 

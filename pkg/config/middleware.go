@@ -24,9 +24,20 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
+var onShutdownCallbacks []func()
+
+// RegisterShutdownCallback registers a function to be called during server shutdown.
+// Used to avoid circular imports between config and handler packages.
+func RegisterShutdownCallback(fn func()) {
+	onShutdownCallbacks = append(onShutdownCallbacks, fn)
+}
+
 // ServerShutdown is a callback function that will be called when
 // we tear down the flagr server
 func ServerShutdown() {
+	for _, fn := range onShutdownCallbacks {
+		fn()
+	}
 	if Config.StatsdEnabled && Config.StatsdAPMEnabled {
 		tracer.Stop()
 	}

@@ -16,6 +16,7 @@ var (
 type DataRecorder interface {
 	AsyncRecord(models.EvalResult)
 	NewDataRecordFrame(models.EvalResult) DataRecordFrame
+	Close() error
 }
 
 // GetDataRecorder gets the data recorder
@@ -35,4 +36,12 @@ func GetDataRecorder() DataRecorder {
 	})
 
 	return singletonDataRecorder
+}
+
+// CloseDataRecorder closes the singleton data recorder if it was initialized
+func CloseDataRecorder() error {
+	if singletonDataRecorder != nil {
+		return singletonDataRecorder.Close()
+	}
+	return nil
 }
