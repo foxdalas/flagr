@@ -54,9 +54,9 @@ require (
 require (
 	cloud.google.com/go/pubsub v1.49.0
 	github.com/glebarez/sqlite v1.6.0
-	gorm.io/driver/mysql v1.4.5
+	gorm.io/driver/mysql v1.6.0
 	gorm.io/driver/postgres v1.6.0
-	gorm.io/gorm v1.25.10 // we will need to fix unscoped preload before upgrading gorm
+	gorm.io/gorm v1.30.0 // we will need to fix unscoped preload before upgrading gorm
 )
 
 require (
@@ -70,6 +70,7 @@ require (
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/iam v1.5.2 // indirect
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.41.1 // indirect
 	github.com/DataDog/datadog-agent/pkg/remoteconfig/state v0.42.0-rc.5 // indirect
 	github.com/DataDog/datadog-go/v5 v5.2.0 // indirect
@@ -114,7 +115,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.25.4 // indirect
 	github.com/go-openapi/swag/typeutils v0.25.4 // indirect
 	github.com/go-openapi/swag/yamlutils v0.25.4 // indirect
-	github.com/go-sql-driver/mysql v1.7.0 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang/glog v1.2.5 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
