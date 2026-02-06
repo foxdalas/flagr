@@ -12,7 +12,7 @@ import (
 	"github.com/openflagr/flagr/pkg/util"
 	"github.com/openflagr/flagr/swagger_gen/models"
 
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"github.com/sirupsen/logrus"
 )
 
@@ -30,6 +30,10 @@ func mustParseKafkaVersion(version string) sarama.KafkaVersion {
 
 // NewKafkaRecorder creates a new Kafka recorder
 var NewKafkaRecorder = func() DataRecorder {
+	if config.Config.RecorderKafkaVerbose {
+		sarama.Logger = logrus.StandardLogger()
+	}
+
 	cfg := sarama.NewConfig()
 
 	tlscfg := createTLSConfiguration(
@@ -59,20 +63,26 @@ var NewKafkaRecorder = func() DataRecorder {
 	cfg.Producer.Flush.Frequency = config.Config.RecorderKafkaFlushFrequency
 	cfg.Version = mustParseKafkaVersion(config.Config.RecorderKafkaVersion)
 
+	if cfg.Producer.Idempotent {
+		cfg.Producer.RequiredAcks = sarama.WaitForAll
+		cfg.Net.MaxOpenRequests = 1
+		if !cfg.Version.IsAtLeast(sarama.V0_11_0_0) {
+			cfg.Version = sarama.V0_11_0_0
+		}
+		logrus.Info("Idempotent producer enabled: set RequiredAcks=WaitForAll, MaxOpenRequests=1, Version>=0.11.0.0")
+	}
+
 	brokerList := strings.Split(config.Config.RecorderKafkaBrokers, ",")
 	producer, err := saramaNewAsyncProducer(brokerList, cfg)
 	if err != nil {
 		logrus.WithField("kafka_error", err).Fatal("Failed to start Sarama producer:")
 	}
 
-	// We will just log to STDOUT if we're not able to produce messages.
-	if producer != nil {
-		go func() {
-			for err := range producer.Errors() {
-				logrus.WithField("kafka_error", err).Error("failed to write access log entry")
-			}
-		}()
-	}
+	go func() {
+		for err := range producer.Errors() {
+			logrus.WithField("kafka_error", err).Error("failed to write access log entry")
+		}
+	}()
 
 	var encryptor dataRecordEncryptor
 	if config.Config.RecorderKafkaEncrypted && config.Config.RecorderKafkaEncryptionKey != "" {
@@ -92,7 +102,11 @@ var NewKafkaRecorder = func() DataRecorder {
 }
 
 func createTLSConfiguration(certFile string, keyFile string, caFile string, verifySSL bool, simpleSSL bool) (t *tls.Config) {
-	if certFile != "" && keyFile != "" {
+	if simpleSSL {
+		t = &tls.Config{
+			InsecureSkipVerify: !verifySSL,
+		}
+	} else if certFile != "" && keyFile != "" {
 		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 		if err != nil {
 			logrus.WithField("TLSConfigurationError", err).Panic(err)
@@ -100,12 +114,6 @@ func createTLSConfiguration(certFile string, keyFile string, caFile string, veri
 
 		t = &tls.Config{
 			Certificates:       []tls.Certificate{cert},
-			InsecureSkipVerify: !verifySSL,
-		}
-	}
-
-	if simpleSSL {
-		t = &tls.Config{
 			InsecureSkipVerify: !verifySSL,
 		}
 	}
@@ -129,6 +137,10 @@ type kafkaRecorder struct {
 	topic               string
 	options             DataRecordFrameOptions
 	partitionKeyEnabled bool
+}
+
+func (k *kafkaRecorder) Close() error {
+	return k.producer.Close()
 }
 
 func (k *kafkaRecorder) NewDataRecordFrame(r models.EvalResult) DataRecordFrame {
