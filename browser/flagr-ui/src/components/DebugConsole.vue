@@ -105,9 +105,6 @@
 import { ref, defineAsyncComponent } from "vue";
 import Axios from "axios";
 import { ElMessage } from "element-plus";
-
-const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
-
 import constants from "@/constants";
 
 const props = defineProps({
@@ -116,6 +113,8 @@ const props = defineProps({
     required: true,
   },
 });
+
+const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
 
 const { API_URL } = constants;
 

@@ -21,18 +21,14 @@
                 </router-link>
               </el-col>
               <el-col
-                :span="1"
-                :offset="15"
+                :span="4"
+                :offset="14"
+                class="nav-links"
               >
                 <a
                   href="https://openflagr.github.io/flagr/api_docs"
                   target="_blank"
                 ><h3>API</h3></a>
-              </el-col>
-              <el-col
-                :span="1"
-                :offset="1"
-              >
                 <a
                   href="https://openflagr.github.io/flagr"
                   target="_blank"
@@ -111,6 +107,13 @@ ol {
     a {
       color: inherit;
       text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 20px;
     }
 
     .el-col {
