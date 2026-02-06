@@ -8,7 +8,7 @@ import (
 	"github.com/caarlos0/env"
 	"github.com/evalphobia/logrus_sentry"
 	raven "github.com/getsentry/raven-go"
-	newrelic "github.com/newrelic/go-agent"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ var EvalOnlyModeDBDrivers = map[string]struct{}{
 
 // Global is the global dependency we can use, such as the new relic app instance
 var Global = struct {
-	NewrelicApp  newrelic.Application
+	NewrelicApp  *newrelic.Application
 	StatsdClient *statsd.Client
 	Prometheus   prometheusMetrics
 }{}
@@ -94,12 +94,12 @@ func setupStatsd() {
 
 func setupNewrelic() {
 	if Config.NewRelicEnabled {
-		nCfg := newrelic.NewConfig(Config.NewRelicAppName, Config.NewRelicKey)
-		nCfg.Enabled = true
-		// These two cannot be enabled at the same time and cross application is enabled by default
-		nCfg.DistributedTracer.Enabled = Config.NewRelicDistributedTracingEnabled
-		nCfg.CrossApplicationTracer.Enabled = !Config.NewRelicDistributedTracingEnabled
-		app, err := newrelic.NewApplication(nCfg)
+		app, err := newrelic.NewApplication(
+			newrelic.ConfigAppName(Config.NewRelicAppName),
+			newrelic.ConfigLicense(Config.NewRelicKey),
+			newrelic.ConfigEnabled(true),
+			newrelic.ConfigDistributedTracerEnabled(Config.NewRelicDistributedTracingEnabled),
+		)
 		if err != nil {
 			panic(fmt.Sprintf("unable to initialize newrelic. %s", err))
 		}

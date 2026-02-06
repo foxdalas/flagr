@@ -149,7 +149,7 @@ func (ec *EvalCache) GetByFlagKeyOrID(keyOrID interface{}) *entity.Flag {
 
 func (ec *EvalCache) reloadMapCache() error {
 	if config.Config.NewRelicEnabled {
-		defer config.Global.NewrelicApp.StartTransaction("eval_cache_reload", nil, nil).End()
+		defer config.Global.NewrelicApp.StartTransaction("eval_cache_reload").End()
 	}
 
 	_, _, err := withtimeout.Do(ec.refreshTimeout, func() (interface{}, error) {

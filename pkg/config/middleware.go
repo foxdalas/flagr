@@ -20,7 +20,7 @@ import (
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/negroni"
-	negroninewrelic "github.com/yadvendar/negroni-newrelic-go-agent"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
@@ -69,7 +69,7 @@ func SetupGlobalMiddleware(handler http.Handler) http.Handler {
 	}
 
 	if Config.NewRelicEnabled {
-		n.Use(&negroninewrelic.Newrelic{Application: &Global.NewrelicApp})
+		n.Use(&newrelicMiddleware{app: Global.NewrelicApp})
 	}
 
 	if Config.CORSEnabled {
@@ -289,6 +289,18 @@ func (s *statsdMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, nex
 		s.StatsdClient.TimeInMilliseconds("http.requests.duration", duration, tags, 1)
 	}(time.Now())
 
+	next(w, r)
+}
+
+type newrelicMiddleware struct {
+	app *newrelic.Application
+}
+
+func (nr *newrelicMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	txn := nr.app.StartTransaction(r.Method + " " + r.URL.Path)
+	defer txn.End()
+	txn.SetWebRequestHTTP(r)
+	w = txn.SetWebResponse(w)
 	next(w, r)
 }
 

@@ -43,7 +43,6 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/tinylib/msgp v1.1.8 // indirect
 	github.com/urfave/negroni v1.0.0
-	github.com/yadvendar/negroni-newrelic-go-agent v0.0.0-20160803090806-3dc58758cb67
 	github.com/zhouzhuojie/conditions v0.2.3
 	github.com/zhouzhuojie/withtimeout v0.0.0-20190405051827-12b39eb2edd5
 	golang.org/x/net v0.47.0
@@ -55,7 +54,6 @@ require (
 require (
 	cloud.google.com/go/pubsub v1.49.0
 	github.com/glebarez/sqlite v1.6.0
-	github.com/newrelic/go-agent v2.1.0+incompatible
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.25.10 // we will need to fix unscoped preload before upgrading gorm
@@ -64,6 +62,7 @@ require (
 require (
 	github.com/aws/aws-sdk-go-v2/config v1.31.20
 	github.com/aws/aws-sdk-go-v2/service/kinesis v1.42.3
+	github.com/newrelic/go-agent/v3 v3.42.0
 )
 
 require (
