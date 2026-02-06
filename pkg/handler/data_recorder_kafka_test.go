@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"github.com/openflagr/flagr/swagger_gen/models"
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/assert"
@@ -36,10 +36,13 @@ var _ sarama.AsyncProducer = (*mockAsyncProducer)(nil)
 
 func TestNewKafkaRecorder(t *testing.T) {
 	t.Run("no panics", func(t *testing.T) {
+		errCh := make(chan *sarama.ProducerError)
+		close(errCh)
 		defer gostub.StubFunc(
 			&saramaNewAsyncProducer,
 			&mockAsyncProducer{
 				inputCh: make(chan *sarama.ProducerMessage),
+				errorCh: errCh,
 			},
 			nil,
 		).Reset()
@@ -101,6 +104,18 @@ func TestCreateTLSConfiguration(t *testing.T) {
 			)
 		})
 	})
+
+	t.Run("simpleSSL takes precedence over cert+key", func(t *testing.T) {
+		tlsConfig := createTLSConfiguration(
+			"./testdata/certificates/alice.crt",
+			"./testdata/certificates/alice.key",
+			"",
+			true,
+			true,
+		)
+		assert.NotNil(t, tlsConfig)
+		assert.Empty(t, tlsConfig.Certificates)
+	})
 }
 
 func TestAsyncRecord(t *testing.T) {
@@ -121,6 +136,7 @@ func TestMustParseKafkaVersion(t *testing.T) {
 	assert.NotPanics(t, func() {
 		mustParseKafkaVersion("0.8.2.0")
 		mustParseKafkaVersion("1.1.0") // for version >1.0, use 3 numbers
+		mustParseKafkaVersion("2.1.0")
 	})
 
 	assert.Panics(t, func() {

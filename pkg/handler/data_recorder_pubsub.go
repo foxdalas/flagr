@@ -43,6 +43,11 @@ var NewPubsubRecorder = func() DataRecorder {
 	}
 }
 
+func (p *pubsubRecorder) Close() error {
+	p.topic.Stop()
+	return p.producer.Close()
+}
+
 func (p *pubsubRecorder) NewDataRecordFrame(r models.EvalResult) DataRecordFrame {
 	return DataRecordFrame{
 		evalResult: r,
