@@ -1,10 +1,12 @@
 package handler
 
 import (
-	"github.com/openflagr/flagr/swagger_gen/models"
 	"testing"
 
+	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/openflagr/flagr/pkg/config"
 	"github.com/openflagr/flagr/pkg/entity"
+	"github.com/openflagr/flagr/swagger_gen/models"
 
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/assert"
@@ -70,4 +72,39 @@ func TestGetByTags(t *testing.T) {
 
 	f = ec.GetByTags(tags, &all)
 	assert.Len(t, f, 0)
+}
+
+func TestReloadMapCacheWithNewRelic(t *testing.T) {
+	fixtureFlag := entity.GenFixtureFlag()
+	db := entity.PopulateTestDB(fixtureFlag)
+
+	tmpDB, dbErr := db.DB()
+	if dbErr != nil {
+		t.Fatalf("Failed to get database")
+	}
+
+	defer tmpDB.Close()
+	defer gostub.StubFunc(&getDB, db).Reset()
+
+	// Noop NR application — valid *Application with no goroutines or data collection
+	app, err := newrelic.NewApplication(newrelic.ConfigEnabled(false))
+	assert.NoError(t, err)
+
+	// Save & restore config
+	origEnabled := config.Config.NewRelicEnabled
+	origApp := config.Global.NewrelicApp
+	defer func() {
+		config.Config.NewRelicEnabled = origEnabled
+		config.Global.NewrelicApp = origApp
+	}()
+
+	// Enable NewRelic path with noop app
+	config.Config.NewRelicEnabled = true
+	config.Global.NewrelicApp = app
+
+	ec := GetEvalCache()
+	assert.NotPanics(t, func() {
+		err := ec.reloadMapCache()
+		assert.NoError(t, err)
+	})
 }
