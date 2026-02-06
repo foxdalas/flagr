@@ -210,7 +210,7 @@ func (ec *EvalCache) shortCircuitReload(snapshotMaxID uint) bool {
 // tags) creates a flag_snapshot row.
 func (ec *EvalCache) reloadMapCache() error {
 	if config.Config.NewRelicEnabled {
-		defer config.Global.NewrelicApp.StartTransaction("eval_cache_reload", nil, nil).End()
+		defer config.Global.NewrelicApp.StartTransaction("eval_cache_reload").End()
 	}
 
 	// Read the snapshot ID once, before the fetch. Using this same value
