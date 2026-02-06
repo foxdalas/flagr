@@ -948,7 +948,8 @@ function saveDistribution(segment) {
   const distributions = Object.values(toRaw(newDistributions)).filter(
     distribution => distribution.percent !== 0
   ).map(distribution => {
-    const { id, ...dist } = JSON.parse(JSON.stringify(distribution));
+    const dist = JSON.parse(JSON.stringify(distribution));
+    delete dist.id;
     return dist;
   });
 
