@@ -1,6 +1,4 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Flags from '@/components/Flags'
-import Flag from '@/components/Flag'
 
 export default createRouter({
   history: createWebHashHistory(),
@@ -8,12 +6,12 @@ export default createRouter({
     {
       path: '/',
       name: 'home',
-      component: Flags
+      component: () => import('@/components/Flags')
     },
     {
       path: '/flags/:flagId',
       name: 'flag',
-      component: Flag
+      component: () => import('@/components/Flag')
     }
   ]
 })

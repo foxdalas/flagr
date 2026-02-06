@@ -28,7 +28,7 @@ test.describe('JSON Editor (json-editor-vue)', () => {
       }
     })
 
-    await page.goto(`http://localhost:8080/#/flags/${flagId}`)
+    await page.goto(`/#/flags/${flagId}`)
     await page.waitForSelector('.flag-container', { timeout: 10000 })
 
     // Open Evaluation collapse to trigger json-editor rendering
@@ -45,7 +45,7 @@ test.describe('JSON Editor (json-editor-vue)', () => {
   })
 
   test('json editor renders correctly', async ({ page }) => {
-    await page.goto(`http://localhost:8080/#/flags/${flagId}`)
+    await page.goto(`/#/flags/${flagId}`)
     await page.waitForSelector('.flag-container', { timeout: 10000 })
 
     const evalItem = page.locator('.dc-container .el-collapse-item').first()

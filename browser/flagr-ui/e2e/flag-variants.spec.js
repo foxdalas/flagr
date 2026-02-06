@@ -10,7 +10,7 @@ test.describe('Flag Variants', () => {
   })
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(`http://localhost:8080/#/flags/${flagId}`)
+    await page.goto(`/#/flags/${flagId}`)
     await page.waitForSelector('.flag-container', { timeout: 10000 })
   })
 
@@ -153,7 +153,7 @@ test.describe('Variant Delete Protection', () => {
   })
 
   test('Cannot delete variant that is in active distribution', async ({ page }) => {
-    await page.goto(`http://localhost:8080/#/flags/${flagIdWithDist}`)
+    await page.goto(`/#/flags/${flagIdWithDist}`)
     await page.waitForSelector('.flag-container', { timeout: 10000 })
 
     // First, add the variant to a distribution via UI

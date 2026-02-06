@@ -292,7 +292,6 @@
                     <markdown-editor
                       v-model:markdown="flag.notes"
                       :show-editor="showMdEditor"
-                      @save="putFlag(flag)"
                     />
                   </div>
                   <div style="margin: 10px;">
@@ -771,12 +770,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick } from "vue";
+import { ref, reactive, computed, onMounted, nextTick, defineAsyncComponent, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import draggable from "vuedraggable";
 import Axios from "axios";
-import JsonEditorVue from "json-editor-vue";
 import { ElMessage } from "element-plus";
+import { Delete, Edit, View, InfoFilled } from "@element-plus/icons-vue";
+
+const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
 
 import constants from "@/constants";
 import helpers from "@/helpers/helpers";
@@ -937,27 +938,26 @@ function editDistribution(segment) {
   Object.keys(newDistributions).forEach(key => delete newDistributions[key]);
 
   segment.distributions.forEach(distribution => {
-    newDistributions[distribution.variantID] = structuredClone(distribution);
+    newDistributions[distribution.variantID] = JSON.parse(JSON.stringify(distribution));
   });
 
   dialogEditDistributionOpen.value = true;
 }
 
 function saveDistribution(segment) {
-  const distributions = Object.values(newDistributions).filter(
+  const distributions = Object.values(toRaw(newDistributions)).filter(
     distribution => distribution.percent !== 0
   ).map(distribution => {
-    let dist = structuredClone(distribution)
-    delete dist.id;
-    return dist
+    const { id, ...dist } = JSON.parse(JSON.stringify(distribution));
+    return dist;
   });
 
   Axios.put(
     `${API_URL}/flags/${flagId.value}/segments/${segment.id}/distributions`,
     { distributions }
   ).then(response => {
-    let distributions = response.data;
-    selectedSegment.value.distributions = distributions;
+    let updatedDistributions = response.data;
+    selectedSegment.value.distributions = updatedDistributions;
     dialogEditDistributionOpen.value = false;
     ElMessage.success("distributions updated");
   }, handleErr);

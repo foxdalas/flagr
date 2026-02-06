@@ -1,53 +1,57 @@
 <template>
-  <div id="app">
-    <div class="navbar">
-      <el-row>
-        <el-col
-          :span="20"
-          :offset="2"
-        >
-          <el-row>
-            <el-col :span="6">
-              <router-link :to="{ name: 'home' }">
-                <div class="logo-container">
-                  <h3 class="logo">
-                    Flagr
-                  </h3>
-                  <div>
-                    <span class="version">{{ version }}</span>
+  <el-config-provider :locale="en">
+    <div id="app">
+      <div class="navbar">
+        <el-row>
+          <el-col
+            :span="20"
+            :offset="2"
+          >
+            <el-row>
+              <el-col :span="6">
+                <router-link :to="{ name: 'home' }">
+                  <div class="logo-container">
+                    <h3 class="logo">
+                      Flagr
+                    </h3>
+                    <div>
+                      <span class="version">{{ version }}</span>
+                    </div>
                   </div>
-                </div>
-              </router-link>
-            </el-col>
-            <el-col
-              :span="1"
-              :offset="15"
-            >
-              <a
-                href="https://openflagr.github.io/flagr/api_docs"
-                target="_blank"
-              ><h3>API</h3></a>
-            </el-col>
-            <el-col
-              :span="1"
-              :offset="1"
-            >
-              <a
-                href="https://openflagr.github.io/flagr"
-                target="_blank"
-              ><h3>Docs</h3></a>
-            </el-col>
-          </el-row>
-        </el-col>
-      </el-row>
+                </router-link>
+              </el-col>
+              <el-col
+                :span="1"
+                :offset="15"
+              >
+                <a
+                  href="https://openflagr.github.io/flagr/api_docs"
+                  target="_blank"
+                ><h3>API</h3></a>
+              </el-col>
+              <el-col
+                :span="1"
+                :offset="1"
+              >
+                <a
+                  href="https://openflagr.github.io/flagr"
+                  target="_blank"
+                ><h3>Docs</h3></a>
+              </el-col>
+            </el-row>
+          </el-col>
+        </el-row>
+      </div>
+      <div class="router-view-container">
+        <router-view />
+      </div>
     </div>
-    <div class="router-view-container">
-      <router-view />
-    </div>
-  </div>
+  </el-config-provider>
 </template>
 
 <script setup>
+import en from 'element-plus/es/locale/lang/en'
+
 const version = process.env.VUE_APP_VERSION;
 </script>
 
