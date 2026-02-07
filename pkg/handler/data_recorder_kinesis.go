@@ -7,8 +7,8 @@ import (
 	"github.com/a8m/kinesis-producer/loggers/kplogrus"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/kinesis"
-	flagrConfig "github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/swagger_gen/models"
+	flagrConfig "github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 	"github.com/sirupsen/logrus"
 )
 

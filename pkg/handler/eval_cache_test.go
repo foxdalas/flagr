@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/assert"

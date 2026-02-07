@@ -5,8 +5,8 @@ import (
 
 	"encoding/json"
 
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/util"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/util"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )

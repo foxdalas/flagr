@@ -24,7 +24,7 @@ import (
 	"github.com/go-openapi/runtime/flagext"
 	"github.com/go-openapi/swag"
 
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations"
 )
 
 const (

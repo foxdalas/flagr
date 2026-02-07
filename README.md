@@ -1,33 +1,34 @@
 <p align="center">
-    <a href="https://github.com/openflagr/flagr/actions/workflows/ci.yml?query=branch%3Amain+" target="_blank">
-        <img src="https://github.com/openflagr/flagr/actions/workflows/ci.yml/badge.svg?branch=main">
+    <a href="https://github.com/foxdalas/flagr/actions/workflows/ci.yml?query=branch%3Amaster+" target="_blank">
+        <img src="https://github.com/foxdalas/flagr/actions/workflows/ci.yml/badge.svg?branch=master">
     </a>
-    <a href="https://goreportcard.com/report/github.com/openflagr/flagr" target="_blank">
-        <img src="https://goreportcard.com/badge/github.com/openflagr/flagr">
+    <a href="https://goreportcard.com/report/github.com/foxdalas/flagr" target="_blank">
+        <img src="https://goreportcard.com/badge/github.com/foxdalas/flagr">
     </a>
-    <a href="https://godoc.org/github.com/openflagr/flagr" target="_blank">
+    <a href="https://godoc.org/github.com/foxdalas/flagr" target="_blank">
         <img src="https://img.shields.io/badge/godoc-reference-green.svg">
     </a>
-    <a href="https://github.com/openflagr/flagr/releases" target="_blank">
-        <img src="https://img.shields.io/github/release/openflagr/flagr.svg?style=flat&color=green">
+    <a href="https://github.com/foxdalas/flagr/releases" target="_blank">
+        <img src="https://img.shields.io/github/release/foxdalas/flagr.svg?style=flat&color=green">
     </a>
-    <a href="https://codecov.io/gh/openflagr/flagr">
-        <img src="https://codecov.io/gh/openflagr/flagr/branch/main/graph/badge.svg?token=iwjv26grrN">
+    <a href="https://codecov.io/gh/foxdalas/flagr">
+        <img src="https://codecov.io/gh/foxdalas/flagr/branch/master/graph/badge.svg?token=iwjv26grrN">
     </a>
-    <a href="https://deepwiki.com/openflagr/flagr">
+    <a href="https://deepwiki.com/foxdalas/flagr">
         <img src="https://deepwiki.com/badge.svg?color=green" alt="Ask DeepWiki">
     </a>
 </p>
 
-## Introduction
+> **This is a fork of [openflagr/flagr](https://github.com/openflagr/flagr).**
+> We recommend using the original project. This fork is maintained for internal use only.
 
-`openflagr/flagr` is a community-driven OSS effort of advancing the development of Flagr.
+## Introduction
 
 Flagr is an open source Go service that delivers the right experience to the right entity and monitors the impact. It provides feature flags, experimentation (A/B testing), and dynamic configuration. It has clear swagger REST APIs for flags management and flag evaluation.
 
 ## Documentation
 
-- https://openflagr.github.io/flagr
+- https://foxdalas.github.io/flagr
 
 ## Quick demo
 
@@ -35,15 +36,15 @@ Try it with Docker.
 
 ```sh
 # Start the docker container
-docker pull ghcr.io/openflagr/flagr
-docker run -it -p 18000:18000 ghcr.io/openflagr/flagr
+docker pull ghcr.io/foxdalas/flagr
+docker run -it -p 18000:18000 ghcr.io/foxdalas/flagr
 
 # Open the Flagr UI
 open localhost:18000
 ```
 
 Or try it on [https://try-flagr.onrender.com](https://try-flagr.onrender.com),
-it may take a while for a cold start, and every commit to the `main` branch will trigger
+it may take a while for a cold start, and every commit to the `master` branch will trigger
 a redeployment of the demo website.
 
 ```
@@ -93,5 +94,5 @@ Error Set:
 
 ## License and Credit
 
-- [`openflagr/flagr`](https://github.com/openflagr/flagr) Apache 2.0
+- [`foxdalas/flagr`](https://github.com/foxdalas/flagr) Apache 2.0
 - [`checkr/flagr`](https://github.com/checkr/flagr) Apache 2.0

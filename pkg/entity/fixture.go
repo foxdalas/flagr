@@ -1,7 +1,7 @@
 package entity
 
 import (
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 
 	"gorm.io/gorm"
 )

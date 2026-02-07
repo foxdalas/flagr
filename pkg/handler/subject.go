@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/util"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/util"
 
 	jwt "github.com/form3tech-oss/jwt-go"
 )

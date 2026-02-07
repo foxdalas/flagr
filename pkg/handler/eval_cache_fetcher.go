@@ -8,9 +8,9 @@ import (
 
 	"encoding/json"
 
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/pkg/util"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/util"
 	"gorm.io/gorm"
 )
 

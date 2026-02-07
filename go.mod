@@ -1,4 +1,4 @@
-module github.com/openflagr/flagr
+module github.com/foxdalas/flagr
 
 go 1.25.7
 

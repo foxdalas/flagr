@@ -1,6 +1,6 @@
 - What's Flagr
     - [Get started](home.md)
-    - [API 🔗](https://openflagr.github.io/flagr/api_docs)
+    - [API 🔗](https://foxdalas.github.io/flagr/api_docs)
 - Introduction
     - [Overview](flagr_overview.md)
     - [Use Cases](flagr_use_cases.md)

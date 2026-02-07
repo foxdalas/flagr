@@ -8,11 +8,11 @@ import (
 
 	"encoding/json"
 
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/pkg/util"
-	"github.com/openflagr/flagr/swagger_gen/models"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/evaluation"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/util"
+	"github.com/foxdalas/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/evaluation"
 	"gorm.io/gorm"
 
 	"github.com/bsm/ratelimit"
