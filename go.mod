@@ -19,7 +19,7 @@ require (
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
 	github.com/getsentry/raven-go v0.2.0
 	github.com/go-openapi/analysis v0.24.1 // indirect
-	github.com/go-openapi/errors v0.22.4
+	github.com/go-openapi/errors v0.22.6
 	github.com/go-openapi/jsonreference v0.21.3 // indirect
 	github.com/go-openapi/loads v0.23.2
 	github.com/go-openapi/runtime v0.29.0
