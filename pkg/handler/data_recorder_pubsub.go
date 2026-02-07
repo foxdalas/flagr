@@ -44,7 +44,7 @@ var NewPubsubRecorder = func() DataRecorder {
 }
 
 func (p *pubsubRecorder) Close() error {
-	p.topic.Stop()
+	p.publisher.Stop()
 	return p.producer.Close()
 }
 
