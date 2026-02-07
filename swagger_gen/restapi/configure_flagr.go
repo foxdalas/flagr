@@ -10,10 +10,12 @@ import (
 
 	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/foxdalas/flagr/pkg/handler"
+	"github.com/foxdalas/flagr/pkg/version"
 	"github.com/foxdalas/flagr/swagger_gen/restapi/operations"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime"
 )
 
@@ -25,7 +27,37 @@ func configureFlags(api *operations.FlagrAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
+func patchSwaggerVersion(api *operations.FlagrAPI) {
+	ver := version.Version
+	if ver == "" || ver == "dev" {
+		return
+	}
+	SwaggerJSON = patchVersionInSpec(SwaggerJSON, ver)
+	FlatSwaggerJSON = patchVersionInSpec(FlatSwaggerJSON, ver)
+
+	spec, err := loads.Embedded(SwaggerJSON, FlatSwaggerJSON)
+	if err == nil {
+		api.SetSpec(spec)
+	}
+}
+
+func patchVersionInSpec(raw json.RawMessage, ver string) json.RawMessage {
+	var doc map[string]interface{}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		return raw
+	}
+	if info, ok := doc["info"].(map[string]interface{}); ok {
+		info["version"] = ver
+	}
+	patched, err := json.Marshal(doc)
+	if err != nil {
+		return raw
+	}
+	return patched
+}
+
 func configureAPI(api *operations.FlagrAPI) http.Handler {
+	patchSwaggerVersion(api)
 	api.ServeError = errors.ServeError
 
 	api.JSONConsumer = runtime.ConsumerFunc(func(reader io.Reader, data interface{}) error {

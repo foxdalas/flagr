@@ -12,6 +12,11 @@ export default createRouter({
       path: '/flags/:flagId',
       name: 'flag',
       component: () => import('@/components/Flag')
+    },
+    {
+      path: '/docs/:section?',
+      name: 'docs',
+      component: () => import('@/components/Docs')
     }
   ]
 })

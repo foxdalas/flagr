@@ -4,7 +4,7 @@ info:
     Flagr is a feature flagging, A/B testing and dynamic configuration
     microservice. The base path for all the APIs is "/api/v1".
   title: Flagr
-  version: 1.1.20
+  version: dev
 tags:
   - name: flag
     description: Everything about the flag
@@ -878,7 +878,7 @@ paths:
       parameters:
         - in: body
           name: body
-          description: evalution context
+          description: evaluation context
           required: true
           schema:
             $ref: '#/definitions/evalContext'
@@ -949,7 +949,7 @@ paths:
       parameters:
         - in: body
           name: body
-          description: evalution batch request
+          description: evaluation batch request
           required: true
           schema:
             $ref: '#/definitions/evaluationBatchRequest'

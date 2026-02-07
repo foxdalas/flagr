@@ -34,7 +34,7 @@ docker run -it -p 18000:18000 ghcr.io/foxdalas/flagr
 
 Install Dependencies.
 
-- Go (1.24+)
+- Go (1.25+)
 - Make (for Makefile)
 - NPM (for building UI)
 

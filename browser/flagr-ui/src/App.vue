@@ -25,14 +25,12 @@
                 :offset="14"
                 class="nav-links"
               >
-                <a
-                  href="https://openflagr.github.io/flagr/api_docs"
-                  target="_blank"
-                ><h3>API</h3></a>
-                <a
-                  href="https://openflagr.github.io/flagr"
-                  target="_blank"
-                ><h3>Docs</h3></a>
+                <router-link :to="{ name: 'docs', params: { section: 'api' } }">
+                  <h3>API</h3>
+                </router-link>
+                <router-link :to="{ name: 'docs' }">
+                  <h3>Docs</h3>
+                </router-link>
               </el-col>
             </el-row>
           </el-col>
@@ -147,7 +145,7 @@ ol {
     margin-top: 20px;
   }
 
-  img {
+  .logo-container img {
     height: 60px;
   }
 

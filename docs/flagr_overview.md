@@ -41,6 +41,6 @@ There are three components in the flagr, Flagr Evaluator, Flagr Manager, and Fla
 
 - Flagr Evaluator. Flagr evaluator evaluates the incoming requests.
 - Flagr Manager. Flagr manager is the CRUD gateway. All the mutations of flags happen here.
-- Flagr Metrics. Flagr metrics is the data pipeline to collect evaluation results. Currently Flagr only supports Kafka as the pipeline.
+- Flagr Metrics. Flagr metrics is the data pipeline to collect evaluation results. Flagr supports Kafka, Kinesis, and Google Cloud Pubsub as pipeline backends (configured via `FLAGR_RECORDER_TYPE`).
 
 ![Flagr Architecture](images/flagr_arch.png)
