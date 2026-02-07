@@ -10,12 +10,6 @@ The definitions of the following concepts are in [API doc](https://foxdalas.gith
 - **Variant Attachment** represents the dynamic configuration of a variant. For example, if you have a variant for the `green` button, you can dynamically control what's the hex color of green you want to use (e.g. `{"hex_color": "#42b983"}`).
 - **Segment** represents the segmentation, i.e. the set of audience we want to target. Segment is the smallest unit of a component we can analyze in Flagr Metrics.
 - **Constraint** represents rules that we can use to define the audience of the segment. In other words, the audience in the segment is defined by a set of constraints. Specifically, in Flagr, the constraints are connected with `AND` in a segment.
-
-  Constraint properties support nested field access using dotted and bracketed syntax:
-  - `user.name` — accesses `args["user"]["name"]` from a nested entity context
-  - `users[0]` — accesses the first element of `args["users"]` array
-  - `users[0].role` — chained array + property access
-  - Simple flat properties like `state` or `age` work as before.
 - **Distribution** represents the distribution of variants in a segment.
 - **Entity** represents the context of what we are going to assign the variant on. Usually, Flagr expects the context coming with the entity, so that one can define constraints based on the context of the entity.
 - **Rollout** and deterministic random logic. The goal here is to ensure deterministic and persistent evaluation result for entities. Steps to evaluating a flag given an entity context:
@@ -45,11 +39,8 @@ The definitions of the following concepts are in [API doc](https://foxdalas.gith
 
 There are three components in the flagr, Flagr Evaluator, Flagr Manager, and Flagr Metrics.
 
-- **Flagr Evaluator**. Flagr evaluator evaluates the incoming requests. It maintains an in-memory cache (`EvalCache`) of all flags, segments, variants, constraints, distributions, and tags — pre-parsed and ready for fast evaluation. The cache is refreshed periodically (default every 3s, configurable via `FLAGR_EVALCACHE_REFRESHINTERVAL`). To avoid unnecessary database load, the reload short-circuits when no new `flag_snapshot` rows have been created, since every mutation handler that affects evaluation data also creates a snapshot.
-
-  The lightweight endpoint `GET /api/v1/flags/snapshots/max_id` exposes the current max `flag_snapshot` id — a monotonically increasing version counter for the entire flag configuration. External caching layers (CDN, sidecar proxies, application-level caches) can poll this single endpoint and compare the value with their last-known version: if the value changed, at least one flag's configuration was modified and cached evaluations should be invalidated. This is vastly more efficient than polling individual flag records.
-
-- **Flagr Manager**. Flagr manager is the CRUD gateway. All the mutations of flags happen here.
-- **Flagr Metrics**. Flagr metrics is the data pipeline to collect evaluation results. Currently Flagr only supports Kafka as the pipeline.
+- Flagr Evaluator. Flagr evaluator evaluates the incoming requests.
+- Flagr Manager. Flagr manager is the CRUD gateway. All the mutations of flags happen here.
+- Flagr Metrics. Flagr metrics is the data pipeline to collect evaluation results. Flagr supports Kafka, Kinesis, and Google Cloud Pubsub as pipeline backends (configured via `FLAGR_RECORDER_TYPE`).
 
 ![Flagr Architecture](images/flagr_arch.png)
