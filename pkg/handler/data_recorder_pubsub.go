@@ -16,12 +16,21 @@ type pubsubRecorder struct {
 	options  DataRecordFrameOptions
 }
 
+func pubsubClientOptions() []option.ClientOption {
+	if config.Config.RecorderPubsubKeyFile != "" {
+		return []option.ClientOption{
+			option.WithAuthCredentialsFile(option.ServiceAccount, config.Config.RecorderPubsubKeyFile),
+		}
+	}
+	return nil
+}
+
 var (
 	pubsubClient = func() (*pubsub.Client, error) {
 		return pubsub.NewClient(
 			context.Background(),
 			config.Config.RecorderPubsubProjectID,
-			option.WithCredentialsFile(config.Config.RecorderPubsubKeyFile),
+			pubsubClientOptions()...,
 		)
 	}
 )
