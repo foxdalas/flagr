@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/pkg/util"
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/util"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 )
 
 // MapDistributions maps distribution

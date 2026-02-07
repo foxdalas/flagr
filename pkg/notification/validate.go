@@ -1,7 +1,7 @@
 package notification
 
 import (
-	"github.com/openflagr/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/sirupsen/logrus"
 )
 

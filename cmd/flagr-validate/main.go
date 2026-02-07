@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openflagr/flagr/pkg/handler"
+	"github.com/foxdalas/flagr/pkg/handler"
 )
 
 func main() {

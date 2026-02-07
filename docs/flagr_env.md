@@ -1,8 +1,8 @@
 # Server Configuration
 
-Flagr is configured entirely through environment variables. See [env.go](https://github.com/openflagr/flagr/blob/master/pkg/config/env.go) for the full list.
+Flagr is configured entirely through environment variables. See [env.go](https://github.com/foxdalas/flagr/blob/master/pkg/config/env.go) for the full list.
 
-[env.go](https://raw.githubusercontent.com/openflagr/flagr/master/pkg/config/env.go ':include :type=code')
+[env.go](https://raw.githubusercontent.com/foxdalas/flagr/master/pkg/config/env.go ':include :type=code')
 
 ```sh
 # Example: set the database driver
@@ -41,7 +41,7 @@ Note: Basic auth protects the web UI. It does not prevent direct API calls to `/
 
 ### JWT Auth
 
-See [env.go](https://github.com/openflagr/flagr/blob/master/pkg/config/env.go) for JWT configuration options.
+See [env.go](https://github.com/foxdalas/flagr/blob/master/pkg/config/env.go) for JWT configuration options.
 
 ## Data record destinations
 

@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/pkg/notification"
-	"github.com/openflagr/flagr/swagger_gen/models"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/flag"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/notification"
+	"github.com/foxdalas/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/flag"
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/assert"
 )

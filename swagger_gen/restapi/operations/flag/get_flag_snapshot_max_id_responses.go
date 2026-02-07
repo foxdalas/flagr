@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 )
 
 // GetFlagSnapshotMaxIDOKCode is the HTTP code returned for type GetFlagSnapshotMaxIDOK

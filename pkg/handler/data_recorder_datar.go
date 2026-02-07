@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/openflagr/flagr/pkg/datar"
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/pkg/datar"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 )
 
 // NewDatarRecorder creates a DataRecorder that feeds evaluation results into the Datar engine.

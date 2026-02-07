@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 
 	"github.com/brandur/simplebox"
-	"github.com/openflagr/flagr/pkg/util"
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/pkg/util"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 )
 
 type dataRecordEncryptor interface {

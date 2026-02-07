@@ -10,7 +10,7 @@ import (
 	postgres "gorm.io/driver/postgres"  // postgres driver
 
 	retry "github.com/avast/retry-go"
-	"github.com/openflagr/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	gorm_logger "gorm.io/gorm/logger"

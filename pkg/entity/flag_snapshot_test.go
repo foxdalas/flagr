@@ -3,7 +3,7 @@ package entity
 import (
 	"testing"
 
-	"github.com/openflagr/flagr/pkg/notification"
+	"github.com/foxdalas/flagr/pkg/notification"
 )
 
 func TestSaveFlagSnapshot(t *testing.T) {

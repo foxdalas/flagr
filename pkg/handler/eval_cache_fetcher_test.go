@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/openflagr/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 

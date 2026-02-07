@@ -6,7 +6,7 @@ import (
 
 	"encoding/json"
 
-	"github.com/openflagr/flagr/pkg/util"
+	"github.com/foxdalas/flagr/pkg/util"
 	"github.com/spf13/cast"
 	"gorm.io/gorm"
 )

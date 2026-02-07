@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/openflagr/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/pmezard/go-difflib/difflib"
 	"github.com/sirupsen/logrus"
 )

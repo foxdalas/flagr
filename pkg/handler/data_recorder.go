@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 )
 
 var (

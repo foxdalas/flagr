@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 	"github.com/stretchr/testify/assert"
 )
 

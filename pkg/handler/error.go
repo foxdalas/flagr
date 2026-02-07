@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 )
 
 // Error is the handler error

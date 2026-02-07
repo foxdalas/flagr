@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/swagger_gen/models"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/distribution"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/flag"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/segment"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/variant"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/distribution"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/flag"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/segment"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/variant"
 	"gorm.io/gorm"
 
 	"github.com/prashantv/gostub"

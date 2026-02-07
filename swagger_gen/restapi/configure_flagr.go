@@ -8,9 +8,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/handler"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/handler"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-openapi/errors"

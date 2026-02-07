@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/openflagr/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/config"
 )
 
 type Notifier interface {

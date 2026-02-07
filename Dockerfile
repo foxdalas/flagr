@@ -2,7 +2,7 @@
 # Prepare npm_builder
 ######################################
 FROM node:20-alpine as npm_builder
-WORKDIR /go/src/github.com/openflagr/flagr
+WORKDIR /go/src/github.com/foxdalas/flagr
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 ADD . .
 ARG FLAGR_UI_POSSIBLE_ENTITY_TYPES=null
@@ -13,7 +13,7 @@ RUN apk add --no-cache make && make build_ui
 # Prepare go_builder
 ######################################
 FROM golang:1.26-alpine as go_builder
-WORKDIR /go/src/github.com/openflagr/flagr
+WORKDIR /go/src/github.com/foxdalas/flagr
 
 RUN apk add --no-cache git make build-base
 ADD . .
@@ -22,7 +22,7 @@ RUN make build
 
 FROM alpine
 
-COPY --from=go_builder /go/src/github.com/openflagr/flagr/flagr .
+COPY --from=go_builder /go/src/github.com/foxdalas/flagr/flagr .
 
 ENV HOST=0.0.0.0
 ENV PORT=18000
@@ -30,7 +30,7 @@ ENV FLAGR_DB_DBDRIVER=sqlite3
 ENV FLAGR_DB_DBCONNECTIONSTR=/data/demo_sqlite3.db
 ENV FLAGR_RECORDER_ENABLED=false
 
-COPY --from=npm_builder /go/src/github.com/openflagr/flagr/browser/flagr-ui/dist ./browser/flagr-ui/dist
+COPY --from=npm_builder /go/src/github.com/foxdalas/flagr/browser/flagr-ui/dist ./browser/flagr-ui/dist
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser

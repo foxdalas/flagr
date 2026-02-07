@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/openflagr/flagr/pkg/config"
-	"github.com/openflagr/flagr/pkg/datar"
-	"github.com/openflagr/flagr/pkg/entity"
-	datarapi "github.com/openflagr/flagr/swagger_gen/restapi/operations/datar"
+	"github.com/foxdalas/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/datar"
+	"github.com/foxdalas/flagr/pkg/entity"
+	datarapi "github.com/foxdalas/flagr/swagger_gen/restapi/operations/datar"
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/assert"
 )

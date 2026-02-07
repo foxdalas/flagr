@@ -9,8 +9,8 @@ import (
 	"path"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/export"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/export"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )

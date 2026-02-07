@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/openflagr/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/entity"
 )
 
 const flushRetries = 3

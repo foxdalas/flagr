@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/openflagr/flagr/pkg/config"
+	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/prashantv/gostub"
 	"github.com/stretchr/testify/assert"
 )

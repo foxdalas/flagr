@@ -3,7 +3,7 @@ package handler
 import (
 	"testing"
 
-	"github.com/openflagr/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/entity"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )

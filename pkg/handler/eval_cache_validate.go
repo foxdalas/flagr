@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/openflagr/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/entity"
 )
 
 // ValidationResult holds the outcome of validating a flag definition.

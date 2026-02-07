@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"github.com/openflagr/flagr/pkg/entity"
-	"github.com/openflagr/flagr/pkg/util"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/distribution"
-	"github.com/openflagr/flagr/swagger_gen/restapi/operations/variant"
+	"github.com/foxdalas/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/util"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/distribution"
+	"github.com/foxdalas/flagr/swagger_gen/restapi/operations/variant"
 )
 
 var validatePutDistributions = func(params distribution.PutDistributionsParams) *Error {

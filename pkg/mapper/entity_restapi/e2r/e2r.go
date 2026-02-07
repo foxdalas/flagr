@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/openflagr/flagr/pkg/entity"
+	"github.com/foxdalas/flagr/pkg/entity"
 
-	"github.com/openflagr/flagr/swagger_gen/models"
+	"github.com/foxdalas/flagr/swagger_gen/models"
 )
 
 // MapFlag maps flag

@@ -19,9 +19,9 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X github.com/openflagr/flagr/pkg/version.Version={{.Version}}
-      - -X github.com/openflagr/flagr/pkg/version.Commit={{.Commit}}
-      - -X github.com/openflagr/flagr/pkg/version.Date={{.Date}}
+      - -X github.com/foxdalas/flagr/pkg/version.Version={{.Version}}
+      - -X github.com/foxdalas/flagr/pkg/version.Commit={{.Commit}}
+      - -X github.com/foxdalas/flagr/pkg/version.Date={{.Date}}
 
 archives:
   - formats:
