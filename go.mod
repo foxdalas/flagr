@@ -52,7 +52,6 @@ require (
 )
 
 require (
-	cloud.google.com/go/pubsub v1.49.0
 	github.com/glebarez/sqlite v1.6.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/driver/postgres v1.6.0
@@ -60,6 +59,7 @@ require (
 )
 
 require (
+	cloud.google.com/go/pubsub/v2 v2.0.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.7
 	github.com/aws/aws-sdk-go-v2/service/kinesis v1.43.0
 	github.com/newrelic/go-agent/v3 v3.42.0
@@ -149,7 +149,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.4.0 // indirect
-	go.einride.tech/aip v0.68.1 // indirect
+	go.einride.tech/aip v0.73.0 // indirect
 	go.mongodb.org/mongo-driver v1.17.6 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
