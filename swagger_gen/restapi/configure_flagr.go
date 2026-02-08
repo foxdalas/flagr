@@ -77,7 +77,11 @@ func configureAPI(api *operations.FlagrAPI) http.Handler {
 	api.ServerShutdown = config.ServerShutdown
 
 	handler.Setup(api)
-	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
+	swaggerHandler := api.Serve(setupMiddlewares)
+	if config.Config.OFREPEnabled {
+		swaggerHandler = handler.WrapWithOFREP(swaggerHandler)
+	}
+	return setupGlobalMiddleware(swaggerHandler)
 }
 
 // The TLS configuration before HTTPS server starts.
