@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"fmt"
 	"maps"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/foxdalas/flagr/swagger_gen/models"
@@ -60,6 +62,8 @@ type EvalCache struct {
 	// because every API mutation that affects eval data creates a snapshot.
 	// lastSnapshotMaxID > 0 indicates at least one successful load has occurred.
 	lastSnapshotMaxID uint
+
+	version atomic.Int64 // unix timestamp (ms) of last successful cache reload, used for ETag
 }
 
 // GetEvalCache gets the EvalCache
@@ -235,10 +239,31 @@ func (ec *EvalCache) reloadMapCache() error {
 			tagCache: tagCache,
 		}
 		ec.lastSnapshotMaxID = preFetchMaxID
+		ec.version.Store(time.Now().UnixMilli())
 		ec.cacheMutex.Unlock()
 
 		return nil, nil
 	})
 
 	return err
+}
+
+// GetETag returns an ETag string based on the unix millisecond timestamp of the last cache reload.
+// Using a timestamp ensures the ETag survives application restarts without false 304 responses.
+func (ec *EvalCache) GetETag() string {
+	return fmt.Sprintf(`"%d"`, ec.version.Load())
+}
+
+// GetAllEnabledFlags returns all enabled flags from the cache.
+func (ec *EvalCache) GetAllEnabledFlags() []*entity.Flag {
+	ec.cacheMutex.RLock()
+	defer ec.cacheMutex.RUnlock()
+
+	flags := make([]*entity.Flag, 0, len(ec.cache.keyCache))
+	for _, f := range ec.cache.keyCache {
+		if f.Enabled {
+			flags = append(flags, f)
+		}
+	}
+	return flags
 }

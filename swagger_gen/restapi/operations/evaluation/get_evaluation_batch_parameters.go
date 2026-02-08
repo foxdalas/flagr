@@ -44,6 +44,11 @@ type GetEvaluationBatchParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*ETag value from previous response for cache validation
+	  In: header
+	*/
+	IfNoneMatch *string
+
 	/*
 	  In: query
 	  Default: ""
@@ -85,6 +90,10 @@ func (o *GetEvaluationBatchParams) BindRequest(r *http.Request, route *middlewar
 	o.HTTPRequest = r
 	qs := runtime.Values(r.URL.Query())
 
+	if err := o.bindIfNoneMatch(r.Header[http.CanonicalHeaderKey("If-None-Match")], true, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	qEntityID, qhkEntityID, _ := qs.GetOK("entityId")
 	if err := o.bindEntityID(qEntityID, qhkEntityID, route.Formats); err != nil {
 		res = append(res, err)
@@ -112,6 +121,23 @@ func (o *GetEvaluationBatchParams) BindRequest(r *http.Request, route *middlewar
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindIfNoneMatch binds and validates parameter IfNoneMatch from header.
+func (o *GetEvaluationBatchParams) bindIfNoneMatch(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+	o.IfNoneMatch = &raw
+
 	return nil
 }
 

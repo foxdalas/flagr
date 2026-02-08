@@ -253,6 +253,11 @@ var Config = struct {
 	// NotificationWebhookHeaders - Webhook Headers for generic notifications, e.g. "Authorization: Bearer token,X-Custom-Header: value"
 	NotificationWebhookHeaders string `env:"FLAGR_NOTIFICATION_WEBHOOK_HEADERS" envDefault:""`
 
+	// OFREPEnabled - enable OpenFeature Remote Evaluation Protocol (OFREP) endpoints
+	// OFREP provides a standard REST API for feature flag evaluation compatible with
+	// any OpenFeature provider (Go, Java, .NET, Python, JS, PHP, Ruby)
+	OFREPEnabled bool `env:"FLAGR_OFREP_ENABLED" envDefault:"true"`
+
 	// WebPrefix - base path for web and API
 	// e.g. FLAGR_WEB_PREFIX=/foo
 	// UI path  => localhost:18000/foo"

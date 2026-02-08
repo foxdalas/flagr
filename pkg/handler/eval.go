@@ -35,6 +35,11 @@ func NewEval() Eval {
 type eval struct{}
 
 func (e *eval) GetEvaluationBatch(params evaluation.GetEvaluationBatchParams) middleware.Responder {
+	etag := GetEvalCache().GetETag()
+	if params.IfNoneMatch != nil && *params.IfNoneMatch == etag {
+		return evaluation.NewGetEvaluationBatchNotModified()
+	}
+
 	var ctx = make(map[string]any)
 	for k, v := range params.HTTPRequest.URL.Query() {
 		if k == "entityId" || k == "flagId" || k == "flagKey" || k == "flagTag" || k == "flagTagQuery" {
@@ -94,7 +99,8 @@ func (e *eval) GetEvaluationBatch(params evaluation.GetEvaluationBatchParams) mi
 		results.EvaluationResults = append(results.EvaluationResults, evalResult)
 	}
 
-	resp := evaluation.NewPostEvaluationBatchOK()
+	resp := evaluation.NewGetEvaluationBatchOK()
+	resp.SetETag(etag)
 	resp.SetPayload(results)
 	return resp
 }
@@ -113,6 +119,11 @@ func (e *eval) PostEvaluation(params evaluation.PostEvaluationParams) middleware
 }
 
 func (e *eval) PostEvaluationBatch(params evaluation.PostEvaluationBatchParams) middleware.Responder {
+	etag := GetEvalCache().GetETag()
+	if params.IfNoneMatch != nil && *params.IfNoneMatch == etag {
+		return evaluation.NewPostEvaluationBatchNotModified()
+	}
+
 	entities := params.Body.Entities
 	flagIDs := params.Body.FlagIDs
 	flagKeys := params.Body.FlagKeys
@@ -201,6 +212,7 @@ func (e *eval) PostEvaluationBatch(params evaluation.PostEvaluationBatchParams) 
 	}
 
 	resp := evaluation.NewPostEvaluationBatchOK()
+	resp.SetETag(etag)
 	resp.SetPayload(results)
 	return resp
 }
