@@ -5,11 +5,13 @@ test.describe('Navigation and Layout', () => {
     await page.goto('/')
     await expect(page.locator('.logo')).toContainText('Flagr')
     await expect(page.locator('.version')).toBeVisible()
-    // Check API and Docs links
-    const apiLink = page.locator('a[href*="api_docs"]')
-    await expect(apiLink).toHaveAttribute('target', '_blank')
-    const docsLink = page.locator('a[href*="openflagr.github.io/flagr"]').last()
-    await expect(docsLink).toHaveAttribute('target', '_blank')
+    // Check API and Docs links (internal router-links)
+    const apiLink = page.locator('.nav-links a[href*="/docs/api"]')
+    await expect(apiLink).toBeVisible()
+    await expect(apiLink).toHaveText('API')
+    const docsLink = page.locator('.nav-links a[href*="/docs"]').last()
+    await expect(docsLink).toBeVisible()
+    await expect(docsLink).toHaveText('Docs')
   })
 
   test('Click logo navigates to home', async ({ page }) => {
