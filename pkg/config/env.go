@@ -230,6 +230,11 @@ var Config = struct {
 	BasicAuthPrefixWhitelistPaths []string `env:"FLAGR_BASIC_AUTH_WHITELIST_PATHS" envDefault:"/api/v1/health,/api/v1/flags,/api/v1/evaluation" envSeparator:","`
 	BasicAuthExactWhitelistPaths  []string `env:"FLAGR_BASIC_AUTH_EXACT_WHITELIST_PATHS" envDefault:"" envSeparator:","`
 
+	// OFREPEnabled - enable OpenFeature Remote Evaluation Protocol (OFREP) endpoints
+	// OFREP provides a standard REST API for feature flag evaluation compatible with
+	// any OpenFeature provider (Go, Java, .NET, Python, JS, PHP, Ruby)
+	OFREPEnabled bool `env:"FLAGR_OFREP_ENABLED" envDefault:"true"`
+
 	// WebPrefix - base path for web and API
 	// e.g. FLAGR_WEB_PREFIX=/foo
 	// UI path  => localhost:18000/foo"

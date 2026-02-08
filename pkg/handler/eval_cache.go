@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/foxdalas/flagr/swagger_gen/models"
@@ -31,6 +33,7 @@ type EvalCache struct {
 	cacheMutex      sync.RWMutex
 	refreshTimeout  time.Duration
 	refreshInterval time.Duration
+	version atomic.Int64 // unix timestamp (ms) of last successful cache reload, used for ETag
 }
 
 // GetEvalCache gets the EvalCache
@@ -164,10 +167,31 @@ func (ec *EvalCache) reloadMapCache() error {
 			keyCache: keyCache,
 			tagCache: tagCache,
 		}
+		ec.version.Store(time.Now().UnixMilli())
 		ec.cacheMutex.Unlock()
 
 		return nil, err
 	})
 
 	return err
+}
+
+// GetETag returns an ETag string based on the unix millisecond timestamp of the last cache reload.
+// Using a timestamp ensures the ETag survives application restarts without false 304 responses.
+func (ec *EvalCache) GetETag() string {
+	return fmt.Sprintf(`"%d"`, ec.version.Load())
+}
+
+// GetAllEnabledFlags returns all enabled flags from the cache.
+func (ec *EvalCache) GetAllEnabledFlags() []*entity.Flag {
+	ec.cacheMutex.RLock()
+	defer ec.cacheMutex.RUnlock()
+
+	flags := make([]*entity.Flag, 0, len(ec.cache.keyCache))
+	for _, f := range ec.cache.keyCache {
+		if f.Enabled {
+			flags = append(flags, f)
+		}
+	}
+	return flags
 }

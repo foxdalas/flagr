@@ -22,6 +22,10 @@ GetEvaluationBatchOK evaluation batch result
 swagger:response getEvaluationBatchOK
 */
 type GetEvaluationBatchOK struct {
+	/*Cache version identifier for the flag evaluation cache
+
+	 */
+	ETag string `json:"ETag"`
 
 	/*
 	  In: Body
@@ -33,6 +37,17 @@ type GetEvaluationBatchOK struct {
 func NewGetEvaluationBatchOK() *GetEvaluationBatchOK {
 
 	return &GetEvaluationBatchOK{}
+}
+
+// WithETag adds the eTag to the get evaluation batch o k response
+func (o *GetEvaluationBatchOK) WithETag(eTag string) *GetEvaluationBatchOK {
+	o.ETag = eTag
+	return o
+}
+
+// SetETag sets the eTag to the get evaluation batch o k response
+func (o *GetEvaluationBatchOK) SetETag(eTag string) {
+	o.ETag = eTag
 }
 
 // WithPayload adds the payload to the get evaluation batch o k response
@@ -49,6 +64,13 @@ func (o *GetEvaluationBatchOK) SetPayload(payload *models.EvaluationBatchRespons
 // WriteResponse to the client
 func (o *GetEvaluationBatchOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	// response header ETag
+
+	eTag := o.ETag
+	if eTag != "" {
+		rw.Header().Set("ETag", eTag)
+	}
+
 	rw.WriteHeader(200)
 	if o.Payload != nil {
 		payload := o.Payload
@@ -56,6 +78,31 @@ func (o *GetEvaluationBatchOK) WriteResponse(rw http.ResponseWriter, producer ru
 			panic(err) // let the recovery middleware deal with this
 		}
 	}
+}
+
+// GetEvaluationBatchNotModifiedCode is the HTTP code returned for type GetEvaluationBatchNotModified
+const GetEvaluationBatchNotModifiedCode int = 304
+
+/*
+GetEvaluationBatchNotModified Not Modified - flag configuration has not changed since the provided ETag
+
+swagger:response getEvaluationBatchNotModified
+*/
+type GetEvaluationBatchNotModified struct {
+}
+
+// NewGetEvaluationBatchNotModified creates GetEvaluationBatchNotModified with default headers values
+func NewGetEvaluationBatchNotModified() *GetEvaluationBatchNotModified {
+
+	return &GetEvaluationBatchNotModified{}
+}
+
+// WriteResponse to the client
+func (o *GetEvaluationBatchNotModified) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
+
+	rw.WriteHeader(304)
 }
 
 /*
