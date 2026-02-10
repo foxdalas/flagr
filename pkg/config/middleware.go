@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
@@ -292,7 +293,7 @@ func (s *statsdMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request, nex
 		duration := float64(time.Since(start)) / float64(time.Millisecond)
 		tags := []string{
 			"status:" + status,
-			"path:" + r.RequestURI,
+			"path:" + normalizePath(r.RequestURI),
 			"method:" + r.Method,
 		}
 
@@ -329,12 +330,48 @@ func (p *prometheusMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request,
 			response := w.(negroni.ResponseWriter)
 			status := strconv.Itoa(response.Status())
 			duration := float64(time.Since(start)) / float64(time.Second)
+			path := normalizePath(r.RequestURI)
 
-			p.counter.WithLabelValues(status, r.RequestURI, r.Method).Inc()
+			p.counter.WithLabelValues(status, path, r.Method).Inc()
 			if p.latencies != nil {
-				p.latencies.WithLabelValues(status, r.RequestURI, r.Method).Observe(duration)
+				p.latencies.WithLabelValues(status, path, r.Method).Observe(duration)
 			}
 		}(time.Now())
 		next(w, r)
 	}
+}
+
+// normalizePath strips query strings, removes numeric path segments (IDs),
+// and normalizes OFREP single-flag paths to prevent metric cardinality explosion.
+func normalizePath(uri string) string {
+	path := uri
+	if i := strings.IndexByte(path, '?'); i >= 0 {
+		path = path[:i]
+	}
+	segments := strings.Split(path, "/")
+	filtered := segments[:0]
+	for _, s := range segments {
+		if s != "" && isNumeric(s) {
+			continue
+		}
+		filtered = append(filtered, s)
+	}
+	path = strings.Join(filtered, "/")
+	// OFREP single flag eval: /ofrep/v1/evaluate/flags/<key> → /ofrep/v1/evaluate/flags
+	if strings.HasPrefix(path, "/ofrep/v1/evaluate/flags/") {
+		path = "/ofrep/v1/evaluate/flags"
+	}
+	if path == "" {
+		path = "/"
+	}
+	return path
+}
+
+func isNumeric(s string) bool {
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return len(s) > 0
 }
