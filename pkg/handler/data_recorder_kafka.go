@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/foxdalas/flagr/pkg/config"
@@ -13,6 +14,8 @@ import (
 	"github.com/foxdalas/flagr/swagger_gen/models"
 
 	"github.com/IBM/sarama"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -81,6 +84,9 @@ var NewKafkaRecorder = func() DataRecorder {
 	go func() {
 		for err := range producer.Errors() {
 			logrus.WithField("kafka_error", err).Error("failed to write access log entry")
+			if config.Global.Prometheus.RecorderErrors != nil {
+				config.Global.Prometheus.RecorderErrors.Inc()
+			}
 		}
 	}()
 
@@ -89,16 +95,30 @@ var NewKafkaRecorder = func() DataRecorder {
 		encryptor = newSimpleboxEncryptor(config.Config.RecorderKafkaEncryptionKey)
 	}
 
-	return &kafkaRecorder{
+	recorder := &kafkaRecorder{
 		topic:               config.Config.RecorderKafkaTopic,
 		partitionKeyEnabled: config.Config.RecorderKafkaPartitionKeyEnabled,
 		producer:            producer,
+		recordCh:            make(chan models.EvalResult, config.Config.RecorderKafkaBufferSize),
 		options: DataRecordFrameOptions{
 			Encrypted:       config.Config.RecorderKafkaEncrypted,
 			Encryptor:       encryptor,
 			FrameOutputMode: config.Config.RecorderFrameOutputMode,
 		},
 	}
+
+	if config.Config.PrometheusEnabled {
+		promauto.NewGaugeFunc(prometheus.GaugeOpts{
+			Name: "flagr_recorder_buffer_usage",
+			Help: "Current number of records in the async buffer",
+		}, func() float64 {
+			return float64(len(recorder.recordCh))
+		})
+	}
+
+	recorder.startWorker()
+
+	return recorder
 }
 
 func createTLSConfiguration(certFile string, keyFile string, caFile string, verifySSL bool, simpleSSL bool) (t *tls.Config) {
@@ -137,9 +157,13 @@ type kafkaRecorder struct {
 	topic               string
 	options             DataRecordFrameOptions
 	partitionKeyEnabled bool
+	recordCh            chan models.EvalResult
+	workerWg            sync.WaitGroup
 }
 
 func (k *kafkaRecorder) Close() error {
+	close(k.recordCh)
+	k.workerWg.Wait()
 	return k.producer.Close()
 }
 
@@ -151,24 +175,49 @@ func (k *kafkaRecorder) NewDataRecordFrame(r models.EvalResult) DataRecordFrame 
 }
 
 func (k *kafkaRecorder) AsyncRecord(r models.EvalResult) {
-	frame := k.NewDataRecordFrame(r)
-	output, err := frame.Output()
-	if err != nil {
-		logrus.WithField("err", err).Error("failed to generate data record frame for kafka recorder")
-		return
+	select {
+	case k.recordCh <- r:
+		if config.Global.Prometheus.RecorderEnqueued != nil {
+			config.Global.Prometheus.RecorderEnqueued.Inc()
+		}
+	default:
+		if config.Global.Prometheus.RecorderDropped != nil {
+			config.Global.Prometheus.RecorderDropped.Inc()
+		}
 	}
-	var partitionKey sarama.Encoder = nil
-	if k.partitionKeyEnabled {
-		partitionKey = sarama.StringEncoder(frame.GetPartitionKey())
-	}
-	k.producer.Input() <- &sarama.ProducerMessage{
-		Topic:     k.topic,
-		Key:       partitionKey,
-		Value:     sarama.ByteEncoder(output),
-		Timestamp: time.Now().UTC(),
-	}
+}
 
-	logKafkaAsyncRecordToDatadog(r)
+func (k *kafkaRecorder) startWorker() {
+	k.workerWg.Add(1)
+	go func() {
+		defer k.workerWg.Done()
+		for r := range k.recordCh {
+			start := time.Now()
+
+			frame := k.NewDataRecordFrame(r)
+			output, err := frame.Output()
+			if err != nil {
+				logrus.WithField("err", err).Error("failed to generate data record frame for kafka recorder")
+				continue
+			}
+			var partitionKey sarama.Encoder = nil
+			if k.partitionKeyEnabled {
+				partitionKey = sarama.StringEncoder(frame.GetPartitionKey())
+			}
+			k.producer.Input() <- &sarama.ProducerMessage{
+				Topic:     k.topic,
+				Key:       partitionKey,
+				Value:     sarama.ByteEncoder(output),
+				Timestamp: time.Now().UTC(),
+			}
+
+			logKafkaAsyncRecordToDatadog(r)
+
+			if config.Global.Prometheus.RecorderWorkerLatency != nil {
+				config.Global.Prometheus.RecorderWorkerLatency.Observe(time.Since(start).Seconds())
+			}
+		}
+	}()
 }
 
 var logKafkaAsyncRecordToDatadog = func(r models.EvalResult) {
