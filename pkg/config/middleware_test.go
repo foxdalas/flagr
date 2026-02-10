@@ -420,3 +420,27 @@ func TestBasicAuthMiddleware(t *testing.T) {
 	})
 
 }
+
+func TestNormalizePath(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"/api/v1/flags", "/api/v1/flags"},
+		{"/api/v1/flags/123", "/api/v1/flags"},
+		{"/api/v1/flags/123/segments/456/constraints/789", "/api/v1/flags/segments/constraints"},
+		{"/api/v1/flags?offset=0&limit=10", "/api/v1/flags"},
+		{"/api/v1/flags/123?foo=bar", "/api/v1/flags"},
+		{"/ofrep/v1/evaluate/flags/my-flag-key", "/ofrep/v1/evaluate/flags"},
+		{"/ofrep/v1/evaluate/flags", "/ofrep/v1/evaluate/flags"},
+		{"/api/v1/evaluation", "/api/v1/evaluation"},
+		{"/api/v1/evaluation/batch", "/api/v1/evaluation/batch"},
+		{"/api/v1/health", "/api/v1/health"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			assert.Equal(t, tt.expected, normalizePath(tt.input))
+		})
+	}
+}
