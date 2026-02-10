@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"testing"
@@ -817,6 +818,258 @@ func TestRateLimitPerFlagConsoleLogging(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			rateLimitPerFlagConsoleLogging(r)
 		}
+	})
+}
+
+func TestETag(t *testing.T) {
+	t.Run("ETag should be structural order-independent hash over valid JSON", func(t *testing.T) {
+		var aJson any
+		var sameJson any
+		if err := json.Unmarshal([]byte("{\"a\":[1,2,3],\"b\":true,\"c\":42,\"d\":\"foobar\",\"e\":null}"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"e\":null,\"d\":\"foobar\",\"c\":42,\"b\":true,\"a\":[1,2,3]}"), &sameJson); err != nil {
+			panic(err)
+		}
+		assert.Equal(t, ETag(aJson), ETag(sameJson))
+	})
+
+	t.Run("ETag should be the same over equal numbers", func(t *testing.T) {
+		var aJson any
+		var sameJson any
+		if err := json.Unmarshal([]byte("42"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("42.0"), &sameJson); err != nil {
+			panic(err)
+		}
+		assert.Equal(t, ETag(aJson), ETag(sameJson))
+	})
+
+	t.Run("ETag should respect value types", func(t *testing.T) {
+		var aJson any
+		var differentJson any
+		if err := json.Unmarshal([]byte("42"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("\"42\""), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("true"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("\"true\""), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("false"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("\"false\""), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("null"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("\"null\""), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("{}"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("[]"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+	})
+
+	t.Run("ETag should not have neutral element flaw", func(t *testing.T) {
+		var aJson any
+		var differentJson any
+		if err := json.Unmarshal([]byte("[{}]"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("[{},{}]"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("{}"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"a\":\"a\"}"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("{}"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"s(a)\":\"a\"}"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("{}"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"s(a)\":\"k(s(a))\"}"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("{\"a\":\"k(b)\"}"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"b\":\"k(a)\"}"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("[]"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("[0]"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("[]"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("[null]"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("[]"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("[true]"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("[]"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("[false]"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("[]"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("[\"\"]"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+		if err := json.Unmarshal([]byte("{\"a\":1,\"b\":2}"), &aJson); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"a\":2,\"b\":1}"), &differentJson); err != nil {
+			panic(err)
+		}
+		assert.NotEqual(t, ETag(aJson), ETag(differentJson))
+	})
+}
+
+func TestEvalResultETag(t *testing.T) {
+	t.Run("EvalResultETag should respect flag ID, segment ID, variant ID and variant attachment", func(t *testing.T) {
+		var attachment1, attachment2 any
+		if err := json.Unmarshal([]byte("{\"foobar\":42}"), &attachment1); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"bazbar\":\"on\"}"), &attachment2); err != nil {
+			panic(err)
+		}
+		evalResult1 := models.EvalResult{
+			FlagID:            1,
+			SegmentID:         1,
+			VariantID:         2,
+			VariantAttachment: attachment1,
+		}
+		evalResult2 := models.EvalResult{
+			FlagID:            1,
+			SegmentID:         2,
+			VariantID:         2,
+			VariantAttachment: attachment1,
+		}
+		evalResult3 := models.EvalResult{
+			FlagID:            1,
+			SegmentID:         1,
+			VariantID:         1,
+			VariantAttachment: attachment1,
+		}
+		evalResult4 := models.EvalResult{
+			FlagID:            1,
+			SegmentID:         1,
+			VariantID:         2,
+			VariantAttachment: attachment2,
+		}
+		evalResult5 := models.EvalResult{
+			FlagID:            1,
+			FlagSnapshotID:    42,
+			SegmentID:         1,
+			VariantID:         2,
+			VariantAttachment: attachment1,
+		}
+		assert.NotEqual(t, EvalResultETag(&evalResult1), EvalResultETag(&evalResult2))
+		assert.NotEqual(t, EvalResultETag(&evalResult1), EvalResultETag(&evalResult3))
+		assert.NotEqual(t, EvalResultETag(&evalResult1), EvalResultETag(&evalResult4))
+		assert.Equal(t, EvalResultETag(&evalResult1), EvalResultETag(&evalResult5))
+	})
+}
+
+func TestEvalResultsETag(t *testing.T) {
+	t.Run("EvalResultsETag should be order-independent", func(t *testing.T) {
+		var attachment1, attachment2 any
+		if err := json.Unmarshal([]byte("{\"foobar\":42}"), &attachment1); err != nil {
+			panic(err)
+		}
+		if err := json.Unmarshal([]byte("{\"bazbar\":\"on\"}"), &attachment2); err != nil {
+			panic(err)
+		}
+		evalResult1 := models.EvalResult{
+			FlagID:            1,
+			VariantID:         2,
+			VariantAttachment: attachment1,
+		}
+		evalResult2 := models.EvalResult{
+			FlagID:            2,
+			VariantID:         1,
+			VariantAttachment: attachment2,
+		}
+		evalResult3 := models.EvalResult{
+			FlagID:            3,
+			VariantID:         1,
+			VariantAttachment: attachment2,
+		}
+		assert.Equal(
+			t,
+			EvalResultsETag([]*models.EvalResult{&evalResult1, &evalResult2}),
+			EvalResultsETag([]*models.EvalResult{&evalResult2, &evalResult1}),
+		)
+		assert.Equal(
+			t,
+			EvalResultsETag([]*models.EvalResult{&evalResult1, &evalResult2, &evalResult3}),
+			EvalResultsETag([]*models.EvalResult{&evalResult2, &evalResult1, &evalResult3}),
+		)
+		assert.Equal(
+			t,
+			EvalResultsETag([]*models.EvalResult{&evalResult1, &evalResult2, &evalResult3}),
+			EvalResultsETag([]*models.EvalResult{&evalResult3, &evalResult1, &evalResult2}),
+		)
+		assert.Equal(
+			t,
+			EvalResultsETag([]*models.EvalResult{&evalResult1, &evalResult2, &evalResult3}),
+			EvalResultsETag([]*models.EvalResult{&evalResult3, &evalResult2, &evalResult1}),
+		)
+		assert.NotEqual(
+			t,
+			EvalResultsETag([]*models.EvalResult{&evalResult1, &evalResult2}),
+			EvalResultsETag([]*models.EvalResult{&evalResult1, &evalResult3}),
+		)
+		assert.NotEqual(
+			t,
+			EvalResultsETag([]*models.EvalResult{&evalResult1, &evalResult2}),
+			EvalResultsETag([]*models.EvalResult{&evalResult2, &evalResult3}),
+		)
 	})
 }
 
