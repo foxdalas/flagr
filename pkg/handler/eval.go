@@ -198,7 +198,16 @@ func (e *eval) GetEvaluationBatch(params evaluation.GetEvaluationBatchParams) mi
 		results.EvaluationResults = append(results.EvaluationResults, evalResult)
 	}
 
-	resp := evaluation.NewPostEvaluationBatchOK()
+	eTagHeader := strconv.FormatUint(EvalResultsETag(results.EvaluationResults), 10)
+	if params.HTTPRequest.Header.Get("If-None-Match") == eTagHeader {
+		resp := evaluation.NewGetEvaluationBatchNotModified()
+		resp.SetCacheControl("private, max-age=120")
+		resp.SetETag(eTagHeader)
+		return resp
+	}
+	resp := evaluation.NewGetEvaluationBatchOK()
+	resp.SetCacheControl("private, max-age=120")
+	resp.SetETag(eTagHeader)
 	resp.SetPayload(results)
 	return resp
 }
