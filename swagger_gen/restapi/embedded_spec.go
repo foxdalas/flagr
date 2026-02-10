@@ -78,12 +78,6 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "ETag value from previous response for cache validation",
-            "name": "If-None-Match",
-            "in": "header"
-          },
-          {
-            "type": "string",
             "default": "",
             "name": "entityId",
             "in": "query"
@@ -125,6 +119,12 @@ func init() {
             "default": "ALL",
             "name": "flagTagQuery",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "ETag value for conditional GET evaluation batch request",
+            "name": "If-None-Match",
+            "in": "header"
           }
         ],
         "responses": {
@@ -134,14 +134,26 @@ func init() {
               "$ref": "#/definitions/evaluationBatchResponse"
             },
             "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
               "ETag": {
                 "type": "string",
-                "description": "Cache version identifier for the flag evaluation cache"
+                "description": "order-independent evaluation results' checksum over flag ID, segment ID, variant ID and variant attachment."
               }
             }
           },
           "304": {
-            "description": "Not Modified - flag configuration has not changed since the provided ETag"
+            "description": "evaluation batch result was not modified marker",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "ETag": {
+                "type": "string",
+                "description": "order-independent evaluation results' checksum over flag ID, segment ID, variant ID and variant attachment."
+              }
+            }
           },
           "default": {
             "description": "generic error response",
@@ -158,12 +170,6 @@ func init() {
         "operationId": "postEvaluationBatch",
         "parameters": [
           {
-            "type": "string",
-            "description": "ETag value from previous response for cache validation",
-            "name": "If-None-Match",
-            "in": "header"
-          },
-          {
             "description": "evaluation batch request",
             "name": "body",
             "in": "body",
@@ -178,16 +184,7 @@ func init() {
             "description": "evaluation batch result",
             "schema": {
               "$ref": "#/definitions/evaluationBatchResponse"
-            },
-            "headers": {
-              "ETag": {
-                "type": "string",
-                "description": "Cache version identifier for the flag evaluation cache"
-              }
             }
-          },
-          "304": {
-            "description": "Not Modified - flag configuration has not changed since the provided ETag"
           },
           "default": {
             "description": "generic error response",
@@ -2277,12 +2274,6 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "ETag value from previous response for cache validation",
-            "name": "If-None-Match",
-            "in": "header"
-          },
-          {
-            "type": "string",
             "default": "",
             "name": "entityId",
             "in": "query"
@@ -2324,6 +2315,12 @@ func init() {
             "default": "ALL",
             "name": "flagTagQuery",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "ETag value for conditional GET evaluation batch request",
+            "name": "If-None-Match",
+            "in": "header"
           }
         ],
         "responses": {
@@ -2333,14 +2330,26 @@ func init() {
               "$ref": "#/definitions/evaluationBatchResponse"
             },
             "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
               "ETag": {
                 "type": "string",
-                "description": "Cache version identifier for the flag evaluation cache"
+                "description": "order-independent evaluation results' checksum over flag ID, segment ID, variant ID and variant attachment."
               }
             }
           },
           "304": {
-            "description": "Not Modified - flag configuration has not changed since the provided ETag"
+            "description": "evaluation batch result was not modified marker",
+            "headers": {
+              "Cache-Control": {
+                "type": "string"
+              },
+              "ETag": {
+                "type": "string",
+                "description": "order-independent evaluation results' checksum over flag ID, segment ID, variant ID and variant attachment."
+              }
+            }
           },
           "default": {
             "description": "generic error response",
@@ -2357,12 +2366,6 @@ func init() {
         "operationId": "postEvaluationBatch",
         "parameters": [
           {
-            "type": "string",
-            "description": "ETag value from previous response for cache validation",
-            "name": "If-None-Match",
-            "in": "header"
-          },
-          {
             "description": "evaluation batch request",
             "name": "body",
             "in": "body",
@@ -2377,16 +2380,7 @@ func init() {
             "description": "evaluation batch result",
             "schema": {
               "$ref": "#/definitions/evaluationBatchResponse"
-            },
-            "headers": {
-              "ETag": {
-                "type": "string",
-                "description": "Cache version identifier for the flag evaluation cache"
-              }
             }
-          },
-          "304": {
-            "description": "Not Modified - flag configuration has not changed since the provided ETag"
           },
           "default": {
             "description": "generic error response",
