@@ -28,7 +28,7 @@ require (
 	github.com/go-openapi/swag v0.25.4
 	github.com/go-openapi/validate v0.25.1
 	github.com/gohttp/pprof v0.0.0-20141119085724-c9d246cbb3ba
-	github.com/jessevdk/go-flags v1.5.0
+	github.com/jessevdk/go-flags v1.6.1
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/meatballhat/negroni-logrus v1.1.1
 	github.com/philhofer/fwd v1.1.3-0.20240916144458-20a13a1f6b7c // indirect
