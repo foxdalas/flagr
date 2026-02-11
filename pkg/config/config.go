@@ -112,6 +112,12 @@ type prometheusMetrics struct {
 	EvalCounter      *prometheus.CounterVec
 	RequestCounter   *prometheus.CounterVec
 	RequestHistogram *prometheus.HistogramVec
+
+	RecorderEnqueued      prometheus.Counter
+	RecorderDropped       prometheus.Counter
+	RecorderErrors        prometheus.Counter
+	RecorderWorkerLatency prometheus.Histogram
+	// RecorderBufferUsage — GaugeFunc, registered in kafkaRecorder (needs channel access)
 }
 
 func setupPrometheus() {
@@ -132,5 +138,23 @@ func setupPrometheus() {
 				Help: "A histogram of latencies for requests received",
 			}, []string{"status", "path", "method"})
 		}
+
+		Global.Prometheus.RecorderEnqueued = promauto.NewCounter(prometheus.CounterOpts{
+			Name: "flagr_recorder_enqueued_total",
+			Help: "Total number of eval results enqueued for recording",
+		})
+		Global.Prometheus.RecorderDropped = promauto.NewCounter(prometheus.CounterOpts{
+			Name: "flagr_recorder_dropped_total",
+			Help: "Total number of eval results dropped due to full buffer",
+		})
+		Global.Prometheus.RecorderErrors = promauto.NewCounter(prometheus.CounterOpts{
+			Name: "flagr_recorder_errors_total",
+			Help: "Total number of Kafka producer errors",
+		})
+		Global.Prometheus.RecorderWorkerLatency = promauto.NewHistogram(prometheus.HistogramOpts{
+			Name:    "flagr_recorder_worker_latency_seconds",
+			Help:    "Latency of processing one record (serialization + Kafka send)",
+			Buckets: []float64{0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5},
+		})
 	}
 }
