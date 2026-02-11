@@ -123,7 +123,6 @@ func TestEvalCacheExport(t *testing.T) {
 		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{Ids: []int64{1, 3}}).Flags
 		assert.Len(t, exportedFlags, 2)
 		assert.True(t, slices.ContainsFunc(exportedFlags, withID(1)))
-		assert.True(t, slices.ContainsFunc(exportedFlags, withID(1)))
 		assert.True(t, slices.ContainsFunc(exportedFlags, withID(3)))
 	})
 
@@ -194,6 +193,38 @@ func TestEvalCacheExport(t *testing.T) {
 		exportedFlags = ec.export(export.GetExportEvalCacheJSONParams{Keys: []string{"fourth"}, Tags: []string{"tag1"}}).Flags
 		assert.Len(t, exportedFlags, 1)
 		assert.True(t, slices.ContainsFunc(exportedFlags, withID(4)))
+	})
+
+	t.Run("should return empty for nonexistent ids", func(t *testing.T) {
+		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{Ids: []int64{999}}).Flags
+		assert.Empty(t, exportedFlags)
+	})
+
+	t.Run("should return empty for nonexistent keys", func(t *testing.T) {
+		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{Keys: []string{"nonexistent"}}).Flags
+		assert.Empty(t, exportedFlags)
+	})
+
+	t.Run("should return empty for nonexistent tags with ANY", func(t *testing.T) {
+		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{Tags: []string{"tag99"}}).Flags
+		assert.Empty(t, exportedFlags)
+	})
+
+	t.Run("should return empty for ALL when one tag missing", func(t *testing.T) {
+		tru := true
+		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{All: &tru, Tags: []string{"tag1", "tag99"}}).Flags
+		assert.Empty(t, exportedFlags)
+	})
+
+	t.Run("should return all flags when no filters", func(t *testing.T) {
+		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{}).Flags
+		assert.Len(t, exportedFlags, 4)
+	})
+
+	t.Run("should deduplicate ids", func(t *testing.T) {
+		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{Ids: []int64{1, 1, 1}}).Flags
+		assert.Len(t, exportedFlags, 1)
+		assert.True(t, slices.ContainsFunc(exportedFlags, withID(1)))
 	})
 
 	t.Run("should be able to combine enabled and tags queries", func(t *testing.T) {

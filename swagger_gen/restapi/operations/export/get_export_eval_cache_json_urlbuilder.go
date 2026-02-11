@@ -96,7 +96,7 @@ func (o *GetExportEvalCacheJSONURL) Build() (*url.URL, error) {
 		}
 	}
 
-	keys := swag.JoinByFormat(keysIR, "")
+	keys := swag.JoinByFormat(keysIR, "csv")
 
 	if len(keys) > 0 {
 		qsv := keys[0]
@@ -113,7 +113,7 @@ func (o *GetExportEvalCacheJSONURL) Build() (*url.URL, error) {
 		}
 	}
 
-	tags := swag.JoinByFormat(tagsIR, "")
+	tags := swag.JoinByFormat(tagsIR, "csv")
 
 	if len(tags) > 0 {
 		qsv := tags[0]

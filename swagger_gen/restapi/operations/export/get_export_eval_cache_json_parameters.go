@@ -33,7 +33,7 @@ type GetExportEvalCacheJSONParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*whether to use ALL (tags) semantics (ANY by default): `?tags=foo,bar&all=true` is equivalent to postEvaluation's `flagTagsOperator: "ALL"`
+	/*whether to use ALL (tags) semantics (ANY by default): `?tags=foo,bar&all=true` is equivalent to postEvaluation's `flagTagsOperator: "ALL"`. Only meaningful when `tags` parameter is present. Ignored otherwise.
 	  In: query
 	*/
 	All *bool
@@ -52,11 +52,13 @@ type GetExportEvalCacheJSONParams struct {
 
 	/*"query optimized" flagKeys parameter. Has precedence over `enabled` and `tags` parameter.
 	  In: query
+	  Collection Format: csv
 	*/
 	Keys []string
 
 	/*"query optimized" flagTags parameter
 	  In: query
+	  Collection Format: csv
 	*/
 	Tags []string
 }
@@ -199,15 +201,15 @@ func (o *GetExportEvalCacheJSONParams) validateIds(formats strfmt.Registry) erro
 
 // bindKeys binds and validates array parameter Keys from query.
 //
-// Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
+// Arrays are parsed according to CollectionFormat: "csv" (defaults to "csv" when empty).
 func (o *GetExportEvalCacheJSONParams) bindKeys(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var qvKeys string
 	if len(rawData) > 0 {
 		qvKeys = rawData[len(rawData)-1]
 	}
 
-	// CollectionFormat:
-	keysIC := swag.SplitByFormat(qvKeys, "")
+	// CollectionFormat: csv
+	keysIC := swag.SplitByFormat(qvKeys, "csv")
 	if len(keysIC) == 0 {
 		return nil
 	}
@@ -230,15 +232,15 @@ func (o *GetExportEvalCacheJSONParams) bindKeys(rawData []string, hasKey bool, f
 
 // bindTags binds and validates array parameter Tags from query.
 //
-// Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
+// Arrays are parsed according to CollectionFormat: "csv" (defaults to "csv" when empty).
 func (o *GetExportEvalCacheJSONParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var qvTags string
 	if len(rawData) > 0 {
 		qvTags = rawData[len(rawData)-1]
 	}
 
-	// CollectionFormat:
-	tagsIC := swag.SplitByFormat(qvTags, "")
+	// CollectionFormat: csv
+	tagsIC := swag.SplitByFormat(qvTags, "csv")
 	if len(tagsIC) == 0 {
 		return nil
 	}
