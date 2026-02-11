@@ -1058,6 +1058,7 @@ paths:
             and `tags` parameter.
           required: false
           type: array
+          collectionFormat: csv
           items:
             type: string
             minLength: 1
@@ -1071,6 +1072,7 @@ paths:
           description: '"query optimized" flagTags parameter'
           required: false
           type: array
+          collectionFormat: csv
           items:
             type: string
             minLength: 1

@@ -123,7 +123,6 @@ func TestEvalCacheExport(t *testing.T) {
 		exportedFlags := ec.export(export.GetExportEvalCacheJSONParams{Ids: []int64{1, 3}}).Flags
 		assert.Len(t, exportedFlags, 2)
 		assert.True(t, slices.ContainsFunc(exportedFlags, withID(1)))
-		assert.True(t, slices.ContainsFunc(exportedFlags, withID(1)))
 		assert.True(t, slices.ContainsFunc(exportedFlags, withID(3)))
 	})
 

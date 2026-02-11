@@ -26,6 +26,7 @@ get:
         Has precedence over `enabled` and `tags` parameter.
       required: false
       type: array
+      collectionFormat: csv
       items:
         type: string
         minLength: 1
@@ -41,6 +42,7 @@ get:
         "query optimized" flagTags parameter
       required: false
       type: array
+      collectionFormat: csv
       items:
         type: string
         minLength: 1

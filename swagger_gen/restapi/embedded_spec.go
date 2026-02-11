@@ -228,6 +228,7 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagKeys parameter. Has precedence over ` + "`" + `enabled` + "`" + ` and ` + "`" + `tags` + "`" + ` parameter.",
             "name": "keys",
             "in": "query"
@@ -244,6 +245,7 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagTags parameter",
             "name": "tags",
             "in": "query"
@@ -2474,6 +2476,7 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagKeys parameter. Has precedence over ` + "`" + `enabled` + "`" + ` and ` + "`" + `tags` + "`" + ` parameter.",
             "name": "keys",
             "in": "query"
@@ -2490,6 +2493,7 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagTags parameter",
             "name": "tags",
             "in": "query"
