@@ -228,6 +228,7 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagKeys parameter. Has precedence over ` + "`" + `enabled` + "`" + ` and ` + "`" + `tags` + "`" + ` parameter.",
             "name": "keys",
             "in": "query"
@@ -244,13 +245,14 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagTags parameter",
             "name": "tags",
             "in": "query"
           },
           {
             "type": "boolean",
-            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `",
+            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `. Only meaningful when ` + "`" + `tags` + "`" + ` parameter is present. Ignored otherwise.",
             "name": "all",
             "in": "query"
           }
@@ -2474,6 +2476,7 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagKeys parameter. Has precedence over ` + "`" + `enabled` + "`" + ` and ` + "`" + `tags` + "`" + ` parameter.",
             "name": "keys",
             "in": "query"
@@ -2490,13 +2493,14 @@ func init() {
               "minLength": 1,
               "type": "string"
             },
+            "collectionFormat": "csv",
             "description": "\"query optimized\" flagTags parameter",
             "name": "tags",
             "in": "query"
           },
           {
             "type": "boolean",
-            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `",
+            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `. Only meaningful when ` + "`" + `tags` + "`" + ` parameter is present. Ignored otherwise.",
             "name": "all",
             "in": "query"
           }
