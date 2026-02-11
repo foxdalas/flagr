@@ -33,7 +33,7 @@ type GetExportEvalCacheJSONParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*whether to use ALL (tags) semantics (ANY by default): `?tags=foo,bar&all=true` is equivalent to postEvaluation's `flagTagsOperator: "ALL"`
+	/*whether to use ALL (tags) semantics (ANY by default): `?tags=foo,bar&all=true` is equivalent to postEvaluation's `flagTagsOperator: "ALL"`. Only meaningful when `tags` parameter is present. Ignored otherwise.
 	  In: query
 	*/
 	All *bool

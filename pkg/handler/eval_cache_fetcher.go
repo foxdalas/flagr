@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"slices"
 
 	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/foxdalas/flagr/pkg/entity"
@@ -37,63 +36,90 @@ func (ec *EvalCache) export(query export.GetExportEvalCacheJSONParams) EvalCache
 		}
 	}
 
-	var hasTags func(*entity.Flag) bool
-	if len(query.Tags) > 0 {
-		if query.All != nil && *query.All {
-			hasTags = func(f *entity.Flag) bool {
-				for _, tag := range query.Tags {
-					if !slices.ContainsFunc(f.Tags, func(t entity.Tag) bool { return t.Value == tag }) {
-						return false
-					}
-				}
-				return true
-			}
-		} else {
-			hasTags = func(f *entity.Flag) bool {
-				for _, tag := range query.Tags {
-					if slices.ContainsFunc(f.Tags, func(t entity.Tag) bool { return t.Value == tag }) {
-						return true
-					}
-				}
-				return false
-			}
-		}
-	}
-
 	ec.cacheMutex.RLock()
 	defer ec.cacheMutex.RUnlock()
 
 	idCache := ec.cache.idCache
+
+	// IDs have highest priority — direct O(k) lookup
+	if targetIDs != nil {
+		fs := make([]entity.Flag, 0, len(targetIDs))
+		for id := range targetIDs {
+			if f, ok := idCache[util.SafeString(id)]; ok {
+				fs = append(fs, *f)
+			}
+		}
+		return EvalCacheJSON{Flags: fs}
+	}
+
+	// Keys have second priority — direct O(k) lookup
+	if targetKeys != nil {
+		keyCache := ec.cache.keyCache
+		fs := make([]entity.Flag, 0, len(targetKeys))
+		for key := range targetKeys {
+			if f, ok := keyCache[key]; ok {
+				fs = append(fs, *f)
+			}
+		}
+		return EvalCacheJSON{Flags: fs}
+	}
+
+	// Tags — use tagCache for direct lookup instead of O(n) scan
+	if len(query.Tags) > 0 {
+		tagCache := ec.cache.tagCache
+		candidates := make(map[uint]*entity.Flag)
+
+		if query.All != nil && *query.All {
+			// ALL semantics: intersection of tag sets
+			for i, tag := range query.Tags {
+				fSet, ok := tagCache[tag]
+				if !ok {
+					return EvalCacheJSON{Flags: []entity.Flag{}}
+				}
+				if i == 0 {
+					for fID, f := range fSet {
+						candidates[fID] = f
+					}
+				} else {
+					for fID := range candidates {
+						if _, ok := fSet[fID]; !ok {
+							delete(candidates, fID)
+						}
+					}
+					if len(candidates) == 0 {
+						return EvalCacheJSON{Flags: []entity.Flag{}}
+					}
+				}
+			}
+		} else {
+			// ANY semantics: union of tag sets
+			for _, tag := range query.Tags {
+				if fSet, ok := tagCache[tag]; ok {
+					for fID, f := range fSet {
+						candidates[fID] = f
+					}
+				}
+			}
+		}
+
+		// Apply enabled filter on candidates
+		fs := make([]entity.Flag, 0, len(candidates))
+		for _, f := range candidates {
+			if query.Enabled != nil && *query.Enabled != f.Enabled {
+				continue
+			}
+			fs = append(fs, *f)
+		}
+		return EvalCacheJSON{Flags: fs}
+	}
+
+	// Enabled-only or no filters — O(n) scan
 	fs := make([]entity.Flag, 0, len(idCache))
 	for _, f := range idCache {
-		if targetIDs != nil {
-			if _, ok := targetIDs[f.ID]; ok {
-				ff := *f
-				fs = append(fs, ff)
-			}
-			continue
-		}
-
-		if targetKeys != nil {
-			if _, ok := targetKeys[f.Key]; ok {
-				ff := *f
-				fs = append(fs, ff)
-			}
-			continue
-		}
-
 		if query.Enabled != nil && *query.Enabled != f.Enabled {
 			continue
 		}
-
-		if hasTags != nil {
-			if !hasTags(f) {
-				continue
-			}
-		}
-
-		ff := *f
-		fs = append(fs, ff)
+		fs = append(fs, *f)
 	}
 	return EvalCacheJSON{Flags: fs}
 }

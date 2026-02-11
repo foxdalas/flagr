@@ -1082,7 +1082,8 @@ paths:
           description: >-
             whether to use ALL (tags) semantics (ANY by default):
             `?tags=foo,bar&all=true` is equivalent to postEvaluation's
-            `flagTagsOperator: "ALL"`
+            `flagTagsOperator: "ALL"`.
+            Only meaningful when `tags` parameter is present. Ignored otherwise.
       responses:
         '200':
           description: OK

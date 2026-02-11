@@ -252,7 +252,7 @@ func init() {
           },
           {
             "type": "boolean",
-            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `",
+            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `. Only meaningful when ` + "`" + `tags` + "`" + ` parameter is present. Ignored otherwise.",
             "name": "all",
             "in": "query"
           }
@@ -2500,7 +2500,7 @@ func init() {
           },
           {
             "type": "boolean",
-            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `",
+            "description": "whether to use ALL (tags) semantics (ANY by default): ` + "`" + `?tags=foo,bar\u0026all=true` + "`" + ` is equivalent to postEvaluation's ` + "`" + `flagTagsOperator: \"ALL\"` + "`" + `. Only meaningful when ` + "`" + `tags` + "`" + ` parameter is present. Ignored otherwise.",
             "name": "all",
             "in": "query"
           }
