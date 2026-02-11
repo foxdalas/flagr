@@ -161,6 +161,7 @@ var Config = struct {
 	RecorderKafkaEncrypted           bool          `env:"FLAGR_RECORDER_KAFKA_ENCRYPTED" envDefault:"false"`
 	RecorderKafkaEncryptionKey       string        `env:"FLAGR_RECORDER_KAFKA_ENCRYPTION_KEY" envDefault:""`
 	RecorderKafkaBufferSize          int           `env:"FLAGR_RECORDER_KAFKA_BUFFER_SIZE" envDefault:"10000"`
+	RecorderKafkaWorkerCount         int           `env:"FLAGR_RECORDER_KAFKA_WORKER_COUNT" envDefault:"4"`
 
 	// Kinesis related configurations for data records logging (Flagr Metrics)
 	RecorderKinesisStreamName          string        `env:"FLAGR_RECORDER_KINESIS_STREAM_NAME" envDefault:"flagr-records"`

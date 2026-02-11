@@ -17,8 +17,13 @@ type mockAsyncProducer struct {
 	errorCh   chan *sarama.ProducerError
 }
 
-func (m *mockAsyncProducer) AsyncClose()                               {}
-func (m *mockAsyncProducer) Close() error                              { return nil }
+func (m *mockAsyncProducer) AsyncClose() {}
+func (m *mockAsyncProducer) Close() error {
+	if m.errorCh != nil {
+		close(m.errorCh)
+	}
+	return nil
+}
 func (m *mockAsyncProducer) Input() chan<- *sarama.ProducerMessage     { return m.inputCh }
 func (m *mockAsyncProducer) Successes() <-chan *sarama.ProducerMessage { return m.successCh }
 func (m *mockAsyncProducer) Errors() <-chan *sarama.ProducerError      { return m.errorCh }
@@ -38,18 +43,18 @@ var _ sarama.AsyncProducer = (*mockAsyncProducer)(nil)
 
 func TestNewKafkaRecorder(t *testing.T) {
 	t.Run("no panics", func(t *testing.T) {
-		errCh := make(chan *sarama.ProducerError)
-		close(errCh)
 		defer gostub.StubFunc(
 			&saramaNewAsyncProducer,
 			&mockAsyncProducer{
 				inputCh: make(chan *sarama.ProducerMessage, 100),
-				errorCh: errCh,
+				errorCh: make(chan *sarama.ProducerError),
 			},
 			nil,
 		).Reset()
 
-		assert.NotPanics(t, func() { NewKafkaRecorder() })
+		var rec DataRecorder
+		assert.NotPanics(t, func() { rec = NewKafkaRecorder() })
+		rec.Close()
 	})
 }
 
@@ -270,6 +275,71 @@ func TestKafkaRecorderConcurrency(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, numGoroutines*numPerGoroutine, len(p.inputCh))
+	})
+}
+
+func TestKafkaRecorderMultiWorker(t *testing.T) {
+	t.Run("multiple workers process records concurrently", func(t *testing.T) {
+		p := &mockAsyncProducer{inputCh: make(chan *sarama.ProducerMessage, 1000)}
+		kr := &kafkaRecorder{
+			producer: p,
+			topic:    "test-topic",
+			recordCh: make(chan models.EvalResult, 1000),
+		}
+
+		numWorkers := 4
+		for i := 0; i < numWorkers; i++ {
+			kr.startWorker()
+		}
+
+		numRecords := 100
+		for i := 0; i < numRecords; i++ {
+			kr.AsyncRecord(models.EvalResult{})
+		}
+
+		close(kr.recordCh)
+		kr.workerWg.Wait()
+
+		assert.Equal(t, numRecords, len(p.inputCh))
+	})
+}
+
+func TestKafkaRecorderErrWgShutdown(t *testing.T) {
+	t.Run("error goroutine tracked by errWg completes on Close", func(t *testing.T) {
+		errCh := make(chan *sarama.ProducerError)
+		p := &mockAsyncProducer{
+			inputCh: make(chan *sarama.ProducerMessage, 100),
+			errorCh: errCh,
+		}
+		kr := &kafkaRecorder{
+			producer: p,
+			topic:    "test-topic",
+			recordCh: make(chan models.EvalResult, 100),
+		}
+		kr.startWorker()
+
+		// Simulate the error goroutine like NewKafkaRecorder does
+		kr.errWg.Add(1)
+		go func() {
+			defer kr.errWg.Done()
+			for range p.Errors() {
+			}
+		}()
+
+		kr.AsyncRecord(models.EvalResult{})
+
+		done := make(chan struct{})
+		go func() {
+			kr.Close()
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			// Close completed — errWg waited for error goroutine
+		case <-time.After(2 * time.Second):
+			t.Fatal("Close blocked — errWg not properly tracked")
+		}
 	})
 }
 
