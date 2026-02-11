@@ -81,7 +81,38 @@ var NewKafkaRecorder = func() DataRecorder {
 		logrus.WithField("kafka_error", err).Fatal("Failed to start Sarama producer:")
 	}
 
+	var encryptor dataRecordEncryptor
+	if config.Config.RecorderKafkaEncrypted && config.Config.RecorderKafkaEncryptionKey != "" {
+		encryptor = newSimpleboxEncryptor(config.Config.RecorderKafkaEncryptionKey)
+	}
+
+	bufSize := config.Config.RecorderKafkaBufferSize
+	if bufSize < 1 {
+		bufSize = 10000
+		logrus.Warn("RecorderKafkaBufferSize < 1, using default 10000")
+	}
+
+	workerCount := config.Config.RecorderKafkaWorkerCount
+	if workerCount < 1 {
+		workerCount = 4
+		logrus.Warn("RecorderKafkaWorkerCount < 1, using default 4")
+	}
+
+	recorder := &kafkaRecorder{
+		topic:               config.Config.RecorderKafkaTopic,
+		partitionKeyEnabled: config.Config.RecorderKafkaPartitionKeyEnabled,
+		producer:            producer,
+		recordCh:            make(chan models.EvalResult, bufSize),
+		options: DataRecordFrameOptions{
+			Encrypted:       config.Config.RecorderKafkaEncrypted,
+			Encryptor:       encryptor,
+			FrameOutputMode: config.Config.RecorderFrameOutputMode,
+		},
+	}
+
+	recorder.errWg.Add(1)
 	go func() {
+		defer recorder.errWg.Done()
 		for err := range producer.Errors() {
 			logrus.WithField("kafka_error", err).Error("failed to write access log entry")
 			if config.Global.Prometheus.RecorderErrors != nil {
@@ -89,23 +120,6 @@ var NewKafkaRecorder = func() DataRecorder {
 			}
 		}
 	}()
-
-	var encryptor dataRecordEncryptor
-	if config.Config.RecorderKafkaEncrypted && config.Config.RecorderKafkaEncryptionKey != "" {
-		encryptor = newSimpleboxEncryptor(config.Config.RecorderKafkaEncryptionKey)
-	}
-
-	recorder := &kafkaRecorder{
-		topic:               config.Config.RecorderKafkaTopic,
-		partitionKeyEnabled: config.Config.RecorderKafkaPartitionKeyEnabled,
-		producer:            producer,
-		recordCh:            make(chan models.EvalResult, config.Config.RecorderKafkaBufferSize),
-		options: DataRecordFrameOptions{
-			Encrypted:       config.Config.RecorderKafkaEncrypted,
-			Encryptor:       encryptor,
-			FrameOutputMode: config.Config.RecorderFrameOutputMode,
-		},
-	}
 
 	if config.Config.PrometheusEnabled {
 		promauto.NewGaugeFunc(prometheus.GaugeOpts{
@@ -116,7 +130,9 @@ var NewKafkaRecorder = func() DataRecorder {
 		})
 	}
 
-	recorder.startWorker()
+	for i := 0; i < workerCount; i++ {
+		recorder.startWorker()
+	}
 
 	return recorder
 }
@@ -159,12 +175,15 @@ type kafkaRecorder struct {
 	partitionKeyEnabled bool
 	recordCh            chan models.EvalResult
 	workerWg            sync.WaitGroup
+	errWg               sync.WaitGroup
 }
 
 func (k *kafkaRecorder) Close() error {
 	close(k.recordCh)
 	k.workerWg.Wait()
-	return k.producer.Close()
+	err := k.producer.Close()
+	k.errWg.Wait()
+	return err
 }
 
 func (k *kafkaRecorder) NewDataRecordFrame(r models.EvalResult) DataRecordFrame {
