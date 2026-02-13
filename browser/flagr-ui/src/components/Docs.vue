@@ -1,11 +1,5 @@
 <template>
   <div class="docs-layout">
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css"
-      integrity="sha384-41TLk51mEPibuqZ3qC5guTOeo30Zt7UUaWLUn0/VdpGRO6b3SXA6AaKxj1mYzgAT"
-      crossorigin="anonymous"
-    >
     <nav class="docs-sidebar">
       <ul>
         <li
@@ -49,6 +43,8 @@ import { computed, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import xss from 'xss'
+
+import 'github-markdown-css/github-markdown.css'
 
 import overviewMd from '@docs/flagr_overview.md'
 import homeMd from '@docs/home.md'
@@ -157,8 +153,8 @@ function handleContentClick(e) {
 .docs-sidebar {
   width: 220px;
   min-width: 220px;
-  background: #f6f8fa;
-  border-right: 1px solid #e4e7ed;
+  background: var(--flagr-color-bg-subtle);
+  border-right: 1px solid var(--flagr-color-border);
   padding: 16px 0;
   display: flex;
   flex-direction: column;
@@ -179,32 +175,32 @@ function handleContentClick(e) {
     a {
       display: block;
       padding: 8px 20px;
-      color: #2c3e50;
+      color: var(--flagr-color-text);
       text-decoration: none;
       font-size: 14px;
       border-left: 3px solid transparent;
 
       &:hover {
-        background: #ebeef5;
+        background: var(--flagr-color-bg-muted);
       }
     }
 
     &.active a {
       font-weight: 600;
-      color: #2e4960;
-      border-left-color: #74e5e0;
-      background: #ebeef5;
+      color: var(--flagr-color-text);
+      border-left-color: var(--flagr-color-primary);
+      background: var(--flagr-color-bg-muted);
     }
   }
 
   .separator-line {
-    border-top: 1px solid #e4e7ed;
+    border-top: 1px solid var(--flagr-color-border);
   }
 
   .docs-version {
     padding: 12px 20px;
     font-size: 12px;
-    color: #909399;
+    color: var(--flagr-color-text-muted);
   }
 }
 
@@ -223,13 +219,48 @@ function handleContentClick(e) {
     }
 
     :deep(.docs-warning) {
-      background: #fff7e6;
-      border-left: 4px solid #e6a23c;
+      background: var(--flagr-color-warning-bg);
+      border-left: 4px solid var(--flagr-color-warning);
       padding: 12px 16px;
       margin: 16px 0;
       border-radius: 0 4px 4px 0;
-      color: #6b5900;
+      color: var(--flagr-color-text);
     }
+  }
+}
+
+/* Responsive (Step 9d) */
+@media (max-width: 768px) {
+  .docs-layout {
+    flex-direction: column;
+  }
+  .docs-sidebar {
+    width: 100%;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid var(--flagr-color-border);
+    padding: 8px 0;
+
+    ul {
+      display: flex;
+      overflow-x: auto;
+      gap: 4px;
+      padding: 0 8px;
+    }
+
+    li a {
+      white-space: nowrap;
+      padding: 6px 12px;
+      border-left: none;
+      border-radius: var(--flagr-radius-sm);
+    }
+
+    li.active a {
+      border-left-color: transparent;
+    }
+  }
+  .docs-content {
+    padding: 16px;
   }
 }
 </style>

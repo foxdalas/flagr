@@ -35,7 +35,7 @@ test.describe('Debug Console', () => {
     await evalItem.locator('button').filter({ hasText: /^\s*POST \/api\/v1\/evaluation\s*$/ }).click()
     await page.waitForTimeout(1000)
     const msg = page.locator('.el-message')
-    await expect(msg).toContainText(/evaluation (success|error)/)
+    await expect(msg).toContainText(/Evaluation (completed|failed)/)
   })
 
   test('Batch Evaluation collapse', async ({ page }) => {
@@ -52,7 +52,7 @@ test.describe('Debug Console', () => {
     await page.locator('button').filter({ hasText: 'POST /api/v1/evaluation/batch' }).click()
     await page.waitForTimeout(1000)
     const msg = page.locator('.el-message')
-    await expect(msg).toContainText(/evaluation (success|error)/)
+    await expect(msg).toContainText(/Evaluation (completed|failed)/)
   })
 
   test('Evaluation on empty flag returns blank result with debug info', async ({ page }) => {
@@ -70,7 +70,7 @@ test.describe('Debug Console', () => {
     // Should get a success response (200 OK) even without variants/segments
     // This proves backend returns 200 with blank result, not 400 error
     const msg = page.locator('.el-message')
-    await expect(msg).toContainText('evaluation success')
+    await expect(msg).toContainText('Evaluation completed')
 
     // The response is in the second json-editor within the collapse item
     const responseEditor = evalItem.locator('.json-editor').nth(1)

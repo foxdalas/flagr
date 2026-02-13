@@ -18,7 +18,7 @@ test.describe('Flag Distributions', () => {
   })
 
   test('Empty distribution state', async ({ page }) => {
-    await expect(page.locator('.segment-distributions .card--error').first()).toContainText('No distribution yet')
+    await expect(page.locator('.segment-distributions .card--empty').first()).toContainText('No distribution configured')
   })
 
   test('Edit distribution dialog opens', async ({ page }) => {
@@ -95,7 +95,7 @@ test.describe('Flag Distributions', () => {
     const saveBtn = dialog.locator('button').filter({ hasText: 'Save' })
     if (await saveBtn.isEnabled()) {
       await saveBtn.click()
-      await expect(page.locator('.el-message')).toContainText('distributions updated')
+      await expect(page.locator('.el-message')).toContainText('Distribution updated')
     } else {
       await page.keyboard.press('Escape')
     }
@@ -145,7 +145,7 @@ test.describe('Flag Distributions', () => {
     const saveBtn = dialog.locator('button').filter({ hasText: 'Save' })
     await expect(saveBtn).toBeEnabled()
     await saveBtn.click()
-    await expect(page.locator('.el-message')).toContainText('distributions updated')
+    await expect(page.locator('.el-message')).toContainText('Distribution updated')
 
     // Verify after reload
     await page.reload()
