@@ -155,11 +155,11 @@ const batchEvalResult = ref({});
 function postEvaluation(evalCtx) {
   Axios.post(`${API_URL}/evaluation`, evalCtx).then(
     response => {
-      ElMessage.success(`evaluation success`);
+      ElMessage.success("Evaluation completed");
       evalResult.value = response.data;
     },
     () => {
-      ElMessage.error(`evaluation error`);
+      ElMessage({ message: "Evaluation failed", type: "error", duration: 5000 });
     }
   );
 }
@@ -167,11 +167,11 @@ function postEvaluation(evalCtx) {
 function postEvaluationBatch(batchEvalCtx) {
   Axios.post(`${API_URL}/evaluation/batch`, batchEvalCtx).then(
     response => {
-      ElMessage.success(`evaluation success`);
+      ElMessage.success("Evaluation completed");
       batchEvalResult.value = response.data;
     },
     () => {
-      ElMessage.error(`evaluation error`);
+      ElMessage({ message: "Evaluation failed", type: "error", duration: 5000 });
     }
   );
 }

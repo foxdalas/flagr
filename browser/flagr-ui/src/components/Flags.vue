@@ -54,6 +54,7 @@
               v-model="searchTerm"
               v-focus
               placeholder="Search a flag"
+              aria-label="Search flags"
               :prefix-icon="Search"
             />
           </el-row>
@@ -63,7 +64,7 @@
             :stripe="true"
             :highlight-current-row="false"
             :default-sort="{ prop: 'id', order: 'descending' }"
-            style="width: 100%"
+            class="width--full"
             @row-click="goToFlag"
           >
             <el-table-column
@@ -138,7 +139,7 @@
                 :stripe="true"
                 :highlight-current-row="false"
                 :default-sort="{ prop: 'id', order: 'descending' }"
-                style="width: 100%"
+                class="width--full"
               >
                 <el-table-column
                   prop="id"
@@ -286,7 +287,7 @@ function createFlag(params) {
   }).then(response => {
     let flag = response.data;
     newFlag.value.description = "";
-    ElMessage.success("flag created");
+    ElMessage.success("Flag created");
 
     flag._new = true;
     flags.value.unshift(flag);

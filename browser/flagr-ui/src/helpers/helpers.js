@@ -33,8 +33,8 @@ function get (obj, path, def) {
 }
 
 function handleErr (err) {
-  let msg = get(err, 'response.data.message', 'request error')
-  ElMessage.error(msg)
+  let msg = get(err, 'response.data.message', 'Request error')
+  ElMessage({ message: msg, type: 'error', duration: 5000 })
   if (get(err, 'response.status') === 401) {
     try {
       let redirectURL = err.response.headers['www-authenticate'].split(`"`)[1]

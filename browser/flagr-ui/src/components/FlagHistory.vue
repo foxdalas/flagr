@@ -21,7 +21,7 @@
             </el-col>
             <el-col
               :span="10"
-              style="text-align: right; color: #2e4960"
+              class="snapshot-meta"
             >
               <div :class="{ compact: diff.updatedBy }">
                 <span size="small">{{ diff.timestamp }}</span>
@@ -87,7 +87,7 @@ function getFlagSnapshots() {
       flagSnapshots.value = response.data;
     },
     () => {
-      ElMessage.error(`failed to get flag snapshots`);
+      ElMessage({ message: "Failed to load flag snapshots", type: "error", duration: 5000 });
     }
   );
 }
@@ -110,6 +110,10 @@ onMounted(() => {
 </script>
 
 <style lang="less">
+.snapshot-meta {
+  text-align: right;
+  color: var(--flagr-navy-700, #2e4960);
+}
 .snapshot-container {
   .diff-snapshot-id-change {
     color: white;
@@ -123,10 +127,26 @@ onMounted(() => {
     del {
       background-color: #f7b3b3;
       text-decoration: none;
+      &::before {
+        content: "[-";
+        font-weight: bold;
+      }
+      &::after {
+        content: "-]";
+        font-weight: bold;
+      }
     }
     ins {
       background-color: #b6ddc6;
       text-decoration: none;
+      &::before {
+        content: "{+";
+        font-weight: bold;
+      }
+      &::after {
+        content: "+}";
+        font-weight: bold;
+      }
     }
     overflow-x: auto;
   }

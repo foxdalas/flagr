@@ -34,7 +34,7 @@ test.describe('Flags Page', () => {
 
     // Click create
     await createBtn.click()
-    await expect(page.locator('.el-message')).toContainText('flag created')
+    await expect(page.locator('.el-message')).toContainText('Flag created')
 
     // New flag appears in table
     await expect(page.locator('.flags-container .el-table__body').first()).toContainText(flagName)
@@ -52,7 +52,7 @@ test.describe('Flags Page', () => {
     await page.locator('.el-dropdown__caret-button').click()
     await page.locator('.el-dropdown-menu__item').filter({ hasText: 'Create Simple Boolean Flag' }).click()
 
-    await expect(page.locator('.el-message')).toContainText('flag created')
+    await expect(page.locator('.el-message')).toContainText('Flag created')
   })
 
   test('Search by description', async ({ page }) => {

@@ -16,7 +16,7 @@ test.describe('Flag Constraints', () => {
   })
 
   test('Empty state shows no constraints message', async ({ page }) => {
-    await expect(page.locator('.card--empty').first()).toContainText('No constraints (ALL will pass)')
+    await expect(page.locator('.segment .card--empty').first()).toContainText('No constraints')
   })
 
   test('Create constraint', async ({ page }) => {
@@ -32,7 +32,7 @@ test.describe('Flag Constraints', () => {
     await valueInput.fill('"US"')
     const addBtn = segment.locator('button').filter({ hasText: 'Add Constraint' })
     await addBtn.click()
-    await expect(page.locator('.el-message')).toContainText('new constraint created')
+    await expect(page.locator('.el-message')).toContainText('Constraint created')
   })
 
   test('All 12 operators available', async ({ page }) => {
@@ -56,7 +56,7 @@ test.describe('Flag Constraints', () => {
     const addBtn = segment.locator('button').filter({ hasText: 'Add Constraint' })
     await addBtn.click()
     await page.waitForTimeout(500)
-    await expect(page.locator('.el-message').last()).toContainText('new constraint created')
+    await expect(page.locator('.el-message').last()).toContainText('Constraint created')
   })
 
   test('Save constraint', async ({ page }) => {
@@ -64,18 +64,17 @@ test.describe('Flag Constraints', () => {
     const saveBtn = segment.locator('.segment-constraint button').filter({ hasText: 'Save' }).first()
     if (await saveBtn.isVisible().catch(() => false)) {
       await saveBtn.click()
-      await expect(page.locator('.el-message')).toContainText('constraint updated')
+      await expect(page.locator('.el-message')).toContainText('Constraint updated')
     }
   })
 
   test('Delete constraint', async ({ page }) => {
-    page.on('dialog', dialog => dialog.accept())
     const segment = page.locator('.segment').first()
     const deleteBtns = segment.locator('.segment-constraint .el-button--danger')
     if (await deleteBtns.count() > 0) {
       await deleteBtns.first().click()
       await page.waitForTimeout(500)
-      await expect(page.locator('.el-message')).toContainText('constraint deleted')
+      await expect(page.locator('.el-message')).toContainText('Constraint deleted')
     }
   })
 
@@ -103,7 +102,7 @@ test.describe('Flag Constraints', () => {
 
     const addBtn = segment.locator('button').filter({ hasText: 'Add Constraint' })
     await addBtn.click()
-    await expect(page.locator('.el-message')).toContainText('new constraint created')
+    await expect(page.locator('.el-message')).toContainText('Constraint created')
   })
 
   test('Create constraint with regex operator (EREG)', async ({ page }) => {
@@ -126,7 +125,7 @@ test.describe('Flag Constraints', () => {
 
     const addBtn = segment.locator('button').filter({ hasText: 'Add Constraint' })
     await addBtn.click()
-    await expect(page.locator('.el-message')).toContainText('new constraint created')
+    await expect(page.locator('.el-message')).toContainText('Constraint created')
   })
 
   test('Create constraint with IN operator', async ({ page }) => {
@@ -149,7 +148,7 @@ test.describe('Flag Constraints', () => {
 
     const addBtn = segment.locator('button').filter({ hasText: 'Add Constraint' })
     await addBtn.click()
-    await expect(page.locator('.el-message')).toContainText('new constraint created')
+    await expect(page.locator('.el-message')).toContainText('Constraint created')
   })
 
   test('Create constraint with CONTAINS operator', async ({ page }) => {
@@ -172,6 +171,6 @@ test.describe('Flag Constraints', () => {
 
     const addBtn = segment.locator('button').filter({ hasText: 'Add Constraint' })
     await addBtn.click()
-    await expect(page.locator('.el-message')).toContainText('new constraint created')
+    await expect(page.locator('.el-message')).toContainText('Constraint created')
   })
 })

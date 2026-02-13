@@ -15,16 +15,16 @@ test.describe('Flag Segments', () => {
   })
 
   test('Empty state', async ({ page }) => {
-    await expect(page.locator('.segments-container .card--error')).toContainText('No segments created for this feature flag yet')
+    await expect(page.locator('.segments-container .card--empty')).toContainText('No segments yet')
   })
 
   test('Reorder and New Segment buttons visible', async ({ page }) => {
     await expect(page.locator('button').filter({ hasText: 'Reorder' })).toBeVisible()
-    await expect(page.locator('button').filter({ hasText: 'New Segment' })).toBeVisible()
+    await expect(page.locator('button').filter({ hasText: 'New Segment' }).first()).toBeVisible()
   })
 
   test('Create segment dialog', async ({ page }) => {
-    await page.locator('button').filter({ hasText: 'New Segment' }).click()
+    await page.locator('button').filter({ hasText: 'New Segment' }).first().click()
     const dialog = page.locator('.el-dialog').filter({ hasText: 'Create segment' })
     await expect(dialog).toBeVisible()
     const createSegBtn = dialog.locator('button').filter({ hasText: 'Create Segment' })
@@ -35,18 +35,18 @@ test.describe('Flag Segments', () => {
   })
 
   test('Create segment', async ({ page }) => {
-    await page.locator('button').filter({ hasText: 'New Segment' }).click()
+    await page.locator('button').filter({ hasText: 'New Segment' }).first().click()
     const dialog = page.locator('.el-dialog').filter({ hasText: 'Create segment' })
     await dialog.locator('input[placeholder="Segment description"]').fill('test-segment')
     await dialog.locator('button').filter({ hasText: 'Create Segment' }).click()
-    await expect(page.locator('.el-message')).toContainText('new segment created')
+    await expect(page.locator('.el-message')).toContainText('Segment created')
     await page.waitForTimeout(300)
     await expect(page.locator('.segments-container-inner')).toBeVisible()
     await expect(page.locator('.segments-container-inner')).toContainText('Segment ID')
   })
 
   test('Default rollout is 50', async ({ page }) => {
-    await page.locator('button').filter({ hasText: 'New Segment' }).click()
+    await page.locator('button').filter({ hasText: 'New Segment' }).first().click()
     const dialog = page.locator('.el-dialog').filter({ hasText: 'Create segment' })
     const sliderInput = dialog.locator('.el-input-number input, .el-slider__input input')
     if (await sliderInput.count() > 0) {
@@ -62,13 +62,12 @@ test.describe('Flag Segments', () => {
       const descInput = segmentCard.locator('input[placeholder="Description"]')
       await descInput.fill('updated-segment')
       await segmentCard.locator('button').filter({ hasText: 'Save Segment Setting' }).click()
-      await expect(page.locator('.el-message')).toContainText('segment updated')
+      await expect(page.locator('.el-message')).toContainText('Segment updated')
     }
   })
 
   test('Delete segment', async ({ page }) => {
-    page.on('dialog', dialog => dialog.accept())
-    await page.locator('button').filter({ hasText: 'New Segment' }).click()
+    await page.locator('button').filter({ hasText: 'New Segment' }).first().click()
     const dialog = page.locator('.el-dialog').filter({ hasText: 'Create segment' })
     await dialog.locator('input[placeholder="Segment description"]').fill('to-delete')
     await dialog.locator('button').filter({ hasText: 'Create Segment' }).click()
@@ -78,8 +77,12 @@ test.describe('Flag Segments', () => {
     // Find the delete icon button
     const deleteIcon = lastSegment.locator('.flex-row.id-row .el-icon').first()
     await deleteIcon.click()
+    // Confirm via ElMessageBox
+    const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'OK' })
+    await expect(okBtn).toBeVisible({ timeout: 3000 })
+    await okBtn.click()
     await page.waitForTimeout(500)
-    await expect(page.locator('.el-message').last()).toContainText('segment deleted')
+    await expect(page.locator('.el-message').last()).toContainText('Segment deleted')
   })
 
   test('Segments are draggable', async ({ page }) => {
@@ -98,6 +101,6 @@ test.describe('Flag Segments', () => {
     await page.waitForTimeout(500)
     const msg = page.locator('.el-message').last()
     await expect(msg).toBeVisible({ timeout: 3000 })
-    await expect(msg).toContainText('segment reordered')
+    await expect(msg).toContainText('Segment reordered')
   })
 })

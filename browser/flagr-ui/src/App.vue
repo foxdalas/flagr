@@ -1,6 +1,10 @@
 <template>
   <el-config-provider :locale="en">
     <div id="app">
+      <a
+        href="#main-content"
+        class="sr-only"
+      >Skip to content</a>
       <div class="navbar">
         <el-row>
           <el-col
@@ -36,7 +40,10 @@
           </el-col>
         </el-row>
       </div>
-      <div class="router-view-container">
+      <div
+        id="main-content"
+        class="router-view-container"
+      >
         <router-view />
       </div>
     </div>
@@ -163,14 +170,21 @@ ol {
     }
     &--empty {
       box-sizing: border-box;
-      background-color: #eee;
-      padding: 10px;
+      background-color: var(--flagr-color-empty-bg, #fafafa);
+      padding: var(--flagr-space-5, 24px) var(--flagr-space-4, 16px);
       text-align: center;
-      color: #777;
-      border: 1px solid #ccc;
-      border-radius: 3px;
+      color: var(--flagr-color-empty-text, #909399);
+      border: 1px dashed var(--flagr-color-empty-border, #dcdfe6);
+      border-radius: var(--flagr-radius-sm, 4px);
       width: 100%;
       margin-bottom: 12px;
+      .empty-title {
+        font-size: var(--flagr-text-base, 14px);
+        margin-bottom: var(--flagr-space-1, 4px);
+      }
+      .empty-hint {
+        font-size: var(--flagr-text-sm, 13px);
+      }
     }
   }
 
@@ -213,6 +227,31 @@ ol {
 
   .el-icon {
     vertical-align: middle;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  &:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5em;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background: var(--flagr-color-primary, #74e5e0);
+    color: var(--flagr-color-text, #2c3e50);
+    z-index: 1000;
   }
 }
 </style>

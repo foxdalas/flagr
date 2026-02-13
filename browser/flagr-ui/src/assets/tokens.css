@@ -1,0 +1,46 @@
+:root {
+  /* Layer 1: Primitives */
+  --flagr-teal-500: #74e5e0;
+  --flagr-teal-600: #5cc8c3;
+  --flagr-navy-700: #2e4960;
+  --flagr-navy-800: #2c3e50;
+  --flagr-red-500: #ff4949;
+  --flagr-green-500: #13ce66;
+  --flagr-red-600: #ed2d2d;
+
+  /* Layer 2: Semantic */
+  --flagr-color-primary: var(--flagr-teal-500);
+  --flagr-color-text: var(--flagr-navy-800);
+  --flagr-color-text-secondary: var(--flagr-navy-700);
+  --flagr-color-bg-surface: #ffffff;
+  --flagr-color-bg-subtle: #f6f8fa;
+  --flagr-color-border: #e4e7ed;
+  --flagr-color-success: var(--flagr-green-500);
+  --flagr-color-danger: var(--flagr-red-500);
+  --flagr-color-empty-bg: #fafafa;
+  --flagr-color-empty-border: #dcdfe6;
+  --flagr-color-empty-text: #909399;
+
+  /* Spacing (base-4, 7 steps) */
+  --flagr-space-1: 4px;
+  --flagr-space-2: 8px;
+  --flagr-space-3: 12px;
+  --flagr-space-4: 16px;
+  --flagr-space-5: 24px;
+  --flagr-space-6: 32px;
+  --flagr-space-8: 48px;
+
+  /* Typography (6 steps, min 12px for WCAG) */
+  --flagr-text-xs: 0.75rem;    /* 12px */
+  --flagr-text-sm: 0.8125rem;  /* 13px */
+  --flagr-text-base: 0.875rem; /* 14px */
+  --flagr-text-md: 1rem;       /* 16px */
+  --flagr-text-lg: 1.25rem;    /* 20px */
+  --flagr-text-xl: 1.5rem;     /* 24px */
+
+  /* Radii & shadows */
+  --flagr-radius-sm: 4px;
+  --flagr-radius-md: 8px;
+  --flagr-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --flagr-shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+}

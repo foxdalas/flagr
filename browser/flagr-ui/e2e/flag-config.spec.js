@@ -59,7 +59,7 @@ test.describe('Flag Config', () => {
     await page.waitForTimeout(500)
 
     const msg = page.locator('.el-message')
-    await expect(msg).toContainText(/You turned (on|off) this feature flag/)
+    await expect(msg).toContainText(/Flag (enabled|disabled)/)
   })
 
   test('Data Records toggle', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe('Flag Config', () => {
     await deleteBtn.click()
     const dialog = page.locator('.el-dialog').filter({ hasText: 'Delete feature flag' })
     await expect(dialog).toBeVisible()
-    await expect(dialog).toContainText('Are you sure you want to delete this feature flag')
+    await expect(dialog).toContainText('This action cannot be undone')
 
     // Cancel
     await dialog.locator('button').filter({ hasText: 'Cancel' }).click()
