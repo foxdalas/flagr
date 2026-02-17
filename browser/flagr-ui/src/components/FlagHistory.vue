@@ -21,10 +21,16 @@
             </el-col>
             <el-col
               :span="10"
-              style="text-align: right; color: #2e4960"
+              class="snapshot-meta"
             >
               <div :class="{ compact: diff.updatedBy }">
-                <span size="small">{{ diff.timestamp }}</span>
+                <el-tooltip
+                  :content="diff.relativeTime"
+                  placement="top"
+                  effect="light"
+                >
+                  <span size="small">{{ diff.timestamp }}</span>
+                </el-tooltip>
               </div>
               <div
                 v-if="diff.updatedBy"
@@ -53,6 +59,7 @@ import { DArrowRight } from "@element-plus/icons-vue";
 import xss from "xss";
 
 import constants from "@/constants";
+import helpers from "@/helpers/helpers";
 
 const props = defineProps({
   flagId: {
@@ -60,6 +67,8 @@ const props = defineProps({
     required: true,
   },
 });
+
+const { timeAgo } = helpers;
 
 const { API_URL } = constants;
 
@@ -72,6 +81,7 @@ const diffs = computed(() => {
   for (let i = 0; i < snapshots.length - 1; i++) {
     ret.push({
       timestamp: new Date(snapshots[i].updatedAt).toLocaleString(),
+      relativeTime: timeAgo(snapshots[i].updatedAt),
       updatedBy: snapshots[i].updatedBy,
       newId: snapshots[i].id,
       oldId: snapshots[i + 1].id || "NULL",
@@ -87,7 +97,7 @@ function getFlagSnapshots() {
       flagSnapshots.value = response.data;
     },
     () => {
-      ElMessage.error(`failed to get flag snapshots`);
+      ElMessage({ message: "Failed to load flag snapshots", type: "error", duration: 5000 });
     }
   );
 }
@@ -110,23 +120,43 @@ onMounted(() => {
 </script>
 
 <style lang="less">
+.snapshot-meta {
+  text-align: right;
+  color: var(--flagr-color-text-secondary);
+}
 .snapshot-container {
   .diff-snapshot-id-change {
-    color: white;
+    color: var(--flagr-color-card-header-text);
     .el-tag {
-      color: #2e4960;
-      background-color: white;
+      color: var(--flagr-color-text);
+      background-color: var(--flagr-color-bg-surface);
     }
   }
   .diff {
     margin: 0;
     del {
-      background-color: #f7b3b3;
+      background-color: var(--flagr-color-diff-remove);
       text-decoration: none;
+      &::before {
+        content: "[-";
+        font-weight: bold;
+      }
+      &::after {
+        content: "-]";
+        font-weight: bold;
+      }
     }
     ins {
-      background-color: #b6ddc6;
+      background-color: var(--flagr-color-diff-add);
       text-decoration: none;
+      &::before {
+        content: "{+";
+        font-weight: bold;
+      }
+      &::after {
+        content: "+}";
+        font-weight: bold;
+      }
     }
     overflow-x: auto;
   }

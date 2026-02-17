@@ -32,15 +32,11 @@ test.describe('Flags Page', () => {
     await descInput.fill(flagName)
     await expect(createBtn).not.toBeDisabled()
 
-    // Click create
+    // Click create — should auto-navigate to flag detail page
     await createBtn.click()
-    await expect(page.locator('.el-message')).toContainText('flag created')
-
-    // New flag appears in table
-    await expect(page.locator('.flags-container .el-table__body').first()).toContainText(flagName)
-
-    // Description field cleared
-    await expect(descInput).toHaveValue('')
+    await expect(page.locator('.el-message')).toContainText('Flag created')
+    await page.waitForTimeout(1000)
+    await expect(page).toHaveURL(/\/#\/flags\/\d+/)
   })
 
   test('Create Simple Boolean Flag', async ({ page }) => {
@@ -52,7 +48,10 @@ test.describe('Flags Page', () => {
     await page.locator('.el-dropdown__caret-button').click()
     await page.locator('.el-dropdown-menu__item').filter({ hasText: 'Create Simple Boolean Flag' }).click()
 
-    await expect(page.locator('.el-message')).toContainText('flag created')
+    await expect(page.locator('.el-message')).toContainText('Flag created')
+    await page.waitForTimeout(1000)
+    // Should auto-navigate to flag detail page
+    await expect(page).toHaveURL(/\/#\/flags\/\d+/)
   })
 
   test('Search by description', async ({ page }) => {
@@ -64,11 +63,15 @@ test.describe('Flags Page', () => {
     await descInput.fill(alpha)
     await createBtn.click()
     await page.waitForTimeout(500)
+    await page.goto('/')
+    await page.waitForSelector('.flags-container')
 
     const beta = 'beta-search-' + Date.now()
     await descInput.fill(beta)
     await createBtn.click()
     await page.waitForTimeout(500)
+    await page.goto('/')
+    await page.waitForSelector('.flags-container')
 
     // Search for alpha
     const searchInput = page.locator('input[placeholder="Search a flag"]')
@@ -109,10 +112,14 @@ test.describe('Flags Page', () => {
     await descInput.fill('foo-bar-' + ts)
     await createBtn.click()
     await page.waitForTimeout(500)
+    await page.goto('/')
+    await page.waitForSelector('.flags-container')
 
     await descInput.fill('foo-baz-' + ts)
     await createBtn.click()
     await page.waitForTimeout(500)
+    await page.goto('/')
+    await page.waitForSelector('.flags-container')
 
     const searchInput = page.locator('input[placeholder="Search a flag"]')
 
@@ -170,6 +177,8 @@ test.describe('Flags Page', () => {
     await descInput.fill(mixedCaseName)
     await createBtn.click()
     await page.waitForTimeout(500)
+    await page.goto('/')
+    await page.waitForSelector('.flags-container')
 
     // Search with lowercase
     const searchInput = page.locator('input[placeholder="Search a flag"]')
@@ -198,14 +207,13 @@ test.describe('Flags Page', () => {
     await createBtn.click()
     await page.waitForTimeout(500)
 
-    // Navigate to the new flag to set its key
-    await page.locator('.el-table__body .el-table__row').first().click()
+    // Auto-navigated to flag detail page
     await page.waitForSelector('.flag-container', { timeout: 10000 })
 
     const keyInput = page.locator('.flag-content input[placeholder="Key"]')
     const mixedCaseKey = 'MyTestKey-' + ts
     await keyInput.fill(mixedCaseKey)
-    await page.locator('button').filter({ hasText: 'Save Flag' }).click()
+    await page.locator('button').filter({ hasText: 'Save Flag' }).first().click()
     await expect(page.locator('.el-message').last()).toContainText('Flag updated')
 
     // Go back to flags list

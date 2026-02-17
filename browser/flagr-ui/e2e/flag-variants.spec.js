@@ -15,7 +15,7 @@ test.describe('Flag Variants', () => {
   })
 
   test('Empty state', async ({ page }) => {
-    await expect(page.locator('.card--error').first()).toContainText('No variants created for this feature flag yet')
+    await expect(page.locator('.card--empty').first()).toContainText('No variants defined yet')
   })
 
   test('Create variant', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('Flag Variants', () => {
     await keyInput.fill('control')
     await expect(createBtn).not.toBeDisabled()
     await createBtn.click()
-    await expect(page.locator('.el-message')).toContainText('new variant created')
+    await expect(page.locator('.el-message')).toContainText('Variant created')
     // Variant key is inside an input element, check via input value
     await expect(page.locator('.variants-container-inner .variant-key-input input').first()).toHaveValue('control')
   })
@@ -35,7 +35,7 @@ test.describe('Flag Variants', () => {
     const createBtn = page.locator('button').filter({ hasText: 'Create Variant' })
     await keyInput.fill('treatment')
     await createBtn.click()
-    await expect(page.locator('.el-message').last()).toContainText('new variant created')
+    await expect(page.locator('.el-message').last()).toContainText('Variant created')
     await page.waitForTimeout(300)
     // Variant key is inside an input element
     const variantInputs = page.locator('.variants-container-inner .variant-key-input input')
@@ -48,7 +48,7 @@ test.describe('Flag Variants', () => {
     if (await variantInputs.count() > 0) {
       await variantInputs.first().fill('control-v2')
       await page.locator('.variants-container-inner button').filter({ hasText: 'Save Variant' }).first().click()
-      await expect(page.locator('.el-message')).toContainText('variant updated')
+      await expect(page.locator('.el-message')).toContainText('Variant updated')
     }
   })
 
@@ -95,7 +95,7 @@ test.describe('Flag Variants', () => {
 
     // 4. Save variant
     await page.locator('.variants-container-inner button').filter({ hasText: 'Save Variant' }).first().click()
-    await expect(page.locator('.el-message').last()).toContainText('variant updated')
+    await expect(page.locator('.el-message').last()).toContainText('Variant updated')
     await page.waitForTimeout(500)
 
     // 5. Reload page
@@ -121,7 +121,6 @@ test.describe('Flag Variants', () => {
   })
 
   test('Delete variant not in use', async ({ page }) => {
-    page.on('dialog', dialog => dialog.accept())
     const keyInput = page.locator('input[placeholder="Variant Key"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create Variant' })
     await keyInput.fill('to-delete-' + Date.now())
@@ -131,8 +130,12 @@ test.describe('Flag Variants', () => {
     const deleteIcons = page.locator('.variants-container-inner .save-remove-variant-row .el-icon')
     if (await deleteIcons.count() > 0) {
       await deleteIcons.last().click()
+      // Confirm via ElMessageBox
+      const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'OK' })
+      await expect(okBtn).toBeVisible({ timeout: 3000 })
+      await okBtn.click()
       await page.waitForTimeout(500)
-      await expect(page.locator('.el-message').last()).toContainText('variant deleted')
+      await expect(page.locator('.el-message').last()).toContainText('Variant deleted')
     }
   })
 
@@ -190,22 +193,18 @@ test.describe('Variant Delete Protection', () => {
       await page.keyboard.press('Escape')
     }
 
-    // Now try to delete the variant - expect alert
-    let alertMessage = ''
-    page.on('dialog', async dialog => {
-      alertMessage = dialog.message()
-      await dialog.dismiss()
-    })
-
-    // Find and click delete button for the variant
+    // Now try to delete the variant - expect ElMessageBox alert
     const deleteIcons = page.locator('.variants-container-inner .save-remove-variant-row .el-icon')
     if (await deleteIcons.count() > 0) {
       await deleteIcons.first().click()
       await page.waitForTimeout(500)
     }
 
-    // Verify alert was shown with the expected message
-    expect(alertMessage).toContain('being used by a segment distribution')
+    // Verify ElMessageBox alert was shown with the expected message
+    const messageBox = page.locator('.el-message-box')
+    await expect(messageBox).toBeVisible({ timeout: 3000 })
+    await expect(messageBox).toContainText('being used by a segment distribution')
+    await messageBox.locator('button').filter({ hasText: 'OK' }).click()
 
     // Verify variant still exists
     const variantInputs = page.locator('.variants-container-inner .variant-key-input input')

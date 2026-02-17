@@ -1,0 +1,271 @@
+/* ========================================
+   Flagr Design Tokens
+   Two-layer: Primitives → Semantic
+   Dark mode: html.dark overrides
+   ======================================== */
+
+:root {
+  /* ── Layer 1: Primitives ────────────── */
+
+  /* Indigo (primary) */
+  --flagr-indigo-50:  #eef2ff;
+  --flagr-indigo-100: #e0e7ff;
+  --flagr-indigo-200: #c7d2fe;
+  --flagr-indigo-300: #a5b4fc;
+  --flagr-indigo-400: #818cf8;
+  --flagr-indigo-500: #6366f1;
+  --flagr-indigo-600: #4f46e5;
+
+  /* Zinc (neutrals — warmer than slate) */
+  --flagr-zinc-50:  #fafafa;
+  --flagr-zinc-100: #f4f4f5;
+  --flagr-zinc-200: #e4e4e7;
+  --flagr-zinc-300: #d4d4d8;
+  --flagr-zinc-400: #a1a1aa;
+  --flagr-zinc-500: #71717a;
+  --flagr-zinc-600: #52525b;
+  --flagr-zinc-700: #3f3f46;
+  --flagr-zinc-800: #27272a;
+  --flagr-zinc-900: #18181b;
+
+  /* Status */
+  --flagr-green-500: #22c55e;
+  --flagr-green-100: #dcfce7;
+  --flagr-red-500: #ef4444;
+  --flagr-red-100: #fee2e2;
+  --flagr-amber-500: #f59e0b;
+  --flagr-amber-100: #fef3c7;
+
+  /* Extended palette (charts & variants) */
+  --flagr-cyan-500:   #06b6d4;
+  --flagr-violet-500: #8b5cf6;
+  --flagr-pink-500:   #ec4899;
+  --flagr-teal-500:   #14b8a6;
+
+  /* ── Layer 2: Semantic (Light) ──────── */
+
+  /* Backgrounds */
+  --flagr-color-bg-page:     #fafbfc;
+  --flagr-color-bg-surface:  #ffffff;
+  --flagr-color-bg-elevated: #ffffff;
+  --flagr-color-bg-subtle:   var(--flagr-zinc-50);
+  --flagr-color-bg-muted:    var(--flagr-zinc-100);
+
+  /* Text */
+  --flagr-color-text:           var(--flagr-zinc-900);
+  --flagr-color-text-secondary: var(--flagr-zinc-600);
+  --flagr-color-text-muted:     var(--flagr-zinc-400);
+  --flagr-color-text-on-primary: #ffffff;
+
+  /* Primary */
+  --flagr-color-primary:       var(--flagr-indigo-500);
+  --flagr-color-primary-hover: var(--flagr-indigo-600);
+  --flagr-color-primary-active: var(--flagr-indigo-600);
+  --flagr-color-primary-light: var(--flagr-indigo-50);
+
+  /* Borders */
+  --flagr-color-border:        var(--flagr-zinc-200);
+  --flagr-color-border-strong: var(--flagr-zinc-300);
+  --flagr-color-border-focus:  var(--flagr-indigo-500);
+
+  /* Status */
+  --flagr-color-success:    var(--flagr-green-500);
+  --flagr-color-success-bg: var(--flagr-green-100);
+  --flagr-color-danger:     var(--flagr-red-500);
+  --flagr-color-danger-bg:  var(--flagr-red-100);
+  --flagr-color-warning:    var(--flagr-amber-500);
+  --flagr-color-warning-bg: var(--flagr-amber-100);
+
+  /* Navbar */
+  --flagr-color-navbar-bg:     #ffffff;
+  --flagr-color-navbar-text:   var(--flagr-zinc-700);
+  --flagr-color-navbar-border: var(--flagr-zinc-200);
+
+  /* Card headers */
+  --flagr-color-card-header-bg:     var(--flagr-zinc-50);
+  --flagr-color-card-header-text:   var(--flagr-zinc-800);
+  --flagr-color-card-header-border: var(--flagr-indigo-500);
+
+  /* Diff */
+  --flagr-color-diff-add:    #b6ddc6;
+  --flagr-color-diff-remove: #f7b3b3;
+
+  /* Empty states */
+  --flagr-color-empty-bg:     var(--flagr-zinc-50);
+  --flagr-color-empty-border: var(--flagr-zinc-300);
+  --flagr-color-empty-text:   var(--flagr-zinc-400);
+
+  /* ── Spacing (base-4, 7 steps) ─────── */
+  --flagr-space-1: 4px;
+  --flagr-space-2: 8px;
+  --flagr-space-3: 12px;
+  --flagr-space-4: 16px;
+  --flagr-space-5: 24px;
+  --flagr-space-6: 32px;
+  --flagr-space-8: 48px;
+
+  /* ── Typography ─────────────────────── */
+  --flagr-font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --flagr-font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  --flagr-font-weight-normal: 400;
+  --flagr-font-weight-medium: 500;
+  --flagr-font-weight-semibold: 600;
+  --flagr-font-weight-bold: 700;
+  --flagr-line-height-tight: 1.25;
+  --flagr-line-height-normal: 1.5;
+  --flagr-line-height-relaxed: 1.625;
+  --flagr-text-xs:   0.75rem;    /* 12px */
+  --flagr-text-sm:   0.8125rem;  /* 13px */
+  --flagr-text-base: 0.875rem;   /* 14px */
+  --flagr-text-md:   1rem;       /* 16px */
+  --flagr-text-lg:   1.25rem;    /* 20px */
+  --flagr-text-xl:   1.5rem;     /* 24px */
+
+  /* ── Radii & Shadows ────────────────── */
+  --flagr-radius-sm: 6px;
+  --flagr-radius-md: 10px;
+  --flagr-radius-lg: 14px;
+  --flagr-radius-full: 9999px;
+  --flagr-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --flagr-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --flagr-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --flagr-shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.2);
+
+  /* ── Transitions ───────────────────── */
+  --flagr-transition-fast: 150ms ease;
+  --flagr-transition-base: 200ms ease;
+  --flagr-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Layout ────────────────────────── */
+  --flagr-navbar-height: 49px;
+
+  /* ── Element Plus overrides (Light) ─── */
+  --el-color-primary: var(--flagr-color-primary);
+  --el-color-primary-light-1: #7577f2;
+  --el-color-primary-light-2: #8889f4;
+  --el-color-primary-light-3: #9a9bf5;
+  --el-color-primary-light-4: #acadf7;
+  --el-color-primary-light-5: #b1b3f8;
+  --el-color-primary-light-6: #c4c5fa;
+  --el-color-primary-light-7: #d6d7fb;
+  --el-color-primary-light-8: #e8e9fc;
+  --el-color-primary-light-9: #f4f4fe;
+  --el-color-primary-dark-2: #4f46e5;
+  --el-color-success: var(--flagr-color-success);
+  --el-color-danger:  var(--flagr-color-danger);
+  --el-color-warning: var(--flagr-color-warning);
+  --el-color-info: #909399;
+  --el-border-radius-base: var(--flagr-radius-sm);
+  --el-font-family: var(--flagr-font-sans);
+  --el-card-border-radius: var(--flagr-radius-md);
+}
+
+/* ── Dark Mode ────────────────────────── */
+html.dark {
+  /* Backgrounds */
+  --flagr-color-bg-page:     var(--flagr-zinc-900);
+  --flagr-color-bg-surface:  var(--flagr-zinc-800);
+  --flagr-color-bg-elevated: var(--flagr-zinc-700);
+  --flagr-color-bg-subtle:   var(--flagr-zinc-800);
+  --flagr-color-bg-muted:    var(--flagr-zinc-700);
+
+  /* Text */
+  --flagr-color-text:           #e4e4e7;
+  --flagr-color-text-secondary: var(--flagr-zinc-300);
+  --flagr-color-text-muted:     var(--flagr-zinc-400);
+
+  /* Primary (lighter in dark) */
+  --flagr-color-primary:       var(--flagr-indigo-400);
+  --flagr-color-primary-hover: var(--flagr-indigo-500);
+  --flagr-color-primary-active: var(--flagr-indigo-500);
+  --flagr-color-primary-light: rgba(129, 140, 248, 0.15);
+
+  /* Borders */
+  --flagr-color-border:        var(--flagr-zinc-600);
+  --flagr-color-border-strong: var(--flagr-zinc-500);
+  --flagr-color-border-focus:  var(--flagr-indigo-400);
+
+  /* Status */
+  --flagr-color-success-bg: rgba(34, 197, 94, 0.15);
+  --flagr-color-danger-bg:  rgba(239, 68, 68, 0.15);
+  --flagr-color-warning-bg: rgba(245, 158, 11, 0.15);
+
+  /* Navbar */
+  --flagr-color-navbar-bg:     var(--flagr-zinc-800);
+  --flagr-color-navbar-text:   var(--flagr-zinc-200);
+  --flagr-color-navbar-border: var(--flagr-zinc-600);
+
+  /* Card headers */
+  --flagr-color-card-header-bg:     var(--flagr-zinc-700);
+  --flagr-color-card-header-text:   var(--flagr-zinc-100);
+  --flagr-color-card-header-border: var(--flagr-indigo-400);
+
+  /* Diff */
+  --flagr-color-diff-add:    rgba(34, 197, 94, 0.2);
+  --flagr-color-diff-remove: rgba(239, 68, 68, 0.2);
+
+  /* Empty states */
+  --flagr-color-empty-bg:     var(--flagr-zinc-800);
+  --flagr-color-empty-border: var(--flagr-zinc-600);
+  --flagr-color-empty-text:   var(--flagr-zinc-400);
+
+  /* Shadows (subtler in dark) */
+  --flagr-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --flagr-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --flagr-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --flagr-shadow-focus: 0 0 0 3px rgba(129, 140, 248, 0.3);
+
+  /* Element Plus overrides (Dark) — bridge EP variables to zinc palette */
+  --el-bg-color: var(--flagr-zinc-900);
+  --el-bg-color-overlay: var(--flagr-zinc-800);
+  --el-bg-color-page: var(--flagr-zinc-900);
+  --el-fill-color-blank: var(--flagr-zinc-900);
+  --el-fill-color: var(--flagr-zinc-700);
+  --el-fill-color-light: var(--flagr-zinc-600);
+  --el-fill-color-lighter: var(--flagr-zinc-700);
+  --el-fill-color-extra-light: var(--flagr-zinc-800);
+  --el-text-color-primary: #e4e4e7;
+  --el-text-color-regular: var(--flagr-zinc-300);
+  --el-text-color-secondary: var(--flagr-zinc-400);
+  --el-text-color-placeholder: var(--flagr-zinc-500);
+  --el-border-color: var(--flagr-zinc-600);
+  --el-border-color-light: var(--flagr-zinc-700);
+  --el-border-color-lighter: var(--flagr-zinc-700);
+  --el-border-color-extra-light: var(--flagr-zinc-800);
+  --el-border-color-dark: var(--flagr-zinc-500);
+  --el-mask-color: rgba(0, 0, 0, 0.6);
+  --el-box-shadow-light: 0px 0px 12px rgba(0, 0, 0, 0.4);
+
+  --el-color-primary: var(--flagr-color-primary);
+  --el-color-primary-light-1: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 10%);
+  --el-color-primary-light-2: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 20%);
+  --el-color-primary-light-3: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 30%);
+  --el-color-primary-light-4: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 40%);
+  --el-color-primary-light-5: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 50%);
+  --el-color-primary-light-6: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 60%);
+  --el-color-primary-light-7: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 70%);
+  --el-color-primary-light-8: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 80%);
+  --el-color-primary-light-9: color-mix(in srgb, var(--flagr-indigo-400), var(--flagr-zinc-800) 90%);
+  --el-color-primary-dark-2: var(--flagr-indigo-300);
+  --el-color-success: var(--flagr-color-success);
+  --el-color-danger:  var(--flagr-color-danger);
+  --el-color-warning: var(--flagr-color-warning);
+  --el-color-info: #909399;
+
+  /* json-editor-vue dark overrides */
+  --jse-theme-color:           var(--flagr-zinc-600);
+  --jse-theme-color-highlight: var(--flagr-zinc-500);
+  --jse-background-color:      var(--flagr-zinc-800);
+  --jse-text-color:            #e4e4e7;
+  --jse-main-border:           1px solid var(--flagr-zinc-600);
+
+  /* github-markdown-css dark overrides */
+  & .markdown-body {
+    color-scheme: dark;
+    --fgColor-default: #e6edf3;
+    --bgColor-default: transparent;
+    --fgColor-muted: #8b949e;
+    --borderColor-default: #30363d;
+    --bgColor-muted: #161b22;
+  }
+}
