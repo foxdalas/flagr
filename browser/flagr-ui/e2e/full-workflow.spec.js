@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Full E2E Workflow', () => {
   test('Complete flag lifecycle', async ({ page }) => {
-    page.on('dialog', dialog => dialog.accept())
 
     // 1. Go to home, create flag
     await page.goto('/')
@@ -14,11 +13,11 @@ test.describe('Full E2E Workflow', () => {
 
     await descInput.fill(flagName)
     await createBtn.click()
-    await expect(page.locator('.el-message')).toContainText('flag created')
+    await expect(page.locator('.el-message')).toContainText('Flag created')
     await page.waitForTimeout(1000)
 
-    // 2. Navigate to flag
-    await page.locator('.flags-container .el-table__body .el-table__row').first().click()
+    // 2. Auto-navigated to flag detail page
+    await expect(page).toHaveURL(/\/#\/flags\/\d+/)
     await page.waitForSelector('.flag-container', { timeout: 10000 })
     await expect(page.locator('.flag-config-card')).toBeVisible()
 
@@ -33,20 +32,20 @@ test.describe('Full E2E Workflow', () => {
 
     await variantInput.fill('control')
     await createVarBtn.click()
-    await expect(page.locator('.el-message').last()).toContainText('new variant created')
+    await expect(page.locator('.el-message').last()).toContainText('Variant created')
     await page.waitForTimeout(1000)
 
     await variantInput.fill('treatment')
     await createVarBtn.click()
-    await expect(page.locator('.el-message').last()).toContainText('new variant created')
+    await expect(page.locator('.el-message').last()).toContainText('Variant created')
     await page.waitForTimeout(1000)
 
     // 6. Create segment
-    await page.locator('button').filter({ hasText: 'New Segment' }).click()
+    await page.locator('button').filter({ hasText: 'New Segment' }).first().click()
     const segDialog = page.locator('.el-dialog').filter({ hasText: 'Create segment' })
     await segDialog.locator('input[placeholder="Segment description"]').fill('all-users')
     await segDialog.locator('button').filter({ hasText: 'Create Segment' }).click()
-    await expect(page.locator('.el-message').last()).toContainText('new segment created')
+    await expect(page.locator('.el-message').last()).toContainText('Segment created')
     await page.waitForTimeout(1000)
 
     // 7. Add constraint (values must be quoted for the backend parser)
@@ -57,7 +56,7 @@ test.describe('Full E2E Workflow', () => {
     const lastConstraintInput = constraintInputs.last()
     await lastConstraintInput.fill('"production"')
     await segment.locator('button').filter({ hasText: 'Add Constraint' }).click()
-    await expect(page.locator('.el-message').last()).toContainText('new constraint created')
+    await expect(page.locator('.el-message').last()).toContainText('Constraint created')
     await page.waitForTimeout(1000)
 
     // 9. Create tag
@@ -69,7 +68,7 @@ test.describe('Full E2E Workflow', () => {
     await page.waitForTimeout(1000)
 
     // 11. Save Flag
-    await page.locator('button').filter({ hasText: 'Save Flag' }).click()
+    await page.locator('button').filter({ hasText: 'Save Flag' }).first().click()
     await expect(page.locator('.el-message').last()).toContainText('Flag updated')
     await page.waitForTimeout(1000)
 
@@ -103,10 +102,15 @@ test.describe('Full E2E Workflow', () => {
 
     const deleteBtn = page.locator('button').filter({ hasText: 'Delete Flag' })
     await deleteBtn.click()
-    const confirmBtn = page.locator('.el-dialog').locator('button').filter({ hasText: 'Confirm' })
-    if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await confirmBtn.click()
-    }
+    // Type flag key to confirm deletion
+    const deleteDialog = page.locator('.el-dialog').filter({ hasText: 'Delete feature flag' })
+    await expect(deleteDialog).toBeVisible({ timeout: 3000 })
+    const flagKeyInput = page.locator('.flag-config-card .flag-content input').first()
+    const flagKey = await flagKeyInput.inputValue()
+    await deleteDialog.locator('input[placeholder="Type flag key to confirm"]').fill(flagKey)
+    const confirmDeleteBtn = deleteDialog.locator('button').filter({ hasText: 'Delete' })
+    await expect(confirmDeleteBtn).toBeEnabled({ timeout: 3000 })
+    await confirmDeleteBtn.click()
     await page.waitForTimeout(1000)
     await page.waitForSelector('.flags-container', { timeout: 5000 })
   })

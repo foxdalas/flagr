@@ -31,7 +31,7 @@ test.describe('Flag Config', () => {
     const newKey = 'test-key-' + Date.now()
     await keyInput.fill(newKey)
 
-    await page.locator('button').filter({ hasText: 'Save Flag' }).click()
+    await page.locator('button').filter({ hasText: 'Save Flag' }).first().click()
     await expect(page.locator('.el-message')).toContainText('Flag updated')
 
     // Reload and verify
@@ -45,7 +45,7 @@ test.describe('Flag Config', () => {
     const newDesc = 'updated-desc-' + Date.now()
     await descInput.fill(newDesc)
 
-    await page.locator('button').filter({ hasText: 'Save Flag' }).click()
+    await page.locator('button').filter({ hasText: 'Save Flag' }).first().click()
     await expect(page.locator('.el-message')).toContainText('Flag updated')
 
     await page.reload()
@@ -59,7 +59,7 @@ test.describe('Flag Config', () => {
     await page.waitForTimeout(500)
 
     const msg = page.locator('.el-message')
-    await expect(msg).toContainText(/You turned (on|off) this feature flag/)
+    await expect(msg).toContainText(/Flag (enabled|disabled)/)
   })
 
   test('Data Records toggle', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe('Flag Config', () => {
     await deleteBtn.click()
     const dialog = page.locator('.el-dialog').filter({ hasText: 'Delete feature flag' })
     await expect(dialog).toBeVisible()
-    await expect(dialog).toContainText('Are you sure you want to delete this feature flag')
+    await expect(dialog).toContainText('This action cannot be undone')
 
     // Cancel
     await dialog.locator('button').filter({ hasText: 'Cancel' }).click()
@@ -90,8 +90,8 @@ test.describe('Flag Config', () => {
   })
 
   test('Save Flag sends all fields', async ({ page }) => {
-    // Just verify Save Flag button works
-    await page.locator('button').filter({ hasText: 'Save Flag' }).click()
+    // Use .last() to get the inner card button (sticky header button is disabled when no changes)
+    await page.locator('button').filter({ hasText: 'Save Flag' }).last().click()
     await expect(page.locator('.el-message')).toContainText('Flag updated')
   })
 

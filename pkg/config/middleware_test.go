@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/urfave/negroni"
 )
 
 type okHandler struct{}
@@ -419,6 +420,93 @@ func TestBasicAuthMiddleware(t *testing.T) {
 		}
 	})
 
+}
+
+func TestStaticCacheWriter_StaticAsset(t *testing.T) {
+	w := httptest.NewRecorder()
+	cw := &staticCacheWriter{ResponseWriter: w, path: "/static/js/app.abc123.js", prefix: ""}
+	cw.WriteHeader(http.StatusOK)
+
+	assert.Equal(t, "public, max-age=31536000, immutable", w.Header().Get("Cache-Control"))
+}
+
+func TestStaticCacheWriter_StaticCSS(t *testing.T) {
+	w := httptest.NewRecorder()
+	cw := &staticCacheWriter{ResponseWriter: w, path: "/static/css/chunk.def456.css", prefix: ""}
+	cw.WriteHeader(http.StatusOK)
+
+	assert.Equal(t, "public, max-age=31536000, immutable", w.Header().Get("Cache-Control"))
+}
+
+func TestStaticCacheWriter_IndexHTML(t *testing.T) {
+	w := httptest.NewRecorder()
+	cw := &staticCacheWriter{ResponseWriter: w, path: "/", prefix: ""}
+	cw.WriteHeader(http.StatusOK)
+
+	assert.Equal(t, "no-cache", w.Header().Get("Cache-Control"))
+}
+
+func TestStaticCacheWriter_IndexHTMLExplicit(t *testing.T) {
+	w := httptest.NewRecorder()
+	cw := &staticCacheWriter{ResponseWriter: w, path: "/index.html", prefix: ""}
+	cw.WriteHeader(http.StatusOK)
+
+	assert.Equal(t, "no-cache", w.Header().Get("Cache-Control"))
+}
+
+func TestStaticCacheWriter_WithPrefix(t *testing.T) {
+	w := httptest.NewRecorder()
+	cw := &staticCacheWriter{ResponseWriter: w, path: "/flagr/static/js/app.abc123.js", prefix: "/flagr"}
+	cw.WriteHeader(http.StatusOK)
+
+	assert.Equal(t, "public, max-age=31536000, immutable", w.Header().Get("Cache-Control"))
+}
+
+func TestStaticCacheWriter_WriteImplicitHeader(t *testing.T) {
+	w := httptest.NewRecorder()
+	cw := &staticCacheWriter{ResponseWriter: w, path: "/static/js/app.js", prefix: ""}
+
+	n, err := cw.Write([]byte("hello"))
+	assert.NoError(t, err)
+	assert.Equal(t, 5, n)
+	assert.Equal(t, "public, max-age=31536000, immutable", w.Header().Get("Cache-Control"))
+	assert.True(t, cw.wroteHeader)
+}
+
+func TestStaticCacheWriter_WriteHeaderOnlyOnce(t *testing.T) {
+	w := httptest.NewRecorder()
+	cw := &staticCacheWriter{ResponseWriter: w, path: "/static/js/app.js", prefix: ""}
+
+	cw.WriteHeader(http.StatusOK)
+	// Manually change header to verify second call doesn't overwrite
+	w.Header().Set("Cache-Control", "modified")
+	cw.WriteHeader(http.StatusOK)
+
+	assert.Equal(t, "modified", w.Header().Get("Cache-Control"))
+}
+
+func TestStaticCacheMiddleware_Fallthrough(t *testing.T) {
+	// When the static middleware falls through (file not found),
+	// the original ResponseWriter should have no Cache-Control header.
+	w := httptest.NewRecorder()
+
+	m := &staticCacheMiddleware{
+		static: negroni.Static{
+			Dir:       http.Dir(t.TempDir()), // valid dir, no files → always falls through
+			IndexFile: "index.html",
+		},
+	}
+	var gotWriter http.ResponseWriter
+	next := func(rw http.ResponseWriter, r *http.Request) {
+		gotWriter = rw
+	}
+
+	r := httptest.NewRequest("GET", "/api/v1/flags", nil)
+	m.ServeHTTP(w, r, next)
+
+	// next() should receive the original writer, not the cache wrapper
+	assert.Equal(t, w, gotWriter, "fallthrough should pass original ResponseWriter")
+	assert.Empty(t, w.Header().Get("Cache-Control"), "no Cache-Control on API fallthrough")
 }
 
 func TestNormalizePath(t *testing.T) {

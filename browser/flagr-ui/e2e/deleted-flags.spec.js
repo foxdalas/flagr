@@ -27,19 +27,21 @@ test.describe('Deleted Flags', () => {
     await createBtn.click()
     await page.waitForTimeout(500)
 
-    // Navigate to the new flag (first row)
-    await page.locator('.el-table__body .el-table__row').first().click()
-    await page.waitForTimeout(500)
+    // Auto-navigated to flag detail page
+    await page.waitForSelector('.flag-container', { timeout: 10000 })
 
-    // Delete the flag
-    page.on('dialog', dialog => dialog.accept())
+    // Delete the flag — type key to confirm
     const deleteBtn = page.locator('button').filter({ hasText: 'Delete Flag' })
     await deleteBtn.click()
 
-    // Handle Element UI dialog
-    const confirmBtn = page.locator('.el-dialog').locator('button').filter({ hasText: 'Confirm' })
-    await expect(confirmBtn).toBeVisible({ timeout: 3000 })
-    await confirmBtn.click()
+    // Get the flag key from the input and type it to confirm
+    const flagKeyInput = page.locator('.flag-config-card .variant-key-input input, .flag-config-card .flag-content input').first()
+    const flagKey = await flagKeyInput.inputValue()
+    const deleteDialog = page.locator('.el-dialog').filter({ hasText: 'Delete feature flag' })
+    await deleteDialog.locator('input[placeholder="Type flag key to confirm"]').fill(flagKey)
+    const confirmDeleteBtn = deleteDialog.locator('button').filter({ hasText: 'Delete' })
+    await expect(confirmDeleteBtn).toBeEnabled({ timeout: 3000 })
+    await confirmDeleteBtn.click()
 
     await page.waitForTimeout(1000)
 

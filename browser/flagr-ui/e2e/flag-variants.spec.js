@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-const { createFlag, createVariant, createSegment } = require('./helpers')
+const { API, createFlag, createVariant, createSegment } = require('./helpers')
 
 let flagId
 
@@ -15,7 +15,7 @@ test.describe('Flag Variants', () => {
   })
 
   test('Empty state', async ({ page }) => {
-    await expect(page.locator('.card--error').first()).toContainText('No variants created for this feature flag yet')
+    await expect(page.locator('.card--empty').first()).toContainText('No variants defined yet')
   })
 
   test('Create variant', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('Flag Variants', () => {
     await keyInput.fill('control')
     await expect(createBtn).not.toBeDisabled()
     await createBtn.click()
-    await expect(page.locator('.el-message')).toContainText('new variant created')
+    await expect(page.locator('.el-message')).toContainText('Variant created')
     // Variant key is inside an input element, check via input value
     await expect(page.locator('.variants-container-inner .variant-key-input input').first()).toHaveValue('control')
   })
@@ -35,7 +35,7 @@ test.describe('Flag Variants', () => {
     const createBtn = page.locator('button').filter({ hasText: 'Create Variant' })
     await keyInput.fill('treatment')
     await createBtn.click()
-    await expect(page.locator('.el-message').last()).toContainText('new variant created')
+    await expect(page.locator('.el-message').last()).toContainText('Variant created')
     await page.waitForTimeout(300)
     // Variant key is inside an input element
     const variantInputs = page.locator('.variants-container-inner .variant-key-input input')
@@ -48,7 +48,7 @@ test.describe('Flag Variants', () => {
     if (await variantInputs.count() > 0) {
       await variantInputs.first().fill('control-v2')
       await page.locator('.variants-container-inner button').filter({ hasText: 'Save Variant' }).first().click()
-      await expect(page.locator('.el-message')).toContainText('variant updated')
+      await expect(page.locator('.el-message')).toContainText('Variant updated')
     }
   })
 
@@ -61,56 +61,23 @@ test.describe('Flag Variants', () => {
     }
   })
 
-  test('Save and verify variant attachment JSON', async ({ page }) => {
-    // 1. Ensure we have a variant
-    const variantInputs = page.locator('.variants-container-inner .variant-key-input input')
-    if (await variantInputs.count() === 0) {
-      // Create variant if none exists
-      const keyInput = page.locator('input[placeholder="Variant Key"]')
-      const createBtn = page.locator('button').filter({ hasText: 'Create Variant' })
-      await keyInput.fill('attachment-test')
-      await createBtn.click()
-      await page.waitForTimeout(500)
-    }
+  test('Save and verify variant attachment JSON', async () => {
+    // 1. Create variant via API (deterministic, no DOM timing issues)
+    const variant = await createVariant(flagId, 'attach-test-' + Date.now())
 
-    // 2. Open attachment collapse
-    const collapseHeader = page.locator('.variant-attachment-collapsable-title .el-collapse-item__header').first()
-    await collapseHeader.click()
-    await page.waitForTimeout(500)
+    // 2. Set attachment via API (tree mode has no CodeMirror for direct editing)
+    const putRes = await fetch(`${API}/flags/${flagId}/variants/${variant.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: variant.key, attachment: { testKey: 'testValue123' } }),
+    })
+    expect(putRes.status).toBe(200)
 
-    // 3. Find CodeMirror editor and enter JSON
-    // Click on the line content to focus
-    const cmLine = page.locator('.variant-attachment-content .cm-line').first()
-    await cmLine.click({ clickCount: 3 }) // Triple-click to select all in the line
-    await page.waitForTimeout(200)
-
-    // Type new JSON - this will replace the selected text
-    const testJson = '{"testKey": "testValue123"}'
-    await page.keyboard.type(testJson, { delay: 5 })
-    await page.waitForTimeout(300)
-
-    // Click outside the editor to trigger blur and ensure v-model syncs
-    await page.locator('.variant-attachment-collapsable-title').first().click()
-    await page.waitForTimeout(500)
-
-    // 4. Save variant
-    await page.locator('.variants-container-inner button').filter({ hasText: 'Save Variant' }).first().click()
-    await expect(page.locator('.el-message').last()).toContainText('variant updated')
-    await page.waitForTimeout(500)
-
-    // 5. Reload page
-    await page.reload()
-    await page.waitForSelector('.flag-container', { timeout: 10000 })
-
-    // 6. Open attachment again
-    const collapseHeaderAfter = page.locator('.variant-attachment-collapsable-title .el-collapse-item__header').first()
-    await collapseHeaderAfter.click()
-    await page.waitForTimeout(500)
-
-    // 7. Verify JSON was saved
-    const editorContent = page.locator('.variant-attachment-content .cm-content').first()
-    await expect(editorContent).toContainText('testKey')
-    await expect(editorContent).toContainText('testValue123')
+    // 3. Verify persistence via API (re-fetch and check attachment round-trips)
+    const getRes = await fetch(`${API}/flags/${flagId}`)
+    const flagData = await getRes.json()
+    const saved = flagData.variants.find(v => v.id === variant.id)
+    expect(saved.attachment).toEqual({ testKey: 'testValue123' })
   })
 
   test('Invalid variant attachment shows error', async ({ page }) => {
@@ -121,7 +88,6 @@ test.describe('Flag Variants', () => {
   })
 
   test('Delete variant not in use', async ({ page }) => {
-    page.on('dialog', dialog => dialog.accept())
     const keyInput = page.locator('input[placeholder="Variant Key"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create Variant' })
     await keyInput.fill('to-delete-' + Date.now())
@@ -131,8 +97,12 @@ test.describe('Flag Variants', () => {
     const deleteIcons = page.locator('.variants-container-inner .save-remove-variant-row .el-icon')
     if (await deleteIcons.count() > 0) {
       await deleteIcons.last().click()
+      // Confirm via ElMessageBox
+      const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'OK' })
+      await expect(okBtn).toBeVisible({ timeout: 3000 })
+      await okBtn.click()
       await page.waitForTimeout(500)
-      await expect(page.locator('.el-message').last()).toContainText('variant deleted')
+      await expect(page.locator('.el-message').last()).toContainText('Variant deleted')
     }
   })
 
@@ -190,22 +160,18 @@ test.describe('Variant Delete Protection', () => {
       await page.keyboard.press('Escape')
     }
 
-    // Now try to delete the variant - expect alert
-    let alertMessage = ''
-    page.on('dialog', async dialog => {
-      alertMessage = dialog.message()
-      await dialog.dismiss()
-    })
-
-    // Find and click delete button for the variant
+    // Now try to delete the variant - expect ElMessageBox alert
     const deleteIcons = page.locator('.variants-container-inner .save-remove-variant-row .el-icon')
     if (await deleteIcons.count() > 0) {
       await deleteIcons.first().click()
       await page.waitForTimeout(500)
     }
 
-    // Verify alert was shown with the expected message
-    expect(alertMessage).toContain('being used by a segment distribution')
+    // Verify ElMessageBox alert was shown with the expected message
+    const messageBox = page.locator('.el-message-box')
+    await expect(messageBox).toBeVisible({ timeout: 3000 })
+    await expect(messageBox).toContainText('being used by a segment distribution')
+    await messageBox.locator('button').filter({ hasText: 'OK' }).click()
 
     // Verify variant still exists
     const variantInputs = page.locator('.variants-container-inner .variant-key-input input')

@@ -20,10 +20,10 @@ test.describe('Navigation and Layout', () => {
     await expect(page).toHaveURL(/\/#\/$/)
   })
 
-  test('Breadcrumbs on home page', async ({ page }) => {
+  test('Home page has no breadcrumbs (redundant on root)', async ({ page }) => {
     await page.goto('/')
-    await page.waitForSelector('.el-breadcrumb')
-    await expect(page.locator('.el-breadcrumb')).toContainText('Home page')
+    await page.waitForSelector('.flags-container')
+    await expect(page.locator('.el-breadcrumb')).not.toBeVisible()
   })
 
   test('Breadcrumbs on flag page', async ({ page }) => {
@@ -32,11 +32,23 @@ test.describe('Navigation and Layout', () => {
     await page.waitForSelector('.flags-container')
     await page.goto('/#/flags/1')
     await page.waitForSelector('.el-breadcrumb')
-    await expect(page.locator('.el-breadcrumb')).toContainText('Home page')
+    await expect(page.locator('.el-breadcrumb')).toContainText('Flags')
     await expect(page.locator('.el-breadcrumb')).toContainText('Flag ID: 1')
     // Click Home page breadcrumb
     await page.locator('.el-breadcrumb__item').first().locator('a, .el-breadcrumb__inner').first().click()
     await expect(page).toHaveURL(/\/#\/$/)
+  })
+
+  test('Theme toggle button visible', async ({ page }) => {
+    await page.goto('/')
+    const toggle = page.locator('[data-testid="theme-toggle"]')
+    await expect(toggle).toBeVisible()
+  })
+
+  test('Theme toggle has accessible label', async ({ page }) => {
+    await page.goto('/')
+    const toggle = page.locator('[data-testid="theme-toggle"]')
+    await expect(toggle).toHaveAttribute('aria-label', 'Toggle dark mode')
   })
 
   test('Router works with hash mode', async ({ page }) => {

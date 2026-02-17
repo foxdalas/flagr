@@ -32,7 +32,7 @@ test.describe('Flag Tags', () => {
     await tagInput.fill(tagName)
     await tagInput.press('Enter')
     await page.waitForTimeout(500)
-    await expect(page.locator('.el-message')).toContainText('new tag created')
+    await expect(page.locator('.el-message')).toContainText('Tag created')
     await expect(page.locator('.tags-container-inner .el-tag').filter({ hasText: tagName })).toBeVisible()
   })
 
@@ -75,13 +75,16 @@ test.describe('Flag Tags', () => {
     await tagInput.fill(tagName)
     await tagInput.press('Enter')
     await page.waitForTimeout(500)
-    // Handle confirm dialog
-    page.on('dialog', dialog => dialog.accept())
+    // Click close button on tag
     const tag = page.locator('.tags-container-inner .el-tag').filter({ hasText: tagName })
     const closeBtn = tag.locator('.el-tag__close, .el-icon-close')
     await closeBtn.click()
+    // Confirm via ElMessageBox
+    const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'OK' })
+    await expect(okBtn).toBeVisible({ timeout: 3000 })
+    await okBtn.click()
     await page.waitForTimeout(500)
-    await expect(page.locator('.el-message').last()).toContainText('tag deleted')
+    await expect(page.locator('.el-message').last()).toContainText('Tag deleted')
   })
 
   test('Tag autocomplete', async ({ page }) => {
@@ -110,7 +113,7 @@ test.describe('Flag Tags', () => {
       await tagInput.fill(tagName)
       await tagInput.press('Enter')
       await page.waitForTimeout(500)
-      await expect(page.locator('.el-message').last()).toContainText('new tag created')
+      await expect(page.locator('.el-message').last()).toContainText('Tag created')
       await expect(page.locator('.tags-container-inner .el-tag').filter({ hasText: tagName })).toBeVisible()
     }
   })

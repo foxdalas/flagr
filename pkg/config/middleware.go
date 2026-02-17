@@ -103,10 +103,12 @@ func SetupGlobalMiddleware(handler http.Handler) http.Handler {
 		n.Use(setupBasicAuthMiddleware())
 	}
 
-	n.Use(&negroni.Static{
-		Dir:       http.Dir("./browser/flagr-ui/dist/"),
-		Prefix:    Config.WebPrefix,
-		IndexFile: "index.html",
+	n.Use(&staticCacheMiddleware{
+		static: negroni.Static{
+			Dir:       http.Dir("./browser/flagr-ui/dist/"),
+			Prefix:    Config.WebPrefix,
+			IndexFile: "index.html",
+		},
 	})
 
 	n.Use(setupRecoveryMiddleware())
@@ -374,4 +376,44 @@ func isNumeric(s string) bool {
 		}
 	}
 	return len(s) > 0
+}
+
+// staticCacheMiddleware wraps negroni.Static to add Cache-Control headers.
+// Hashed assets under /static/ get immutable caching; index.html gets no-cache.
+// On fallthrough (file not found), the original ResponseWriter is passed to next()
+// so cache headers don't leak onto API responses.
+type staticCacheMiddleware struct {
+	static negroni.Static
+}
+
+func (m *staticCacheMiddleware) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	wrapper := &staticCacheWriter{ResponseWriter: rw, path: r.URL.Path, prefix: m.static.Prefix}
+	unwrappedNext := func(_ http.ResponseWriter, r *http.Request) { next(rw, r) }
+	m.static.ServeHTTP(wrapper, r, unwrappedNext)
+}
+
+type staticCacheWriter struct {
+	http.ResponseWriter
+	path, prefix string
+	wroteHeader  bool
+}
+
+func (w *staticCacheWriter) WriteHeader(code int) {
+	if !w.wroteHeader {
+		w.wroteHeader = true
+		trimmed := strings.TrimPrefix(w.path, w.prefix)
+		if strings.HasPrefix(trimmed, "/static/") {
+			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		} else {
+			w.Header().Set("Cache-Control", "no-cache")
+		}
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *staticCacheWriter) Write(b []byte) (int, error) {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.Write(b)
 }
