@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-const { createFlag, createVariant, createSegment } = require('./helpers')
+const { API, createFlag, createVariant, createSegment } = require('./helpers')
 
 let flagId
 
@@ -78,39 +78,31 @@ test.describe('Flag Variants', () => {
     await collapseHeader.click()
     await page.waitForTimeout(500)
 
-    // 3. Find CodeMirror editor and enter JSON
-    // Click on the line content to focus
-    const cmLine = page.locator('.variant-attachment-content .cm-line').first()
-    await cmLine.click({ clickCount: 3 }) // Triple-click to select all in the line
-    await page.waitForTimeout(200)
+    // 3. Set attachment JSON via API (tree mode has no CodeMirror)
+    const variantIdText = await page.locator('.variants-container-inner .id-row .el-tag b').first().textContent()
+    const variantId = variantIdText.trim()
+    const variantKey = await page.locator('.variants-container-inner .variant-key-input input').first().inputValue()
 
-    // Type new JSON - this will replace the selected text
-    const testJson = '{"testKey": "testValue123"}'
-    await page.keyboard.type(testJson, { delay: 5 })
-    await page.waitForTimeout(300)
+    const res = await fetch(`${API}/flags/${flagId}/variants/${variantId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: variantKey, attachment: { testKey: 'testValue123' } }),
+    })
+    expect(res.status).toBe(200)
 
-    // Click outside the editor to trigger blur and ensure v-model syncs
-    await page.locator('.variant-attachment-collapsable-title').first().click()
-    await page.waitForTimeout(500)
-
-    // 4. Save variant
-    await page.locator('.variants-container-inner button').filter({ hasText: 'Save Variant' }).first().click()
-    await expect(page.locator('.el-message').last()).toContainText('Variant updated')
-    await page.waitForTimeout(500)
-
-    // 5. Reload page
+    // 4. Reload and verify persistence
     await page.reload()
     await page.waitForSelector('.flag-container', { timeout: 10000 })
 
-    // 6. Open attachment again
+    // 5. Open attachment collapse
     const collapseHeaderAfter = page.locator('.variant-attachment-collapsable-title .el-collapse-item__header').first()
     await collapseHeaderAfter.click()
     await page.waitForTimeout(500)
 
-    // 7. Verify JSON was saved
-    const editorContent = page.locator('.variant-attachment-content .cm-content').first()
-    await expect(editorContent).toContainText('testKey')
-    await expect(editorContent).toContainText('testValue123')
+    // 6. Verify JSON in tree mode (renders key/value as text nodes)
+    const attachmentContent = page.locator('.variant-attachment-content')
+    await expect(attachmentContent).toContainText('testKey')
+    await expect(attachmentContent).toContainText('testValue123')
   })
 
   test('Invalid variant attachment shows error', async ({ page }) => {

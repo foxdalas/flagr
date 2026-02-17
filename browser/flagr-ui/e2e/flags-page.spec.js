@@ -197,6 +197,60 @@ test.describe('Flags Page', () => {
     await searchInput.fill('')
   })
 
+  test('Search shows empty state for no results', async ({ page }) => {
+    const searchInput = page.locator('input[placeholder="Search a flag"]')
+    await searchInput.fill('zzz-nonexistent-flag-' + Date.now())
+    await page.waitForTimeout(300)
+
+    // Empty state should appear
+    const emptyState = page.locator('.card--empty')
+    await expect(emptyState).toBeVisible()
+    await expect(emptyState).toContainText('No flags match your search')
+    await expect(emptyState).toContainText('Try a different search term')
+
+    // Table should be hidden
+    await expect(page.locator('.flags-table')).not.toBeVisible()
+  })
+
+  test('Search clearable resets results', async ({ page }) => {
+    const searchInput = page.locator('input[placeholder="Search a flag"]')
+    await searchInput.fill('zzz-nonexistent-' + Date.now())
+    await page.waitForTimeout(300)
+
+    // Verify empty state is shown
+    await expect(page.locator('.card--empty')).toBeVisible()
+
+    // Hover the input to make the clearable X icon visible, then click it
+    const searchWrapper = page.locator('.flags-container .search-row .el-input')
+    await searchWrapper.hover()
+    const clearBtn = page.locator('.flags-container .search-row .el-input__clear')
+    await clearBtn.click()
+    await page.waitForTimeout(300)
+
+    // Table should reappear with all flags
+    await expect(page.locator('.flags-table')).toBeVisible()
+    await expect(page.locator('.card--empty')).not.toBeVisible()
+  })
+
+  test('Search results counter updates', async ({ page }) => {
+    // Verify counter shows total count initially
+    const flagsCount = page.locator('.flags-count')
+    await expect(flagsCount).toBeVisible()
+    await expect(flagsCount).toContainText('flags')
+
+    // Search for something specific
+    const searchInput = page.locator('input[placeholder="Search a flag"]')
+    await searchInput.fill('zzz-nonexistent-' + Date.now())
+    await page.waitForTimeout(300)
+
+    // Counter should show "0 flags of N total"
+    await expect(flagsCount).toContainText('0 flags')
+    await expect(flagsCount).toContainText('total')
+
+    // Clear search
+    await searchInput.fill('')
+  })
+
   test('Search by key is case-insensitive', async ({ page }) => {
     // Create a flag and set its key via the flag detail page
     const descInput = page.locator('input[placeholder="Specific new flag description"]')

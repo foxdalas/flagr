@@ -5,8 +5,9 @@
         <h2>Debug Console</h2>
       </div>
     </template>
-    <el-collapse>
-      <el-collapse-item title="Evaluation">
+    <el-collapse v-model="activeCollapseItems">
+      <el-collapse-item title="Evaluation" name="evaluation">
+        <template v-if="activeCollapseItems.includes('evaluation')">
         <el-row :gutter="10">
           <el-col :span="5">
             <span>Request</span>
@@ -50,9 +51,11 @@
             />
           </el-col>
         </el-row>
+        </template>
       </el-collapse-item>
 
-      <el-collapse-item title="Batch Evaluation">
+      <el-collapse-item title="Batch Evaluation" name="batch">
+        <template v-if="activeCollapseItems.includes('batch')">
         <el-row :gutter="10">
           <el-col :span="5">
             <span>Request</span>
@@ -96,6 +99,7 @@
             />
           </el-col>
         </el-row>
+        </template>
       </el-collapse-item>
     </el-collapse>
   </el-card>
@@ -115,6 +119,8 @@ const props = defineProps({
 });
 
 const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
+
+const activeCollapseItems = ref([]);
 
 const { API_URL } = constants;
 

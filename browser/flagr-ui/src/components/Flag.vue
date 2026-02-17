@@ -7,6 +7,7 @@
       <div class="container flag-container">
         <el-dialog
           v-model="dialogDeleteFlagVisible"
+          destroy-on-close
           title="Delete feature flag"
         >
           <p>This action cannot be undone. Type the flag key <b>{{ flag.key }}</b> to confirm.</p>
@@ -29,6 +30,7 @@
 
         <el-dialog
           v-model="dialogEditDistributionOpen"
+          destroy-on-close
           title="Edit distribution"
         >
           <div v-if="loaded && flag">
@@ -116,6 +118,7 @@
 
         <el-dialog
           v-model="dialogCreateSegmentOpen"
+          destroy-on-close
           title="Create segment"
         >
           <div>
@@ -149,7 +152,7 @@
 
         <el-breadcrumb separator="/">
           <el-breadcrumb-item :to="{ name: 'home' }">
-            Home page
+            Flags
           </el-breadcrumb-item>
           <el-breadcrumb-item>Flag ID: {{ route.params.flagId }}</el-breadcrumb-item>
         </el-breadcrumb>
@@ -265,37 +268,33 @@
                     align="middle"
                   >
                     <el-col :span="19">
-                      <el-row>
-                        <el-col :span="24">
-                          <el-input
-                            v-model="flag.key"
-                            size="small"
-                            placeholder="Key"
+                      <el-input
+                        v-model="flag.key"
+                        size="small"
+                        placeholder="Key"
+                      >
+                        <template #prepend>
+                          Flag Key
+                        </template>
+                        <template #append>
+                          <el-tooltip
+                            content="Copy Flag Key"
+                            placement="top"
+                            effect="light"
                           >
-                            <template #prepend>
-                              Flag Key
-                            </template>
-                            <template #append>
-                              <el-tooltip
-                                content="Copy Flag Key"
-                                placement="top"
-                                effect="light"
-                              >
-                                <button
-                                  class="copy-btn copy-btn--inline"
-                                  aria-label="Copy Flag Key to clipboard"
-                                  @click="copyKey"
-                                >
-                                  <el-icon :size="14">
-                                    <Check v-if="keyCopied" />
-                                    <CopyDocument v-else />
-                                  </el-icon>
-                                </button>
-                              </el-tooltip>
-                            </template>
-                          </el-input>
-                        </el-col>
-                      </el-row>
+                            <button
+                              class="copy-btn copy-btn--inline"
+                              aria-label="Copy Flag Key to clipboard"
+                              @click="copyKey"
+                            >
+                              <el-icon :size="14">
+                                <Check v-if="keyCopied" />
+                                <CopyDocument v-else />
+                              </el-icon>
+                            </button>
+                          </el-tooltip>
+                        </template>
+                      </el-input>
                     </el-col>
                     <el-col :span="5">
                       <div class="data-records-group">
@@ -323,33 +322,28 @@
                     align="middle"
                   >
                     <el-col :span="19">
-                      <el-row>
-                        <el-col :span="24">
-                          <el-input
-                            v-model="flag.description"
-                            size="small"
-                            placeholder="Description"
-                          >
-                            <template #prepend>
-                              Flag Description
-                            </template>
-                          </el-input>
-                        </el-col>
-                      </el-row>
+                      <el-input
+                        v-model="flag.description"
+                        size="small"
+                        placeholder="Description"
+                      >
+                        <template #prepend>
+                          Flag Description
+                        </template>
+                      </el-input>
                     </el-col>
-                    <el-col
-                      class="text-right"
-                      :span="5"
-                    >
-                      <div>
+                    <el-col :span="5">
+                      <div
+                        v-show="!!flag.dataRecordsEnabled"
+                        class="data-records-group"
+                      >
                         <el-select
-                          v-show="!!flag.dataRecordsEnabled"
                           v-model="flag.entityType"
                           size="small"
                           filterable
                           :allow-create="allowCreateEntityType"
                           default-first-option
-                          placeholder="<null>"
+                          placeholder="Entity Type"
                         >
                           <el-option
                             v-for="item in entityTypes"
@@ -358,21 +352,16 @@
                             :value="item.value"
                           />
                         </el-select>
-                      </div>
-                    </el-col>
-                    <el-col :span="2">
-                      <div
-                        v-show="!!flag.dataRecordsEnabled"
-                        class="data-records-label"
-                      >
-                        Entity Type
-                        <el-tooltip
-                          content="Overrides the entityType in data records logging"
-                          placement="top-end"
-                          effect="light"
-                        >
-                          <el-icon><InfoFilled /></el-icon>
-                        </el-tooltip>
+                        <div class="data-records-label">
+                          Entity Type
+                          <el-tooltip
+                            content="Overrides the entityType in data records logging"
+                            placement="top-end"
+                            effect="light"
+                          >
+                            <el-icon><InfoFilled /></el-icon>
+                          </el-tooltip>
+                        </div>
                       </div>
                     </el-col>
                   </el-row>
@@ -518,8 +507,8 @@
                             </p>
                             <JsonEditorVue
                               v-model="variant.attachment"
-                              :mode="'text'"
-                              :main-menu-bar="false"
+                              mode="tree"
+                              :main-menu-bar="true"
                               :navigation-bar="false"
                               :status-bar="false"
                               class="variant-attachment-content"
@@ -600,17 +589,21 @@
                   <draggable
                     v-model="flag.segments"
                     item-key="id"
+                    handle=".drag-handle"
                     @start="drag = true"
                     @end="onDragEnd"
                   >
-                    <template #item="{ element: segment }">
+                    <template #item="{ element: segment, index: segmentIndex }">
                       <el-card
                         shadow="hover"
-                        class="segment grabbable"
+                        class="segment"
                       >
                         <div class="flex-row id-row">
                           <div class="flex-row-left">
-                            <span class="segment-order-badge">[{{ flag.segments.indexOf(segment) + 1 }}]</span>
+                            <span class="drag-handle">
+                              <el-icon><Rank /></el-icon>
+                            </span>
+                            <span class="segment-order-badge">[{{ segmentIndex + 1 }}]</span>
                             <el-tag
                               type="primary"
                               :disable-transitions="true"
@@ -648,7 +641,7 @@
                               <el-button
                                 size="small"
                                 aria-label="Move segment up"
-                                :disabled="flag.segments.indexOf(segment) === 0"
+                                :disabled="segmentIndex === 0"
                                 @click="moveSegment(segment, -1)"
                               >
                                 <el-icon><ArrowUp /></el-icon>
@@ -662,7 +655,7 @@
                               <el-button
                                 size="small"
                                 aria-label="Move segment down"
-                                :disabled="flag.segments.indexOf(segment) === flag.segments.length - 1"
+                                :disabled="segmentIndex === flag.segments.length - 1"
                                 @click="moveSegment(segment, 1)"
                               >
                                 <el-icon><ArrowDown /></el-icon>
@@ -1017,7 +1010,7 @@ import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import draggable from "vuedraggable";
 import Axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, Edit, View, InfoFilled, ArrowUp, ArrowDown, Operation, Aim, Setting, DataAnalysis, CopyDocument, Check } from "@element-plus/icons-vue";
+import { Delete, Edit, View, InfoFilled, ArrowUp, ArrowDown, Operation, Aim, Setting, DataAnalysis, CopyDocument, Check, Rank } from "@element-plus/icons-vue";
 
 const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
 const FlagEvalFlow = defineAsyncComponent(() => import("@/components/FlagEvalFlow.vue"));
@@ -1029,7 +1022,7 @@ import { useDirtyState } from "@/composables/useDirtyState";
 import { useClipboard } from "@/composables/useClipboard";
 import Spinner from "@/components/Spinner";
 import DebugConsole from "@/components/DebugConsole";
-import FlagHistory from "@/components/FlagHistory";
+const FlagHistory = defineAsyncComponent(() => import("@/components/FlagHistory"));
 const MarkdownEditor = defineAsyncComponent(() => import("@/components/MarkdownEditor.vue"));
 import { operators } from "@/operators.json";
 
@@ -1171,10 +1164,7 @@ const newDistributionPercentageSum = computed(() => {
 });
 
 const newDistributionIsValid = computed(() => {
-  const percentageSum = sum(
-    pluck(Object.values(newDistributions), "percent")
-  );
-  return percentageSum === 100;
+  return newDistributionPercentageSum.value === 100;
 });
 
 const flagId = computed(() => {
@@ -1779,11 +1769,19 @@ h5 {
   }
 }
 
-.grabbable {
-  cursor: move; /* fallback if grab cursor is unsupported */
+.drag-handle {
+  cursor: move;
   cursor: grab;
-  cursor: -moz-grab;
   cursor: -webkit-grab;
+  opacity: 0.4;
+  transition: opacity var(--flagr-transition-fast, 150ms ease);
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+
+  &:hover {
+    opacity: 0.8;
+  }
 }
 
 .segments-container-inner .segment {

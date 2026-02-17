@@ -337,12 +337,6 @@ ol {
     margin-bottom: var(--flagr-space-4);
   }
 
-  .jse-main {
-    --jse-main-border: 1px solid var(--flagr-color-border);
-    --jse-theme-color: var(--flagr-color-border);
-    --jse-theme-color-highlight: var(--flagr-color-border-strong);
-  }
-
   .el-tag {
     margin: 2.5px;
   }
