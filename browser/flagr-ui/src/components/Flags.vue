@@ -77,30 +77,15 @@
             </div>
           </div>
 
-          <!-- Context menu for "Open in new tab" -->
-          <div
-            v-if="contextMenu.visible"
-            class="flag-context-menu"
-            :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
-          >
-            <div
-              class="flag-context-menu__item"
-              @click="openFlagInNewTab(contextMenu.flagId)"
-            >
-              Open in new tab
-            </div>
-          </div>
-
           <!-- Table uses v-show to stay in DOM for test compatibility -->
           <el-table
             v-show="filteredFlags.length"
-            :data="filteredFlags"
+            :data="paginatedFlags"
             :stripe="true"
             :highlight-current-row="false"
             :default-sort="{ prop: 'id', order: 'descending' }"
             class="width--full flags-table"
             @row-click="goToFlag"
-            @row-contextmenu="onRowContextMenu"
           >
             <el-table-column
               prop="id"
@@ -174,7 +159,36 @@
                 </el-tag>
               </template>
             </el-table-column>
+            <el-table-column
+              fixed="right"
+              width="50"
+              align="center"
+              class-name="flag-actions-col"
+            >
+              <template #default="scope">
+                <el-icon
+                  class="flag-actions-icon"
+                  title="Open in new tab"
+                  @click.stop="openFlagInNewTab(scope.row.id)"
+                >
+                  <TopRight />
+                </el-icon>
+              </template>
+            </el-table-column>
           </el-table>
+
+          <div
+            v-if="filteredFlags.length > PAGE_SIZE"
+            class="pagination-wrapper"
+          >
+            <el-pagination
+              v-model:current-page="currentPage"
+              :page-size="PAGE_SIZE"
+              :total="filteredFlags.length"
+              layout="prev, pager, next, jumper, ->, total"
+              background
+            />
+          </div>
 
           <el-collapse
             class="deleted-flags-table"
@@ -259,7 +273,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import Axios from "axios";
-import { Search, Plus } from "@element-plus/icons-vue";
+import { Search, Plus, TopRight } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 import constants from "@/constants";
@@ -280,6 +294,9 @@ const debouncedSearchTerm = ref("");
 const newFlag = ref({ description: "" });
 const searchInput = ref(null);
 let searchDebounceTimer = null;
+
+const PAGE_SIZE = 50;
+const currentPage = ref(1);
 
 watch(searchTerm, (val) => {
   clearTimeout(searchDebounceTimer);
@@ -324,12 +341,17 @@ const filteredFlags = computed(() => {
   return flags.value;
 });
 
+const paginatedFlags = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return filteredFlags.value.slice(start, start + PAGE_SIZE);
+});
+
+watch(debouncedSearchTerm, () => { currentPage.value = 1; });
+
 function datetimeFormatter(row, col, val) {
   if (!val) return "";
   return val.split(".")[0].replace("T", " ").slice(0, 16);
 }
-
-const contextMenu = ref({ visible: false, x: 0, y: 0, flagId: null });
 
 function getFlagUrl(flagId) {
   const resolved = router.resolve({ name: "flag", params: { flagId } });
@@ -338,7 +360,6 @@ function getFlagUrl(flagId) {
 
 function openFlagInNewTab(flagId) {
   window.open(getFlagUrl(flagId), "_blank");
-  contextMenu.value.visible = false;
 }
 
 function goToFlag(row, column, event) {
@@ -347,20 +368,6 @@ function goToFlag(row, column, event) {
     return;
   }
   router.push({ name: "flag", params: { flagId: row.id } });
-}
-
-function onRowContextMenu(row, column, event) {
-  event.preventDefault();
-  contextMenu.value = {
-    visible: true,
-    x: event.clientX,
-    y: event.clientY,
-    flagId: row.id
-  };
-}
-
-function closeContextMenu() {
-  contextMenu.value.visible = false;
 }
 
 function onCommandDropdown(command) {
@@ -426,14 +433,10 @@ function onSlashKey(e) {
 
 onMounted(() => {
   document.addEventListener('keydown', onSlashKey);
-  document.addEventListener('click', closeContextMenu);
-  document.addEventListener('scroll', closeContextMenu, true);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onSlashKey);
-  document.removeEventListener('click', closeContextMenu);
-  document.removeEventListener('scroll', closeContextMenu, true);
   clearTimeout(searchDebounceTimer);
 });
 </script>
@@ -506,6 +509,29 @@ onBeforeUnmount(() => {
       width: 5px;
       height: 5px;
     }
+  }
+
+  .flag-actions-icon {
+    cursor: pointer;
+    color: var(--flagr-color-text-muted);
+    opacity: 0.5;
+    transition: opacity var(--flagr-transition-fast, 150ms ease);
+    font-size: 16px;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .flag-actions-col .cell {
+    padding: 0;
+  }
+
+  .pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--flagr-space-4, 16px);
+    margin-bottom: var(--flagr-space-2, 8px);
   }
 
   .el-button-group .el-button--primary:first-child {

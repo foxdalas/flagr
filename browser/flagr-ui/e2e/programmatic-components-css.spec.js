@@ -21,7 +21,7 @@ test.describe('Programmatic Components CSS', () => {
     await page.waitForTimeout(500)
 
     // Navigate away via breadcrumb to trigger onBeforeRouteLeave
-    await page.locator('.el-breadcrumb__inner').filter({ hasText: 'Home page' }).click()
+    await page.locator('.el-breadcrumb__inner').filter({ hasText: 'Flags' }).click()
 
     // Wait for the message box
     const messageBox = page.locator('.el-message-box')

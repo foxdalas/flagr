@@ -32,7 +32,7 @@ test.describe('Navigation and Layout', () => {
     await page.waitForSelector('.flags-container')
     await page.goto('/#/flags/1')
     await page.waitForSelector('.el-breadcrumb')
-    await expect(page.locator('.el-breadcrumb')).toContainText('Home page')
+    await expect(page.locator('.el-breadcrumb')).toContainText('Flags')
     await expect(page.locator('.el-breadcrumb')).toContainText('Flag ID: 1')
     // Click Home page breadcrumb
     await page.locator('.el-breadcrumb__item').first().locator('a, .el-breadcrumb__inner').first().click()

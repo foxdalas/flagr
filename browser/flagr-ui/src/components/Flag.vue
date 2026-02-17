@@ -7,6 +7,7 @@
       <div class="container flag-container">
         <el-dialog
           v-model="dialogDeleteFlagVisible"
+          destroy-on-close
           title="Delete feature flag"
         >
           <p>This action cannot be undone. Type the flag key <b>{{ flag.key }}</b> to confirm.</p>
@@ -29,6 +30,7 @@
 
         <el-dialog
           v-model="dialogEditDistributionOpen"
+          destroy-on-close
           title="Edit distribution"
         >
           <div v-if="loaded && flag">
@@ -116,6 +118,7 @@
 
         <el-dialog
           v-model="dialogCreateSegmentOpen"
+          destroy-on-close
           title="Create segment"
         >
           <div>
@@ -149,7 +152,7 @@
 
         <el-breadcrumb separator="/">
           <el-breadcrumb-item :to="{ name: 'home' }">
-            Home page
+            Flags
           </el-breadcrumb-item>
           <el-breadcrumb-item>Flag ID: {{ route.params.flagId }}</el-breadcrumb-item>
         </el-breadcrumb>
@@ -590,7 +593,7 @@
                     @start="drag = true"
                     @end="onDragEnd"
                   >
-                    <template #item="{ element: segment }">
+                    <template #item="{ element: segment, index: segmentIndex }">
                       <el-card
                         shadow="hover"
                         class="segment"
@@ -600,7 +603,7 @@
                             <span class="drag-handle">
                               <el-icon><Rank /></el-icon>
                             </span>
-                            <span class="segment-order-badge">[{{ flag.segments.indexOf(segment) + 1 }}]</span>
+                            <span class="segment-order-badge">[{{ segmentIndex + 1 }}]</span>
                             <el-tag
                               type="primary"
                               :disable-transitions="true"
@@ -638,7 +641,7 @@
                               <el-button
                                 size="small"
                                 aria-label="Move segment up"
-                                :disabled="flag.segments.indexOf(segment) === 0"
+                                :disabled="segmentIndex === 0"
                                 @click="moveSegment(segment, -1)"
                               >
                                 <el-icon><ArrowUp /></el-icon>
@@ -652,7 +655,7 @@
                               <el-button
                                 size="small"
                                 aria-label="Move segment down"
-                                :disabled="flag.segments.indexOf(segment) === flag.segments.length - 1"
+                                :disabled="segmentIndex === flag.segments.length - 1"
                                 @click="moveSegment(segment, 1)"
                               >
                                 <el-icon><ArrowDown /></el-icon>
@@ -1019,7 +1022,7 @@ import { useDirtyState } from "@/composables/useDirtyState";
 import { useClipboard } from "@/composables/useClipboard";
 import Spinner from "@/components/Spinner";
 import DebugConsole from "@/components/DebugConsole";
-import FlagHistory from "@/components/FlagHistory";
+const FlagHistory = defineAsyncComponent(() => import("@/components/FlagHistory"));
 const MarkdownEditor = defineAsyncComponent(() => import("@/components/MarkdownEditor.vue"));
 import { operators } from "@/operators.json";
 
@@ -1161,10 +1164,7 @@ const newDistributionPercentageSum = computed(() => {
 });
 
 const newDistributionIsValid = computed(() => {
-  const percentageSum = sum(
-    pluck(Object.values(newDistributions), "percent")
-  );
-  return percentageSum === 100;
+  return newDistributionPercentageSum.value === 100;
 });
 
 const flagId = computed(() => {

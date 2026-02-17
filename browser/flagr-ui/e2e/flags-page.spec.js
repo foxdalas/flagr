@@ -220,7 +220,9 @@ test.describe('Flags Page', () => {
     // Verify empty state is shown
     await expect(page.locator('.card--empty')).toBeVisible()
 
-    // Click the clearable button (the X icon inside the input)
+    // Hover the input to make the clearable X icon visible, then click it
+    const searchWrapper = page.locator('.flags-container .search-row .el-input')
+    await searchWrapper.hover()
     const clearBtn = page.locator('.flags-container .search-row .el-input__clear')
     await clearBtn.click()
     await page.waitForTimeout(300)

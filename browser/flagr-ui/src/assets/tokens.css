@@ -26,6 +26,7 @@
   --flagr-zinc-600: #52525b;
   --flagr-zinc-700: #3f3f46;
   --flagr-zinc-800: #27272a;
+  --flagr-zinc-850: #1e1e21;
   --flagr-zinc-900: #18181b;
 
   /* Status */
@@ -158,6 +159,47 @@
   --el-border-radius-base: var(--flagr-radius-sm);
   --el-font-family: var(--flagr-font-sans);
   --el-card-border-radius: var(--flagr-radius-md);
+
+  /* ── json-editor-vue overrides (Light) ─── */
+
+  /* Menu bar & theme */
+  --jse-theme-color:           var(--flagr-zinc-100);
+  --jse-theme-color-highlight: var(--flagr-zinc-200);
+  --jse-menu-color:            var(--flagr-zinc-600);
+  --jse-main-border:           1px solid var(--flagr-zinc-300);
+
+  /* Panels */
+  --jse-panel-background:                  var(--flagr-zinc-50);
+  --jse-panel-color:                       var(--flagr-zinc-700);
+  --jse-panel-border:                      1px solid var(--flagr-zinc-200);
+  --jse-panel-button-color-highlight:      var(--flagr-zinc-800);
+  --jse-panel-button-background-highlight: var(--flagr-zinc-200);
+
+  /* Context menu */
+  --jse-context-menu-background:           #ffffff;
+  --jse-context-menu-background-highlight: var(--flagr-zinc-100);
+  --jse-context-menu-separator-color:      var(--flagr-zinc-200);
+  --jse-context-menu-color:                var(--flagr-zinc-800);
+
+  /* Tree node colors (syntax highlighting) */
+  --jse-key-color:              var(--flagr-indigo-600);
+  --jse-value-color:            var(--flagr-zinc-800);
+  --jse-value-color-number:     #0d9488;
+  --jse-value-color-boolean:    var(--flagr-indigo-500);
+  --jse-value-color-null:       var(--flagr-zinc-400);
+  --jse-value-color-string:     #b45309;
+  --jse-delimiter-color:        var(--flagr-zinc-400);
+
+  /* Selection & hover */
+  --jse-selection-background-color:          rgba(99, 102, 241, 0.12);
+  --jse-selection-background-inactive-color: var(--flagr-zinc-100);
+  --jse-hover-background-color:              rgba(0, 0, 0, 0.03);
+  --jse-active-line-background-color:        rgba(99, 102, 241, 0.06);
+
+  /* Collapsed sections */
+  --jse-collapsed-items-background-color:          var(--flagr-zinc-100);
+  --jse-collapsed-items-selected-background-color: var(--flagr-zinc-200);
+  --jse-collapsed-items-link-color:                var(--flagr-indigo-500);
 }
 
 /* ── Dark Mode ────────────────────────── */
@@ -222,7 +264,7 @@ html.dark {
   --el-fill-color-blank: var(--flagr-zinc-900);
   --el-fill-color: var(--flagr-zinc-700);
   --el-fill-color-light: var(--flagr-zinc-600);
-  --el-fill-color-lighter: var(--flagr-zinc-700);
+  --el-fill-color-lighter: var(--flagr-zinc-850);
   --el-fill-color-extra-light: var(--flagr-zinc-800);
   --el-text-color-primary: #e4e4e7;
   --el-text-color-regular: var(--flagr-zinc-300);
@@ -253,11 +295,58 @@ html.dark {
   --el-color-info: #909399;
 
   /* json-editor-vue dark overrides */
-  --jse-theme-color:           var(--flagr-zinc-600);
-  --jse-theme-color-highlight: var(--flagr-zinc-500);
-  --jse-background-color:      var(--flagr-zinc-800);
+
+  /* Menu bar & theme */
+  --jse-theme-color:           var(--flagr-zinc-700);
+  --jse-theme-color-highlight: var(--flagr-zinc-600);
+  --jse-background-color:      var(--flagr-zinc-850);
   --jse-text-color:            #e4e4e7;
+  --jse-text-color-inverse:    var(--flagr-zinc-800);
   --jse-main-border:           1px solid var(--flagr-zinc-600);
+  --jse-menu-color:            var(--flagr-zinc-300);
+
+  /* Panels (search, gutter, filter) */
+  --jse-panel-background:                  var(--flagr-zinc-700);
+  --jse-panel-color:                       var(--flagr-zinc-200);
+  --jse-panel-border:                      1px solid var(--flagr-zinc-600);
+  --jse-panel-button-color-highlight:      #e4e4e7;
+  --jse-panel-button-background-highlight: var(--flagr-zinc-600);
+
+  /* Context menu */
+  --jse-context-menu-background:           var(--flagr-zinc-700);
+  --jse-context-menu-background-highlight: var(--flagr-zinc-600);
+  --jse-context-menu-separator-color:      var(--flagr-zinc-600);
+  --jse-context-menu-color:                #e4e4e7;
+
+  /* Tree node colors (syntax highlighting) */
+  --jse-key-color:              #93c5fd;
+  --jse-value-color:            #e4e4e7;
+  --jse-value-color-number:     #b5cea8;
+  --jse-value-color-boolean:    #569cd6;
+  --jse-value-color-null:       #569cd6;
+  --jse-value-color-string:     #ce9178;
+  --jse-delimiter-color:        var(--flagr-zinc-400);
+
+  /* Selection & hover */
+  --jse-selection-background-color:          rgba(99, 102, 241, 0.2);
+  --jse-selection-background-inactive-color: var(--flagr-zinc-700);
+  --jse-hover-background-color:              rgba(255, 255, 255, 0.05);
+  --jse-active-line-background-color:        rgba(255, 255, 255, 0.06);
+
+  /* Collapsed sections */
+  --jse-collapsed-items-background-color:          var(--flagr-zinc-700);
+  --jse-collapsed-items-selected-background-color: var(--flagr-zinc-600);
+  --jse-collapsed-items-link-color:                var(--flagr-zinc-400);
+
+  /* Modal & input */
+  --jse-modal-background:      var(--flagr-zinc-700);
+  --jse-modal-overlay-background: rgba(0, 0, 0, 0.5);
+  --jse-input-background:      var(--flagr-zinc-700);
+  --jse-button-background:     var(--flagr-zinc-500);
+  --jse-button-color:          #e4e4e7;
+  --jse-button-secondary-background: var(--flagr-zinc-600);
+  --jse-button-secondary-color: #e4e4e7;
+  --jse-a-color:               var(--flagr-indigo-300);
 
   /* github-markdown-css dark overrides */
   & .markdown-body {

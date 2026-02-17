@@ -73,9 +73,9 @@ test.describe('Flag Segments', () => {
     await page.waitForTimeout(500)
     const segments = page.locator('.segments-container-inner .segment')
     const lastSegment = segments.last()
-    // Find the delete icon button
-    const deleteIcon = lastSegment.locator('.flex-row.id-row .el-icon').first()
-    await deleteIcon.click()
+    // Find the delete button by its aria-label
+    const deleteBtn = lastSegment.locator('button[aria-label="Delete segment"]')
+    await deleteBtn.click()
     // Confirm via ElMessageBox
     const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'OK' })
     await expect(okBtn).toBeVisible({ timeout: 3000 })
