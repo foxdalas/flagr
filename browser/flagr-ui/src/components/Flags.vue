@@ -77,6 +77,20 @@
             </div>
           </div>
 
+          <!-- Context menu for "Open in new tab" -->
+          <div
+            v-if="contextMenu.visible"
+            class="flag-context-menu"
+            :style="{ top: contextMenu.y + 'px', left: contextMenu.x + 'px' }"
+          >
+            <div
+              class="flag-context-menu__item"
+              @click="openFlagInNewTab(contextMenu.flagId)"
+            >
+              Open in new tab
+            </div>
+          </div>
+
           <!-- Table uses v-show to stay in DOM for test compatibility -->
           <el-table
             v-show="filteredFlags.length"
@@ -86,6 +100,7 @@
             :default-sort="{ prop: 'id', order: 'descending' }"
             class="width--full flags-table"
             @row-click="goToFlag"
+            @row-contextmenu="onRowContextMenu"
           >
             <el-table-column
               prop="id"
@@ -241,7 +256,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import Axios from "axios";
 import { Search, Plus } from "@element-plus/icons-vue";
@@ -261,8 +276,21 @@ const deletedFlagsLoaded = ref(false);
 const flags = ref([]);
 const deletedFlags = ref([]);
 const searchTerm = ref("");
+const debouncedSearchTerm = ref("");
 const newFlag = ref({ description: "" });
 const searchInput = ref(null);
+let searchDebounceTimer = null;
+
+watch(searchTerm, (val) => {
+  clearTimeout(searchDebounceTimer);
+  if (!val) {
+    debouncedSearchTerm.value = "";
+    return;
+  }
+  searchDebounceTimer = setTimeout(() => {
+    debouncedSearchTerm.value = val;
+  }, 200);
+});
 
 // created() equivalent — runs at setup time
 Axios.get(`${API_URL}/flags`).then(response => {
@@ -273,9 +301,9 @@ Axios.get(`${API_URL}/flags`).then(response => {
 }, handleErr);
 
 const filteredFlags = computed(() => {
-  if (searchTerm.value) {
+  if (debouncedSearchTerm.value) {
     return flags.value.filter(({ id, key, description, tags }) =>
-      searchTerm.value
+      debouncedSearchTerm.value
         .split(",")
         .map(term => {
           const termLowerCase = term.toLowerCase();
@@ -301,8 +329,38 @@ function datetimeFormatter(row, col, val) {
   return val.split(".")[0].replace("T", " ").slice(0, 16);
 }
 
-function goToFlag(row) {
+const contextMenu = ref({ visible: false, x: 0, y: 0, flagId: null });
+
+function getFlagUrl(flagId) {
+  const resolved = router.resolve({ name: "flag", params: { flagId } });
+  return resolved.href;
+}
+
+function openFlagInNewTab(flagId) {
+  window.open(getFlagUrl(flagId), "_blank");
+  contextMenu.value.visible = false;
+}
+
+function goToFlag(row, column, event) {
+  if (event.metaKey || event.ctrlKey) {
+    openFlagInNewTab(row.id);
+    return;
+  }
   router.push({ name: "flag", params: { flagId: row.id } });
+}
+
+function onRowContextMenu(row, column, event) {
+  event.preventDefault();
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    flagId: row.id
+  };
+}
+
+function closeContextMenu() {
+  contextMenu.value.visible = false;
 }
 
 function onCommandDropdown(command) {
@@ -368,10 +426,15 @@ function onSlashKey(e) {
 
 onMounted(() => {
   document.addEventListener('keydown', onSlashKey);
+  document.addEventListener('click', closeContextMenu);
+  document.addEventListener('scroll', closeContextMenu, true);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onSlashKey);
+  document.removeEventListener('click', closeContextMenu);
+  document.removeEventListener('scroll', closeContextMenu, true);
+  clearTimeout(searchDebounceTimer);
 });
 </script>
 

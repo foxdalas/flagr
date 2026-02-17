@@ -84,10 +84,11 @@ test.describe('Flag Segments', () => {
     await expect(page.locator('.el-message').last()).toContainText('Segment deleted')
   })
 
-  test('Segments are draggable', async ({ page }) => {
-    const segments = page.locator('.segments-container-inner .segment.grabbable')
-    if (await segments.count() > 0) {
-      const cursor = await segments.first().evaluate(el => getComputedStyle(el).cursor)
+  test('Segments have drag handle', async ({ page }) => {
+    const handles = page.locator('.segments-container-inner .drag-handle')
+    if (await handles.count() > 0) {
+      await expect(handles.first()).toBeVisible()
+      const cursor = await handles.first().evaluate(el => getComputedStyle(el).cursor)
       expect(['grab', 'move', '-webkit-grab']).toContain(cursor)
     }
   })
@@ -114,11 +115,20 @@ test.describe('Flag Segments', () => {
     }
   })
 
+  test('Clicking input inside segment focuses it (not drag)', async ({ page }) => {
+    const segmentCard = page.locator('.segments-container-inner .segment').first()
+    if (await segmentCard.isVisible().catch(() => false)) {
+      const descInput = segmentCard.locator('input[placeholder="Description"]')
+      await descInput.click()
+      await expect(descInput).toBeFocused()
+    }
+  })
+
   test('Drag-and-drop reorder auto-saves segment order', async ({ page }) => {
-    const segments = page.locator('.segments-container-inner .segment.grabbable')
-    if (await segments.count() >= 2) {
-      const cursor = await segments.first().evaluate(el => getComputedStyle(el).cursor)
-      // Verify drag cursor is set (the auto-save is triggered by @end handler)
+    const handles = page.locator('.segments-container-inner .drag-handle')
+    if (await handles.count() >= 2) {
+      const cursor = await handles.first().evaluate(el => getComputedStyle(el).cursor)
+      // Verify drag cursor is set on handle (the auto-save is triggered by @end handler)
       expect(['grab', 'move', '-webkit-grab']).toContain(cursor)
     }
   })
