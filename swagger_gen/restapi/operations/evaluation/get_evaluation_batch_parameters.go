@@ -24,12 +24,15 @@ func NewGetEvaluationBatchParams() GetEvaluationBatchParams {
 	var (
 		// initialize parameters with default values
 
-		entityIDDefault = string("")
+		ifNoneMatchDefault = string("ETag value for conditional GET evaluation batch request")
+		entityIDDefault    = string("")
 
 		flagTagQueryDefault = string("ALL")
 	)
 
 	return GetEvaluationBatchParams{
+		IfNoneMatch: &ifNoneMatchDefault,
+
 		EntityID: &entityIDDefault,
 
 		FlagTagQuery: &flagTagQueryDefault,
@@ -44,8 +47,9 @@ type GetEvaluationBatchParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*ETag value from previous response for cache validation
+	/*
 	  In: header
+	  Default: "ETag value for conditional GET evaluation batch request"
 	*/
 	IfNoneMatch *string
 
@@ -134,6 +138,7 @@ func (o *GetEvaluationBatchParams) bindIfNoneMatch(rawData []string, hasKey bool
 	// Required: false
 
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEvaluationBatchParams()
 		return nil
 	}
 	o.IfNoneMatch = &raw
