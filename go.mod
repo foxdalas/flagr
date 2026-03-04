@@ -5,7 +5,7 @@ go 1.25.7
 require (
 	cloud.google.com/go v0.123.0 // indirect
 	github.com/DataDog/datadog-go v4.8.3+incompatible
-	github.com/IBM/sarama v1.46.3
+	github.com/IBM/sarama v1.47.0
 	github.com/a8m/kinesis-producer v0.2.1-0.20240916120605-7e5fa98d32a5
 	github.com/auth0/go-jwt-middleware v1.0.2-0.20210804140707-b4090e955b98
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -45,7 +45,7 @@ require (
 	github.com/urfave/negroni v1.0.0
 	github.com/zhouzhuojie/conditions v0.2.3
 	github.com/zhouzhuojie/withtimeout v0.0.0-20190405051827-12b39eb2edd5
-	golang.org/x/net v0.50.0
+	golang.org/x/net v0.51.0
 	google.golang.org/api v0.265.0
 	google.golang.org/grpc v1.78.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.74.8
@@ -110,7 +110,6 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/eapache/go-resiliency v1.7.0 // indirect
-	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/ebitengine/purego v0.8.3 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -134,7 +133,6 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -154,7 +152,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.18.1 // indirect
+	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -164,7 +162,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.36.2 // indirect
 	github.com/outcaste-io/ristretto v0.2.3 // indirect
-	github.com/pierrec/lz4/v4 v4.1.22 // indirect
+	github.com/pierrec/lz4/v4 v4.1.25 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
