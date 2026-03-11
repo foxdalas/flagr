@@ -898,11 +898,6 @@ paths:
       operationId: getEvaluationBatch
       description: Salo flagr-response's lambda GET-handler drop-in replacement
       parameters:
-        - in: header
-          name: If-None-Match
-          type: string
-          required: false
-          description: ETag value from previous response for cache validation
         - in: query
           name: entityId
           type: string
@@ -938,19 +933,34 @@ paths:
             - ALL
           required: false
           default: ALL
+        - in: header
+          name: If-None-Match
+          type: string
+          required: false
+          default: ETag value for conditional GET evaluation batch request
       responses:
         '200':
           description: evaluation batch result
+          headers:
+            Cache-Control:
+              type: string
+            ETag:
+              description: >-
+                order-independent evaluation results' checksum over flag ID,
+                segment ID, variant ID and variant attachment.
+              type: string
           schema:
             $ref: '#/definitions/evaluationBatchResponse'
-          headers:
-            ETag:
-              type: string
-              description: Cache version identifier for the flag evaluation cache
         '304':
-          description: >-
-            Not Modified - flag configuration has not changed since the provided
-            ETag
+          description: evaluation batch result was not modified marker
+          headers:
+            Cache-Control:
+              type: string
+            ETag:
+              description: >-
+                order-independent evaluation results' checksum over flag ID,
+                segment ID, variant ID and variant attachment.
+              type: string
         default:
           description: generic error response
           schema:
@@ -960,11 +970,6 @@ paths:
         - evaluation
       operationId: postEvaluationBatch
       parameters:
-        - in: header
-          name: If-None-Match
-          type: string
-          required: false
-          description: ETag value from previous response for cache validation
         - in: body
           name: body
           description: evaluation batch request
@@ -976,14 +981,6 @@ paths:
           description: evaluation batch result
           schema:
             $ref: '#/definitions/evaluationBatchResponse'
-          headers:
-            ETag:
-              type: string
-              description: Cache version identifier for the flag evaluation cache
-        '304':
-          description: >-
-            Not Modified - flag configuration has not changed since the provided
-            ETag
         default:
           description: generic error response
           schema:
