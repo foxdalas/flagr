@@ -26,7 +26,7 @@ require (
 	github.com/go-openapi/spec v0.22.4
 	github.com/go-openapi/strfmt v0.26.0
 	github.com/go-openapi/swag v0.25.4
-	github.com/go-openapi/validate v0.25.1
+	github.com/go-openapi/validate v0.25.2
 	github.com/gohttp/pprof v0.0.0-20141119085724-c9d246cbb3ba
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/jpillora/backoff v1.0.0 // indirect
@@ -120,7 +120,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.22.5 // indirect
 	github.com/go-openapi/swag/cmdutils v0.25.4 // indirect
 	github.com/go-openapi/swag/conv v0.25.5 // indirect
-	github.com/go-openapi/swag/fileutils v0.25.4 // indirect
+	github.com/go-openapi/swag/fileutils v0.25.5 // indirect
 	github.com/go-openapi/swag/jsonname v0.25.5 // indirect
 	github.com/go-openapi/swag/jsonutils v0.25.5 // indirect
 	github.com/go-openapi/swag/loading v0.25.5 // indirect
