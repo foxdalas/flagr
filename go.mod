@@ -47,7 +47,7 @@ require (
 	github.com/zhouzhuojie/withtimeout v0.0.0-20190405051827-12b39eb2edd5
 	golang.org/x/net v0.51.0
 	google.golang.org/api v0.269.0
-	google.golang.org/grpc v1.79.1
+	google.golang.org/grpc v1.79.3
 	gopkg.in/DataDog/dd-trace-go.v1 v1.74.8
 )
 
