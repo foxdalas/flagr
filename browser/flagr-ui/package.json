@@ -37,7 +37,7 @@
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.4.0",
     "less": "^4.5.1",
-    "less-loader": "^12.3.1",
+    "less-loader": "^12.3.2",
     "minimist": ">=1.2.2",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-vue-components": "^31.0.0"
