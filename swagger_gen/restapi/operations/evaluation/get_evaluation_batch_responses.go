@@ -22,7 +22,11 @@ GetEvaluationBatchOK evaluation batch result
 swagger:response getEvaluationBatchOK
 */
 type GetEvaluationBatchOK struct {
-	/*Cache version identifier for the flag evaluation cache
+	/*
+
+	 */
+	CacheControl string `json:"Cache-Control"`
+	/*order-independent evaluation results' checksum over flag ID, segment ID, variant ID and variant attachment.
 
 	 */
 	ETag string `json:"ETag"`
@@ -37,6 +41,17 @@ type GetEvaluationBatchOK struct {
 func NewGetEvaluationBatchOK() *GetEvaluationBatchOK {
 
 	return &GetEvaluationBatchOK{}
+}
+
+// WithCacheControl adds the cacheControl to the get evaluation batch o k response
+func (o *GetEvaluationBatchOK) WithCacheControl(cacheControl string) *GetEvaluationBatchOK {
+	o.CacheControl = cacheControl
+	return o
+}
+
+// SetCacheControl sets the cacheControl to the get evaluation batch o k response
+func (o *GetEvaluationBatchOK) SetCacheControl(cacheControl string) {
+	o.CacheControl = cacheControl
 }
 
 // WithETag adds the eTag to the get evaluation batch o k response
@@ -64,6 +79,13 @@ func (o *GetEvaluationBatchOK) SetPayload(payload *models.EvaluationBatchRespons
 // WriteResponse to the client
 func (o *GetEvaluationBatchOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
+	// response header Cache-Control
+
+	cacheControl := o.CacheControl
+	if cacheControl != "" {
+		rw.Header().Set("Cache-Control", cacheControl)
+	}
+
 	// response header ETag
 
 	eTag := o.ETag
@@ -84,11 +106,19 @@ func (o *GetEvaluationBatchOK) WriteResponse(rw http.ResponseWriter, producer ru
 const GetEvaluationBatchNotModifiedCode int = 304
 
 /*
-GetEvaluationBatchNotModified Not Modified - flag configuration has not changed since the provided ETag
+GetEvaluationBatchNotModified evaluation batch result was not modified marker
 
 swagger:response getEvaluationBatchNotModified
 */
 type GetEvaluationBatchNotModified struct {
+	/*
+
+	 */
+	CacheControl string `json:"Cache-Control"`
+	/*order-independent evaluation results' checksum over flag ID, segment ID, variant ID and variant attachment.
+
+	 */
+	ETag string `json:"ETag"`
 }
 
 // NewGetEvaluationBatchNotModified creates GetEvaluationBatchNotModified with default headers values
@@ -97,8 +127,44 @@ func NewGetEvaluationBatchNotModified() *GetEvaluationBatchNotModified {
 	return &GetEvaluationBatchNotModified{}
 }
 
+// WithCacheControl adds the cacheControl to the get evaluation batch not modified response
+func (o *GetEvaluationBatchNotModified) WithCacheControl(cacheControl string) *GetEvaluationBatchNotModified {
+	o.CacheControl = cacheControl
+	return o
+}
+
+// SetCacheControl sets the cacheControl to the get evaluation batch not modified response
+func (o *GetEvaluationBatchNotModified) SetCacheControl(cacheControl string) {
+	o.CacheControl = cacheControl
+}
+
+// WithETag adds the eTag to the get evaluation batch not modified response
+func (o *GetEvaluationBatchNotModified) WithETag(eTag string) *GetEvaluationBatchNotModified {
+	o.ETag = eTag
+	return o
+}
+
+// SetETag sets the eTag to the get evaluation batch not modified response
+func (o *GetEvaluationBatchNotModified) SetETag(eTag string) {
+	o.ETag = eTag
+}
+
 // WriteResponse to the client
 func (o *GetEvaluationBatchNotModified) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	// response header Cache-Control
+
+	cacheControl := o.CacheControl
+	if cacheControl != "" {
+		rw.Header().Set("Cache-Control", cacheControl)
+	}
+
+	// response header ETag
+
+	eTag := o.ETag
+	if eTag != "" {
+		rw.Header().Set("ETag", eTag)
+	}
 
 	rw.Header().Del(runtime.HeaderContentType) // Remove Content-Type on empty responses
 

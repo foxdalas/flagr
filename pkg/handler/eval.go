@@ -1,13 +1,18 @@
 package handler
 
 import (
+	"encoding/binary"
 	"fmt"
+	"math"
+	"math/bits"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
 
 	"encoding/json"
 
+	"github.com/cespare/xxhash/v2"
 	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/foxdalas/flagr/pkg/entity"
 	"github.com/foxdalas/flagr/pkg/util"
@@ -35,12 +40,105 @@ func NewEval() Eval {
 
 type eval struct{}
 
-func (e *eval) GetEvaluationBatch(params evaluation.GetEvaluationBatchParams) middleware.Responder {
-	etag := GetEvalCache().GetETag()
-	if params.IfNoneMatch != nil && *params.IfNoneMatch == etag {
-		return evaluation.NewGetEvaluationBatchNotModified()
+func TrivialHash(s string) int {
+	var h uint
+	for i := 0; i < len(s); i++ {
+		h = bits.RotateLeft(h, 8) | uint(s[i])
 	}
+	return int(h)
+}
 
+var hNil = xxhash.Sum64String("nil")
+var hTrue = xxhash.Sum64String("true")
+var hFalse = xxhash.Sum64String("false")
+
+func ETag(a any) uint64 {
+	switch a := a.(type) {
+	case nil:
+		return hNil
+
+	case bool:
+		if a {
+			return hTrue
+		}
+		return hFalse
+
+	case float64:
+		var buf [8]byte
+		binary.LittleEndian.PutUint64(buf[:], math.Float64bits(a))
+		var h = xxhash.New()
+		h.WriteString("f(")
+		h.Write(buf[:])
+		h.WriteString(")")
+		return h.Sum64()
+
+	case string:
+		var h = xxhash.New()
+		h.WriteString("s(")
+		h.WriteString(a)
+		h.WriteString(")")
+		return h.Sum64()
+
+	case []any:
+		var h = xxhash.New()
+		h.WriteString("a[")
+		for _, v := range a {
+			var buf [8]byte
+			binary.LittleEndian.PutUint64(buf[:], ETag(v))
+			h.Write(buf[:])
+		}
+		h.WriteString("]")
+		return h.Sum64()
+
+	case map[string]any:
+		var oh uint64
+		for k, v := range a {
+			kh := xxhash.New()
+			kh.WriteString("k[")
+			kh.WriteString(k)
+			kh.WriteString("]")
+			oh ^= bits.RotateLeft64(kh.Sum64()^ETag(v), TrivialHash(k))
+		}
+		var buf [8]byte
+		binary.LittleEndian.PutUint64(buf[:], oh)
+		var h = xxhash.New()
+		h.WriteString("o{")
+		h.Write(buf[:])
+		h.WriteString("}")
+		return h.Sum64()
+
+	default:
+		panic(fmt.Errorf("unsupported type: %T", a))
+	}
+}
+
+func EvalResultETag(evalResult *models.EvalResult) uint64 {
+	var h = xxhash.New()
+	var buf [8]byte
+	binary.LittleEndian.PutUint64(buf[:], uint64(evalResult.FlagID))
+	h.Write(buf[:])
+	binary.LittleEndian.PutUint64(buf[:], uint64(evalResult.SegmentID))
+	h.Write(buf[:])
+	binary.LittleEndian.PutUint64(buf[:], uint64(evalResult.VariantID))
+	h.Write(buf[:])
+	if a, ok := evalResult.VariantAttachment.(entity.Attachment); ok {
+		binary.LittleEndian.PutUint64(buf[:], ETag(map[string]any(a)))
+	} else {
+		binary.LittleEndian.PutUint64(buf[:], ETag(evalResult.VariantAttachment))
+	}
+	h.Write(buf[:])
+	return h.Sum64()
+}
+
+func EvalResultsETag(evalResults []*models.EvalResult) uint64 {
+	var eTag uint64
+	for _, evalResult := range evalResults {
+		eTag ^= bits.RotateLeft64(EvalResultETag(evalResult), int(evalResult.FlagID))
+	}
+	return eTag
+}
+
+func (e *eval) GetEvaluationBatch(params evaluation.GetEvaluationBatchParams) middleware.Responder {
 	var ctx = make(map[string]any)
 	for k, v := range params.HTTPRequest.URL.Query() {
 		if k == "entityId" || k == "flagId" || k == "flagKey" || k == "flagTag" || k == "flagTagQuery" {
@@ -100,8 +198,16 @@ func (e *eval) GetEvaluationBatch(params evaluation.GetEvaluationBatchParams) mi
 		results.EvaluationResults = append(results.EvaluationResults, evalResult)
 	}
 
+	eTagHeader := strconv.FormatUint(EvalResultsETag(results.EvaluationResults), 10)
+	if params.HTTPRequest.Header.Get("If-None-Match") == eTagHeader {
+		resp := evaluation.NewGetEvaluationBatchNotModified()
+		resp.SetCacheControl("private, max-age=120")
+		resp.SetETag(eTagHeader)
+		return resp
+	}
 	resp := evaluation.NewGetEvaluationBatchOK()
-	resp.SetETag(etag)
+	resp.SetCacheControl("private, max-age=120")
+	resp.SetETag(eTagHeader)
 	resp.SetPayload(results)
 	return resp
 }
@@ -120,11 +226,6 @@ func (e *eval) PostEvaluation(params evaluation.PostEvaluationParams) middleware
 }
 
 func (e *eval) PostEvaluationBatch(params evaluation.PostEvaluationBatchParams) middleware.Responder {
-	etag := GetEvalCache().GetETag()
-	if params.IfNoneMatch != nil && *params.IfNoneMatch == etag {
-		return evaluation.NewPostEvaluationBatchNotModified()
-	}
-
 	entities := params.Body.Entities
 	flagIDs := params.Body.FlagIDs
 	flagKeys := params.Body.FlagKeys
@@ -213,7 +314,6 @@ func (e *eval) PostEvaluationBatch(params evaluation.PostEvaluationBatchParams) 
 	}
 
 	resp := evaluation.NewPostEvaluationBatchOK()
-	resp.SetETag(etag)
 	resp.SetPayload(results)
 	return resp
 }
