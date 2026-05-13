@@ -1,7 +1,7 @@
 ######################################
 # Prepare npm_builder
 ######################################
-FROM node:25 as npm_builder
+FROM node:26 as npm_builder
 WORKDIR /go/src/github.com/foxdalas/flagr
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 ADD . .
