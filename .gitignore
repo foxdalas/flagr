@@ -38,3 +38,10 @@ progress.md
 integration-bench.txt
 
 dist/
+
+# Local agent / tooling artifacts (not part of the repo)
+.claude/
+.playwright-mcp/
+.playwright-report/
+CLAUDE.md
+/image*.png
