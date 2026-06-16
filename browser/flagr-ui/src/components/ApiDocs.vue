@@ -17,7 +17,7 @@ let scriptEl = null
 
 function getSwaggerUrl() {
   const apiUrl = constants.API_URL
-  const base = process.env.BASE_URL || '/'
+  const base = import.meta.env.BASE_URL || '/'
   if (!apiUrl || !apiUrl.startsWith('http')) {
     return base + 'swagger.json'
   }

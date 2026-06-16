@@ -69,9 +69,9 @@ test.describe('Flag Config', () => {
   })
 
   test('Entity Type select', async ({ page }) => {
-    // Entity type select may be hidden if data records disabled, just check it exists on page
-    const selects = page.locator('.flag-content .el-select')
-    expect(await selects.count()).toBeGreaterThanOrEqual(1)
+    // Entity type select may be hidden if data records disabled, just check it exists on page.
+    // Use an auto-retrying assertion so this isn't racy under parallel load.
+    await expect(page.locator('.flag-content .el-select').first()).toBeAttached()
   })
 
   test('Delete Flag shows confirmation dialog', async ({ page }) => {

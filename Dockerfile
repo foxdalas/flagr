@@ -3,11 +3,10 @@
 ######################################
 FROM node:20-alpine as npm_builder
 WORKDIR /go/src/github.com/foxdalas/flagr
-RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 ADD . .
 ARG FLAGR_UI_POSSIBLE_ENTITY_TYPES=null
 ENV VITE_FLAGR_UI_POSSIBLE_ENTITY_TYPES ${FLAGR_UI_POSSIBLE_ENTITY_TYPES}
-RUN apk add --no-cache make && make build_ui
+RUN apk add --no-cache make git && make build_ui
 
 ######################################
 # Prepare go_builder

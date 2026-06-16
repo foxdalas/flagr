@@ -46,18 +46,18 @@ import xss from 'xss'
 
 import 'github-markdown-css/github-markdown.css'
 
-import overviewMd from '@docs/flagr_overview.md'
-import homeMd from '@docs/home.md'
-import useCasesMd from '@docs/flagr_use_cases.md'
-import configMd from '@docs/flagr_env.md'
-import debuggingMd from '@docs/flagr_debugging.md'
-import envGoSource from '@docs/../pkg/config/env.go'
+import overviewMd from '@docs/flagr_overview.md?raw'
+import homeMd from '@docs/home.md?raw'
+import useCasesMd from '@docs/flagr_use_cases.md?raw'
+import configMd from '@docs/flagr_env.md?raw'
+import debuggingMd from '@docs/flagr_debugging.md?raw'
+import envGoSource from '@docs/../pkg/config/env.go?raw'
 
 const ApiDocs = defineAsyncComponent(() => import('./ApiDocs.vue'))
 
 const route = useRoute()
 const router = useRouter()
-const version = process.env.VUE_APP_VERSION
+const version = import.meta.env.VITE_VERSION
 
 const md = MarkdownIt('commonmark')
 
@@ -92,7 +92,7 @@ const xssOptions = {
 }
 
 function preprocessMarkdown(content) {
-  const base = process.env.BASE_URL || '/'
+  const base = import.meta.env.BASE_URL || '/'
 
   // Replace !> warnings with styled divs
   content = content.replace(
