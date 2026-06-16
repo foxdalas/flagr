@@ -77,6 +77,12 @@ func NewFlagrAPI(spec *loads.Document) *FlagrAPI {
 			return middleware.NotImplemented("operation tag.CreateTag has not yet been implemented")
 		}),
 
+		TagCreateTagGlobalHandler: tag.CreateTagGlobalHandlerFunc(func(params tag.CreateTagGlobalParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation tag.CreateTagGlobal has not yet been implemented")
+		}),
+
 		VariantCreateVariantHandler: variant.CreateVariantHandlerFunc(func(params variant.CreateVariantParams) middleware.Responder {
 			_ = params
 
@@ -105,6 +111,12 @@ func NewFlagrAPI(spec *loads.Document) *FlagrAPI {
 			_ = params
 
 			return middleware.NotImplemented("operation tag.DeleteTag has not yet been implemented")
+		}),
+
+		TagDeleteTagGlobalHandler: tag.DeleteTagGlobalHandlerFunc(func(params tag.DeleteTagGlobalParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation tag.DeleteTagGlobal has not yet been implemented")
 		}),
 
 		VariantDeleteVariantHandler: variant.DeleteVariantHandlerFunc(func(params variant.DeleteVariantParams) middleware.Responder {
@@ -239,6 +251,12 @@ func NewFlagrAPI(spec *loads.Document) *FlagrAPI {
 			return middleware.NotImplemented("operation segment.PutSegmentsReorder has not yet been implemented")
 		}),
 
+		TagPutTagHandler: tag.PutTagHandlerFunc(func(params tag.PutTagParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation tag.PutTag has not yet been implemented")
+		}),
+
 		VariantPutVariantHandler: variant.PutVariantHandlerFunc(func(params variant.PutVariantParams) middleware.Responder {
 			_ = params
 
@@ -304,6 +322,8 @@ type FlagrAPI struct {
 	SegmentCreateSegmentHandler segment.CreateSegmentHandler
 	// TagCreateTagHandler sets the operation handler for the create tag operation
 	TagCreateTagHandler tag.CreateTagHandler
+	// TagCreateTagGlobalHandler sets the operation handler for the create tag global operation
+	TagCreateTagGlobalHandler tag.CreateTagGlobalHandler
 	// VariantCreateVariantHandler sets the operation handler for the create variant operation
 	VariantCreateVariantHandler variant.CreateVariantHandler
 	// ConstraintDeleteConstraintHandler sets the operation handler for the delete constraint operation
@@ -314,6 +334,8 @@ type FlagrAPI struct {
 	SegmentDeleteSegmentHandler segment.DeleteSegmentHandler
 	// TagDeleteTagHandler sets the operation handler for the delete tag operation
 	TagDeleteTagHandler tag.DeleteTagHandler
+	// TagDeleteTagGlobalHandler sets the operation handler for the delete tag global operation
+	TagDeleteTagGlobalHandler tag.DeleteTagGlobalHandler
 	// VariantDeleteVariantHandler sets the operation handler for the delete variant operation
 	VariantDeleteVariantHandler variant.DeleteVariantHandler
 	// TagFindAllTagsHandler sets the operation handler for the find all tags operation
@@ -358,6 +380,8 @@ type FlagrAPI struct {
 	SegmentPutSegmentHandler segment.PutSegmentHandler
 	// SegmentPutSegmentsReorderHandler sets the operation handler for the put segments reorder operation
 	SegmentPutSegmentsReorderHandler segment.PutSegmentsReorderHandler
+	// TagPutTagHandler sets the operation handler for the put tag operation
+	TagPutTagHandler tag.PutTagHandler
 	// VariantPutVariantHandler sets the operation handler for the put variant operation
 	VariantPutVariantHandler variant.PutVariantHandler
 	// FlagRestoreFlagHandler sets the operation handler for the restore flag operation
@@ -456,6 +480,9 @@ func (o *FlagrAPI) Validate() error {
 	if o.TagCreateTagHandler == nil {
 		unregistered = append(unregistered, "tag.CreateTagHandler")
 	}
+	if o.TagCreateTagGlobalHandler == nil {
+		unregistered = append(unregistered, "tag.CreateTagGlobalHandler")
+	}
 	if o.VariantCreateVariantHandler == nil {
 		unregistered = append(unregistered, "variant.CreateVariantHandler")
 	}
@@ -470,6 +497,9 @@ func (o *FlagrAPI) Validate() error {
 	}
 	if o.TagDeleteTagHandler == nil {
 		unregistered = append(unregistered, "tag.DeleteTagHandler")
+	}
+	if o.TagDeleteTagGlobalHandler == nil {
+		unregistered = append(unregistered, "tag.DeleteTagGlobalHandler")
 	}
 	if o.VariantDeleteVariantHandler == nil {
 		unregistered = append(unregistered, "variant.DeleteVariantHandler")
@@ -536,6 +566,9 @@ func (o *FlagrAPI) Validate() error {
 	}
 	if o.SegmentPutSegmentsReorderHandler == nil {
 		unregistered = append(unregistered, "segment.PutSegmentsReorderHandler")
+	}
+	if o.TagPutTagHandler == nil {
+		unregistered = append(unregistered, "tag.PutTagHandler")
 	}
 	if o.VariantPutVariantHandler == nil {
 		unregistered = append(unregistered, "variant.PutVariantHandler")
@@ -658,6 +691,10 @@ func (o *FlagrAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/tags"] = tag.NewCreateTagGlobal(o.context, o.TagCreateTagGlobalHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/flags/{flagID}/variants"] = variant.NewCreateVariant(o.context, o.VariantCreateVariantHandler)
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
@@ -675,6 +712,10 @@ func (o *FlagrAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/flags/{flagID}/tags/{tagID}"] = tag.NewDeleteTag(o.context, o.TagDeleteTagHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/tags/{tagID}"] = tag.NewDeleteTagGlobal(o.context, o.TagDeleteTagGlobalHandler)
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
@@ -763,6 +804,10 @@ func (o *FlagrAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/flags/{flagID}/segments/reorder"] = segment.NewPutSegmentsReorder(o.context, o.SegmentPutSegmentsReorderHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/tags/{tagID}"] = tag.NewPutTag(o.context, o.TagPutTagHandler)
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}

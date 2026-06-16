@@ -25,10 +25,13 @@
                 </router-link>
               </el-col>
               <el-col
-                :span="4"
-                :offset="14"
+                :span="6"
+                :offset="12"
                 class="nav-links"
               >
+                <router-link :to="{ name: 'tags' }">
+                  <h3>Tags</h3>
+                </router-link>
                 <router-link :to="{ name: 'docs', params: { section: 'api' } }">
                   <h3>API</h3>
                 </router-link>

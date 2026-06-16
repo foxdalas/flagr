@@ -81,6 +81,8 @@ paths:
     $ref: ./flag_entity_types.yaml
   /tags:
     $ref: ./tags.yaml
+  /tags/{tagID}:
+    $ref: ./tag.yaml
   /evaluation:
     $ref: ./evaluation.yaml
   /evaluation/batch:
@@ -226,6 +228,13 @@ definitions:
       value:
         type: string
         minLength: 1
+      description:
+        type: string
+        maxLength: 512
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
   createTagRequest:
     type: object
     required:
@@ -234,6 +243,15 @@ definitions:
       value:
         type: string
         minLength: 1
+      description:
+        type: string
+        maxLength: 512
+  putTagRequest:
+    type: object
+    properties:
+      description:
+        type: string
+        maxLength: 512
 
   # Segment
   segment:

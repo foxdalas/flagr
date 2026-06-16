@@ -27,4 +27,22 @@ async function createSegment(flagId, description, rolloutPercent = 50) {
   return res.json()
 }
 
-module.exports = { API, createFlag, createVariant, createSegment }
+async function createTag(value, description) {
+  const res = await fetch(`${API}/tags`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value, description: description || '' }),
+  })
+  return res.json()
+}
+
+async function attachTag(flagId, value) {
+  const res = await fetch(`${API}/flags/${flagId}/tags`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value }),
+  })
+  return res.json()
+}
+
+module.exports = { API, createFlag, createVariant, createSegment, createTag, attachTag }

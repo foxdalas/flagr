@@ -52,6 +52,9 @@ func setupCRUD(api *operations.FlagrAPI) {
 	api.TagDeleteTagHandler = tag.DeleteTagHandlerFunc(c.DeleteTag)
 	api.TagFindTagsHandler = tag.FindTagsHandlerFunc(c.FindTags)
 	api.TagFindAllTagsHandler = tag.FindAllTagsHandlerFunc(c.FindAllTags)
+	api.TagCreateTagGlobalHandler = tag.CreateTagGlobalHandlerFunc(c.CreateTagGlobal)
+	api.TagPutTagHandler = tag.PutTagHandlerFunc(c.PutTag)
+	api.TagDeleteTagGlobalHandler = tag.DeleteTagGlobalHandlerFunc(c.DeleteTagGlobal)
 
 	// segments
 	api.SegmentCreateSegmentHandler = segment.CreateSegmentHandlerFunc(c.CreateSegment)

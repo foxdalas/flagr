@@ -870,6 +870,73 @@ paths:
           description: generic error response
           schema:
             $ref: '#/definitions/error'
+    post:
+      tags:
+        - tag
+      operationId: createTagGlobal
+      parameters:
+        - in: body
+          name: body
+          description: create a tag
+          required: true
+          schema:
+            $ref: '#/definitions/createTagRequest'
+      responses:
+        '200':
+          description: tag just created
+          schema:
+            $ref: '#/definitions/tag'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/error'
+  /tags/{tagID}:
+    put:
+      tags:
+        - tag
+      operationId: putTag
+      parameters:
+        - in: path
+          name: tagID
+          description: numeric ID of the tag
+          required: true
+          type: integer
+          format: int64
+          minimum: 1
+        - in: body
+          name: body
+          description: update a tag
+          required: true
+          schema:
+            $ref: '#/definitions/putTagRequest'
+      responses:
+        '200':
+          description: tag just updated
+          schema:
+            $ref: '#/definitions/tag'
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/error'
+    delete:
+      tags:
+        - tag
+      operationId: deleteTagGlobal
+      parameters:
+        - in: path
+          name: tagID
+          description: numeric ID of the tag
+          required: true
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: deleted
+        default:
+          description: generic error response
+          schema:
+            $ref: '#/definitions/error'
   /evaluation:
     post:
       tags:
@@ -1082,8 +1149,8 @@ paths:
           description: >-
             whether to use ALL (tags) semantics (ANY by default):
             `?tags=foo,bar&all=true` is equivalent to postEvaluation's
-            `flagTagsOperator: "ALL"`.
-            Only meaningful when `tags` parameter is present. Ignored otherwise.
+            `flagTagsOperator: "ALL"`. Only meaningful when `tags` parameter is
+            present. Ignored otherwise.
       responses:
         '200':
           description: OK
@@ -1226,6 +1293,13 @@ definitions:
       value:
         type: string
         minLength: 1
+      description:
+        type: string
+        maxLength: 512
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
   createTagRequest:
     type: object
     required:
@@ -1234,6 +1308,15 @@ definitions:
       value:
         type: string
         minLength: 1
+      description:
+        type: string
+        maxLength: 512
+  putTagRequest:
+    type: object
+    properties:
+      description:
+        type: string
+        maxLength: 512
   segment:
     type: object
     required:

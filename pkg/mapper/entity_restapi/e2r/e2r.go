@@ -103,6 +103,8 @@ func MapTag(e *entity.Tag) *models.Tag {
 	r := &models.Tag{}
 	r.ID = int64(e.ID)
 	r.Value = util.StringPtr(e.Value)
+	r.Description = e.Description
+	r.CreatedAt = strfmt.DateTime(e.CreatedAt)
 	return r
 }
 

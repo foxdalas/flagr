@@ -106,13 +106,18 @@
               min-width="150"
             >
               <template #default="scope">
-                <el-tag
+                <el-tooltip
                   v-for="tag in scope.row.tags"
                   :key="tag.id"
-                  disable-transitions
+                  :content="tag.description"
+                  :disabled="!tag.description"
+                  placement="top"
+                  effect="light"
                 >
-                  {{ tag.value }}
-                </el-tag>
+                  <el-tag disable-transitions>
+                    {{ tag.value }}
+                  </el-tag>
+                </el-tooltip>
               </template>
             </el-table-column>
             <el-table-column
@@ -221,13 +226,18 @@
                   min-width="200"
                 >
                   <template #default="scope">
-                    <el-tag
+                    <el-tooltip
                       v-for="tag in scope.row.tags"
                       :key="tag.id"
-                      disable-transitions
+                      :content="tag.description"
+                      :disabled="!tag.description"
+                      placement="top"
+                      effect="light"
                     >
-                      {{ tag.value }}
-                    </el-tag>
+                      <el-tag disable-transitions>
+                        {{ tag.value }}
+                      </el-tag>
+                    </el-tooltip>
                   </template>
                 </el-table-column>
                 <el-table-column

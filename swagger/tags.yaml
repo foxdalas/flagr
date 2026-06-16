@@ -28,3 +28,23 @@ get:
       description: generic error response
       schema:
         $ref: "#/definitions/error"
+post:
+  tags:
+    - tag
+  operationId: createTagGlobal
+  parameters:
+    - in: body
+      name: body
+      description: create a tag
+      required: true
+      schema:
+        $ref: "#/definitions/createTagRequest"
+  responses:
+    200:
+      description: tag just created
+      schema:
+        $ref: "#/definitions/tag"
+    default:
+      description: generic error response
+      schema:
+        $ref: "#/definitions/error"

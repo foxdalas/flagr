@@ -373,6 +373,70 @@ step_12_test_tag_operator_batch_evaluation() {
 
 }
 
+step_13_test_crud_tag_global() {
+    flagr_url=$1:18000/api/v1
+
+    description_1=$(uuid_str)
+    description_2=$(uuid_str)
+    value_global=$(uuid_str)
+
+    ################################################
+    # Test find all tags (value_1 and value_2 were
+    # created globally via flag association in step_10)
+    ################################################
+    shakedown GET "$flagr_url"/tags -H 'Content-Type:application/json'
+    status 200
+    contains "value_1"
+    contains "value_2"
+
+    ################################################
+    # Test create global tag
+    ################################################
+    shakedown POST "$flagr_url"/tags -H 'Content-Type:application/json' -d "{\"value\": \"$value_global\", \"description\": \"$description_1\"}"
+    status 200
+    matches "\"value\":\"$value_global\""
+    contains "$description_1"
+
+    ################################################
+    # Test create global tag with duplicate value
+    ################################################
+    shakedown POST "$flagr_url"/tags -H 'Content-Type:application/json' -d "{\"value\": \"value_1\"}"
+    status 400
+    contains "already exists"
+
+    ################################################
+    # Test find all tags with filters
+    ################################################
+    shakedown GET "$flagr_url/tags?value_like=value_" -H 'Content-Type:application/json'
+    status 200
+    contains "value_1"
+    contains "value_2"
+
+    shakedown GET "$flagr_url/tags?limit=1" -H 'Content-Type:application/json'
+    status 200
+
+    ################################################
+    # Test put global tag (value_global is tag id 3)
+    ################################################
+    shakedown PUT "$flagr_url"/tags/3 -H 'Content-Type:application/json' -d "{\"description\": \"$description_2\"}"
+    status 200
+    contains "$description_2"
+
+    ################################################
+    # Test delete global tag
+    ################################################
+    shakedown DELETE "$flagr_url"/tags/3 -H 'Content-Type:application/json'
+    status 200
+
+    ################################################
+    # Test delete global tag that is still attached
+    # to a flag (value_1 is tag id 1, attached to flag 1)
+    ################################################
+    shakedown DELETE "$flagr_url"/tags/1 -H 'Content-Type:application/json'
+    status 400
+    contains "Cannot delete tag"
+}
+
 start_test() {
     flagr_host=$1
     echo -e "\e[32m                \e[0m"
@@ -394,6 +458,12 @@ start_test() {
     step_10_test_crud_tag "$flagr_host"
     step_11_test_tag_batch_evaluation "$flagr_host"
     step_12_test_tag_operator_batch_evaluation "$flagr_host"
+
+    # Global tag endpoints (/tags, /tags/{tagID}) are new in this fork and
+    # are not present in the checkr/flagr backward-compatibility image.
+    if [ "$flagr_host" != "checkr_flagr_with_sqlite" ]; then
+        step_13_test_crud_tag_global "$flagr_host"
+    fi
 }
 
 start() {
