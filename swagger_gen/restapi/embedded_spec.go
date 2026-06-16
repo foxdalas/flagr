@@ -1531,6 +1531,107 @@ func init() {
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "tag"
+        ],
+        "operationId": "createTagGlobal",
+        "parameters": [
+          {
+            "description": "create a tag",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/createTagRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "tag just created",
+            "schema": {
+              "$ref": "#/definitions/tag"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/tags/{tagID}": {
+      "put": {
+        "tags": [
+          "tag"
+        ],
+        "operationId": "putTag",
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int64",
+            "description": "numeric ID of the tag",
+            "name": "tagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "update a tag",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/putTagRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "tag just updated",
+            "schema": {
+              "$ref": "#/definitions/tag"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "tag"
+        ],
+        "operationId": "deleteTagGlobal",
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int64",
+            "description": "numeric ID of the tag",
+            "name": "tagID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deleted"
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
       }
     }
   },
@@ -1643,6 +1744,10 @@ func init() {
         "value"
       ],
       "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 512
+        },
         "value": {
           "type": "string",
           "minLength": 1
@@ -2083,6 +2188,15 @@ func init() {
         }
       }
     },
+    "putTagRequest": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    },
     "putVariantRequest": {
       "type": "object",
       "required": [
@@ -2169,6 +2283,15 @@ func init() {
         "value"
       ],
       "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 512
+        },
         "id": {
           "type": "integer",
           "format": "int64",
@@ -3779,6 +3902,107 @@ func init() {
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "tag"
+        ],
+        "operationId": "createTagGlobal",
+        "parameters": [
+          {
+            "description": "create a tag",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/createTagRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "tag just created",
+            "schema": {
+              "$ref": "#/definitions/tag"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      }
+    },
+    "/tags/{tagID}": {
+      "put": {
+        "tags": [
+          "tag"
+        ],
+        "operationId": "putTag",
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int64",
+            "description": "numeric ID of the tag",
+            "name": "tagID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "update a tag",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/putTagRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "tag just updated",
+            "schema": {
+              "$ref": "#/definitions/tag"
+            }
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "tag"
+        ],
+        "operationId": "deleteTagGlobal",
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int64",
+            "description": "numeric ID of the tag",
+            "name": "tagID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deleted"
+          },
+          "default": {
+            "description": "generic error response",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          }
+        }
       }
     }
   },
@@ -3892,6 +4116,10 @@ func init() {
         "value"
       ],
       "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 512
+        },
         "value": {
           "type": "string",
           "minLength": 1
@@ -4334,6 +4562,15 @@ func init() {
         }
       }
     },
+    "putTagRequest": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 512
+        }
+      }
+    },
     "putVariantRequest": {
       "type": "object",
       "required": [
@@ -4422,6 +4659,15 @@ func init() {
         "value"
       ],
       "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 512
+        },
         "id": {
           "type": "integer",
           "format": "int64",

@@ -1,0 +1,46 @@
+put:
+  tags:
+    - tag
+  operationId: putTag
+  parameters:
+    - in: path
+      name: tagID
+      description: numeric ID of the tag
+      required: true
+      type: integer
+      format: int64
+      minimum: 1
+    - in: body
+      name: body
+      description: update a tag
+      required: true
+      schema:
+        $ref: "#/definitions/putTagRequest"
+  responses:
+    200:
+      description: tag just updated
+      schema:
+        $ref: "#/definitions/tag"
+    default:
+      description: generic error response
+      schema:
+        $ref: "#/definitions/error"
+delete:
+  tags:
+    - tag
+  operationId: deleteTagGlobal
+  parameters:
+    - in: path
+      name: tagID
+      description: numeric ID of the tag
+      required: true
+      type: integer
+      format: int64
+      minimum: 1
+  responses:
+    200:
+      description: deleted
+    default:
+      description: generic error response
+      schema:
+        $ref: "#/definitions/error"

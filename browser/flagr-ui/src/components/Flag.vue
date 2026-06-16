@@ -1,29 +1,32 @@
 <template>
   <el-row>
-    <el-col
-      :span="20"
-      :offset="2"
-    >
+    <el-col :span="20" :offset="2">
       <div class="container flag-container">
         <el-dialog
           v-model="dialogDeleteFlagVisible"
           destroy-on-close
           title="Delete feature flag"
         >
-          <p>This action cannot be undone. Type the flag key <b>{{ flag.key }}</b> to confirm.</p>
+          <p>
+            This action cannot be undone. Type the flag key
+            <b>{{ flag.key }}</b> to confirm.
+          </p>
           <el-input
             v-model="deleteFlagKeyConfirm"
             placeholder="Type flag key to confirm"
           />
           <template #footer>
             <span class="dialog-footer">
-              <el-button @click="dialogDeleteFlagVisible = false">Cancel</el-button>
+              <el-button @click="dialogDeleteFlagVisible = false"
+                >Cancel</el-button
+              >
               <el-button
                 type="danger"
                 :disabled="deleteFlagKeyConfirm !== flag.key"
                 :loading="deletingFlag"
                 @click.prevent="deleteFlag"
-              >Delete</el-button>
+                >Delete</el-button
+              >
             </span>
           </template>
         </el-dialog>
@@ -43,10 +46,7 @@
                   :model-value="!!newDistributions[variant.id]"
                   @change="(e) => selectVariant(e, variant)"
                 />
-                <el-tag
-                  type="danger"
-                  :disable-transitions="true"
-                >
+                <el-tag type="danger" :disable-transitions="true">
                   {{ variant.key }}
                 </el-tag>
               </div>
@@ -67,16 +67,10 @@
           </div>
           <div class="distribution-presets">
             <span class="distribution-presets__label">Presets:</span>
-            <el-button
-              size="small"
-              @click="applyPreset('even')"
-            >
+            <el-button size="small" @click="applyPreset('even')">
               Even Split
             </el-button>
-            <el-button
-              size="small"
-              @click="applyPreset('control')"
-            >
+            <el-button size="small" @click="applyPreset('control')">
               100% Control
             </el-button>
             <el-button
@@ -108,8 +102,8 @@
             class="edit-distribution-alert"
             :title="
               'Percentages must add up to 100% (currently at ' +
-                newDistributionPercentageSum +
-                '%)'
+              newDistributionPercentageSum +
+              '%)'
             "
             type="error"
             show-icon
@@ -154,22 +148,22 @@
           <el-breadcrumb-item :to="{ name: 'home' }">
             Flags
           </el-breadcrumb-item>
-          <el-breadcrumb-item>Flag ID: {{ route.params.flagId }}</el-breadcrumb-item>
+          <el-breadcrumb-item
+            >Flag ID: {{ route.params.flagId }}</el-breadcrumb-item
+          >
         </el-breadcrumb>
 
         <div v-if="loaded && flag">
           <div class="sticky-flag-header">
-            <span class="sticky-flag-header__key">{{ flag.key || 'Flag ' + flag.id }}</span>
+            <span class="sticky-flag-header__key">{{
+              flag.key || 'Flag ' + flag.id
+            }}</span>
             <span
               class="sticky-flag-header__status"
               :class="flag.enabled ? 'is-enabled' : 'is-disabled'"
               aria-hidden="true"
             />
-            <el-tag
-              v-if="isDirty"
-              type="warning"
-              size="small"
-            >
+            <el-tag v-if="isDirty" type="warning" size="small">
               Unsaved changes
             </el-tag>
             <div class="sticky-flag-header__actions">
@@ -197,10 +191,7 @@
                       <div class="flex-row-left">
                         <h2>Flag</h2>
                       </div>
-                      <div
-                        v-if="flag"
-                        class="flex-row-right flag-enable-row"
-                      >
+                      <div v-if="flag" class="flex-row-right flag-enable-row">
                         <span
                           class="flag-enable-label"
                           :class="flag.enabled ? 'is-enabled' : 'is-disabled'"
@@ -224,16 +215,10 @@
                     </div>
                   </div>
                 </template>
-                <el-card
-                  shadow="hover"
-                  :class="toggleInnerConfigCard"
-                >
+                <el-card shadow="hover" :class="toggleInnerConfigCard">
                   <div class="flex-row id-row">
                     <div class="flex-row-left">
-                      <el-tag
-                        type="primary"
-                        :disable-transitions="true"
-                      >
+                      <el-tag type="primary" :disable-transitions="true">
                         Flag ID: {{ route.params.flagId }}
                       </el-tag>
                       <el-tooltip
@@ -263,19 +248,14 @@
                       </el-button>
                     </div>
                   </div>
-                  <el-row
-                    class="flag-content"
-                    align="middle"
-                  >
+                  <el-row class="flag-content" align="middle">
                     <el-col :span="19">
                       <el-input
                         v-model="flag.key"
                         size="small"
                         placeholder="Key"
                       >
-                        <template #prepend>
-                          Flag Key
-                        </template>
+                        <template #prepend> Flag Key </template>
                         <template #append>
                           <el-tooltip
                             content="Copy Flag Key"
@@ -317,19 +297,14 @@
                       </div>
                     </el-col>
                   </el-row>
-                  <el-row
-                    class="flag-content"
-                    align="middle"
-                  >
+                  <el-row class="flag-content" align="middle">
                     <el-col :span="19">
                       <el-input
                         v-model="flag.description"
                         size="small"
                         placeholder="Description"
                       >
-                        <template #prepend>
-                          Flag Description
-                        </template>
+                        <template #prepend> Flag Description </template>
                       </el-input>
                     </el-col>
                     <el-col :span="5">
@@ -381,7 +356,7 @@
                         <el-icon v-else>
                           <View />
                         </el-icon>
-                        {{ !showMdEditor ? "edit" : "view" }}
+                        {{ !showMdEditor ? 'edit' : 'view' }}
                       </el-button>
                     </h5>
                   </div>
@@ -398,18 +373,19 @@
                   </div>
                   <div>
                     <div class="tags-container-inner">
-                      <el-tag
+                      <el-tooltip
                         v-for="tag in flag.tags"
                         :key="tag.id"
-                        closable
-                        @close="deleteTag(tag)"
+                        :content="tag.description"
+                        :disabled="!tag.description"
+                        placement="top"
+                        effect="light"
                       >
-                        {{ tag.value }}
-                      </el-tag>
-                      <div
-                        v-if="tagInputVisible"
-                        class="tag-key-input"
-                      >
+                        <el-tag closable @close="deleteTag(tag)">
+                          {{ tag.value }}
+                        </el-tag>
+                      </el-tooltip>
+                      <div v-if="tagInputVisible" class="tag-key-input">
                         <el-autocomplete
                           ref="saveTagInput"
                           v-model="newTag.value"
@@ -445,20 +421,11 @@
                   v-if="flag.variants.length"
                   class="variants-container-inner"
                 >
-                  <div
-                    v-for="variant in flag.variants"
-                    :key="variant.id"
-                  >
+                  <div v-for="variant in flag.variants" :key="variant.id">
                     <el-card shadow="hover">
-                      <el-form
-                        label-position="left"
-                        label-width="100px"
-                      >
+                      <el-form label-position="left" label-width="100px">
                         <div class="flex-row id-row">
-                          <el-tag
-                            type="primary"
-                            :disable-transitions="true"
-                          >
+                          <el-tag type="primary" :disable-transitions="true">
                             Variant ID:
                             <b>{{ variant.id }}</b>
                           </el-tag>
@@ -468,9 +435,7 @@
                             size="small"
                             placeholder="Key"
                           >
-                            <template #prepend>
-                              Key
-                            </template>
+                            <template #prepend> Key </template>
                           </el-input>
                           <div class="flex-row-right save-remove-variant-row">
                             <el-button
@@ -500,9 +465,7 @@
                             title="Variant attachment"
                             class="variant-attachment-collapsable-title"
                           >
-                            <p
-                              class="variant-attachment-title"
-                            >
+                            <p class="variant-attachment-title">
                               You can add JSON in key/value pairs format.
                             </p>
                             <JsonEditorVue
@@ -512,7 +475,14 @@
                               :navigation-bar="false"
                               :status-bar="false"
                               class="variant-attachment-content"
-                              @change="(content, prev, { contentErrors }) => handleAttachmentChange(variant, content, contentErrors)"
+                              @change="
+                                (content, prev, { contentErrors }) =>
+                                  handleAttachmentChange(
+                                    variant,
+                                    content,
+                                    contentErrors,
+                                  )
+                              "
                             />
                           </el-collapse-item>
                         </el-collapse>
@@ -520,32 +490,27 @@
                     </el-card>
                   </div>
                 </div>
-                <div
-                  v-else
-                  class="card--empty"
-                >
+                <div v-else class="card--empty">
                   <div class="empty-icon">
                     <el-icon><Operation /></el-icon>
                   </div>
-                  <div class="empty-title">
-                    No variants defined yet
-                  </div>
+                  <div class="empty-title">No variants defined yet</div>
                   <div class="empty-hint">
-                    Variants represent the different values this flag can return.
+                    Variants represent the different values this flag can
+                    return.
                   </div>
                 </div>
                 <div class="variants-input">
-                  <div class="flex-row equal-width constraints-inputs-container">
+                  <div
+                    class="flex-row equal-width constraints-inputs-container"
+                  >
                     <div>
                       <el-input
                         v-model="newVariant.key"
                         placeholder="Variant Key"
                         :class="{ 'is-error': newVariantKeyError }"
                       />
-                      <div
-                        v-if="newVariantKeyError"
-                        class="input-error-msg"
-                      >
+                      <div v-if="newVariantKeyError" class="input-error-msg">
                         {{ newVariantKeyError }}
                       </div>
                     </div>
@@ -576,10 +541,7 @@
                     </div>
                   </div>
                 </template>
-                <div
-                  v-if="flag.segments.length"
-                  class="segment-order-hint"
-                >
+                <div v-if="flag.segments.length" class="segment-order-hint">
                   Segments are evaluated top to bottom — first match wins.
                 </div>
                 <div
@@ -594,20 +556,16 @@
                     @end="onDragEnd"
                   >
                     <template #item="{ element: segment, index: segmentIndex }">
-                      <el-card
-                        shadow="hover"
-                        class="segment"
-                      >
+                      <el-card shadow="hover" class="segment">
                         <div class="flex-row id-row">
                           <div class="flex-row-left">
                             <span class="drag-handle">
                               <el-icon><Rank /></el-icon>
                             </span>
-                            <span class="segment-order-badge">[{{ segmentIndex + 1 }}]</span>
-                            <el-tag
-                              type="primary"
-                              :disable-transitions="true"
+                            <span class="segment-order-badge"
+                              >[{{ segmentIndex + 1 }}]</span
                             >
+                            <el-tag type="primary" :disable-transitions="true">
                               Segment ID:
                               <b>{{ segment.id }}</b>
                             </el-tag>
@@ -655,7 +613,9 @@
                               <el-button
                                 size="small"
                                 aria-label="Move segment down"
-                                :disabled="segmentIndex === flag.segments.length - 1"
+                                :disabled="
+                                  segmentIndex === flag.segments.length - 1
+                                "
                                 @click="moveSegment(segment, 1)"
                               >
                                 <el-icon><ArrowDown /></el-icon>
@@ -663,19 +623,14 @@
                             </el-tooltip>
                           </div>
                         </div>
-                        <el-row
-                          :gutter="10"
-                          class="id-row"
-                        >
+                        <el-row :gutter="10" class="id-row">
                           <el-col :span="18">
                             <el-input
                               v-model="segment.description"
                               size="small"
                               placeholder="Description"
                             >
-                              <template #prepend>
-                                Description
-                              </template>
+                              <template #prepend> Description </template>
                             </el-input>
                           </el-col>
                           <el-col :span="6">
@@ -685,7 +640,9 @@
                                 placement="top"
                                 effect="light"
                               >
-                                <span class="segment-rollout-label">Rollout %</span>
+                                <span class="segment-rollout-label"
+                                  >Rollout %</span
+                                >
                               </el-tooltip>
                               <el-input-number
                                 v-model="segment.rolloutPercent"
@@ -722,9 +679,7 @@
                                         size="small"
                                         placeholder="Property"
                                       >
-                                        <template #prepend>
-                                          Property
-                                        </template>
+                                        <template #prepend> Property </template>
                                       </el-input>
                                     </el-col>
                                     <el-col :span="4">
@@ -741,7 +696,9 @@
                                           :value="item.value"
                                         >
                                           <span>{{ item.label }}</span>
-                                          <span class="operator-desc">{{ item.description }}</span>
+                                          <span class="operator-desc">{{
+                                            item.description
+                                          }}</span>
                                         </el-option>
                                       </el-select>
                                     </el-col>
@@ -749,11 +706,9 @@
                                       <el-input
                                         v-model="constraint.value"
                                         size="small"
-                                        placeholder="e.g. &quot;CA&quot; for strings, 18 for numbers"
+                                        placeholder='e.g. "CA" for strings, 18 for numbers'
                                       >
-                                        <template #prepend>
-                                          Value
-                                        </template>
+                                        <template #prepend> Value </template>
                                       </el-input>
                                     </el-col>
                                     <el-col :span="2">
@@ -782,7 +737,10 @@
                                           size="small"
                                           aria-label="Delete constraint"
                                           @click="
-                                            deleteConstraint(segment, constraint)
+                                            deleteConstraint(
+                                              segment,
+                                              constraint,
+                                            )
                                           "
                                         >
                                           <el-icon><Delete /></el-icon>
@@ -792,34 +750,24 @@
                                   </el-row>
                                 </div>
                               </div>
-                              <div
-                                v-else
-                                class="card--empty"
-                              >
+                              <div v-else class="card--empty">
                                 <div class="empty-icon">
                                   <el-icon><Setting /></el-icon>
                                 </div>
-                                <div class="empty-title">
-                                  No constraints
-                                </div>
+                                <div class="empty-title">No constraints</div>
                                 <div class="empty-hint">
                                   All entities will match this segment.
                                 </div>
                               </div>
                               <div>
-                                <el-row
-                                  :gutter="3"
-                                  class="segment-constraint"
-                                >
+                                <el-row :gutter="3" class="segment-constraint">
                                   <el-col :span="20">
                                     <el-input
                                       v-model="segment.newConstraint.property"
                                       size="small"
                                       placeholder="Property"
                                     >
-                                      <template #prepend>
-                                        Property
-                                      </template>
+                                      <template #prepend> Property </template>
                                     </el-input>
                                   </el-col>
                                   <el-col :span="4">
@@ -836,7 +784,9 @@
                                         :value="item.value"
                                       >
                                         <span>{{ item.label }}</span>
-                                        <span class="operator-desc">{{ item.description }}</span>
+                                        <span class="operator-desc">{{
+                                          item.description
+                                        }}</span>
                                       </el-option>
                                     </el-select>
                                   </el-col>
@@ -846,16 +796,25 @@
                                       size="small"
                                       placeholder="Value"
                                     >
-                                      <template #prepend>
-                                        Value
-                                      </template>
+                                      <template #prepend> Value </template>
                                     </el-input>
                                     <div
-                                      v-if="segment.newConstraint.value && constraintValueHint(segment.newConstraint.operator, segment.newConstraint.value)"
+                                      v-if="
+                                        segment.newConstraint.value &&
+                                        constraintValueHint(
+                                          segment.newConstraint.operator,
+                                          segment.newConstraint.value,
+                                        )
+                                      "
                                       class="constraint-hint"
                                       role="alert"
                                     >
-                                      {{ constraintValueHint(segment.newConstraint.operator, segment.newConstraint.value) }}
+                                      {{
+                                        constraintValueHint(
+                                          segment.newConstraint.operator,
+                                          segment.newConstraint.value,
+                                        )
+                                      }}
                                     </div>
                                   </el-col>
                                   <el-col :span="4">
@@ -866,8 +825,11 @@
                                       plain
                                       :disabled="
                                         !segment.newConstraint.property ||
-                                          !segment.newConstraint.value ||
-                                          !!constraintValueHint(segment.newConstraint.operator, segment.newConstraint.value)
+                                        !segment.newConstraint.value ||
+                                        !!constraintValueHint(
+                                          segment.newConstraint.operator,
+                                          segment.newConstraint.value,
+                                        )
                                       "
                                       @click.prevent="
                                         () => createConstraint(segment)
@@ -880,10 +842,7 @@
                               </div>
                             </div>
                           </el-col>
-                          <el-col
-                            :span="24"
-                            class="segment-distributions"
-                          >
+                          <el-col :span="24" class="segment-distributions">
                             <h5>
                               <span>Distribution</span>
                               <el-button
@@ -909,9 +868,7 @@
                                 >
                                   <div>
                                     <span size="small">
-                                      {{
-                                        distribution.variantKey
-                                      }}
+                                      {{ distribution.variantKey }}
                                     </span>
                                   </div>
                                   <el-progress
@@ -923,10 +880,7 @@
                               </el-col>
                             </el-row>
 
-                            <div
-                              v-else
-                              class="card--empty"
-                            >
+                            <div v-else class="card--empty">
                               <div class="empty-icon">
                                 <el-icon><DataAnalysis /></el-icon>
                               </div>
@@ -943,22 +897,17 @@
                     </template>
                   </draggable>
                 </div>
-                <div
-                  v-else
-                  class="card--empty"
-                >
+                <div v-else class="card--empty">
                   <div class="empty-icon">
                     <el-icon><Aim /></el-icon>
                   </div>
-                  <div class="empty-title">
-                    No segments yet
-                  </div>
+                  <div class="empty-title">No segments yet</div>
                   <div class="empty-hint">
                     Segments define targeting rules for this flag.
                   </div>
                   <el-button
                     size="small"
-                    style="margin-top: 8px;"
+                    style="margin-top: 8px"
                     @click="dialogCreateSegmentOpen = true"
                   >
                     New Segment
@@ -975,7 +924,10 @@
                 <el-button
                   type="danger"
                   plain
-                  @click="deleteFlagKeyConfirm = ''; dialogDeleteFlagVisible = true"
+                  @click="
+                    deleteFlagKeyConfirm = '';
+                    dialogDeleteFlagVisible = true;
+                  "
                 >
                   <el-icon><Delete /></el-icon>
                   Delete Flag
@@ -984,10 +936,7 @@
               <spinner v-if="!loaded" />
             </el-tab-pane>
 
-            <el-tab-pane
-              label="Evaluation Flow"
-              lazy
-            >
+            <el-tab-pane label="Evaluation Flow" lazy>
               <flag-eval-flow :flag="flag" />
             </el-tab-pane>
 
@@ -1005,43 +954,72 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, defineAsyncComponent, toRaw } from "vue";
-import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
-import draggable from "vuedraggable";
-import Axios from "axios";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, Edit, View, InfoFilled, ArrowUp, ArrowDown, Operation, Aim, Setting, DataAnalysis, CopyDocument, Check, Rank } from "@element-plus/icons-vue";
+import {
+  ref,
+  reactive,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
+  defineAsyncComponent,
+  toRaw,
+} from 'vue';
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router';
+import draggable from 'vuedraggable';
+import Axios from 'axios';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import {
+  Delete,
+  Edit,
+  View,
+  InfoFilled,
+  ArrowUp,
+  ArrowDown,
+  Operation,
+  Aim,
+  Setting,
+  DataAnalysis,
+  CopyDocument,
+  Check,
+  Rank,
+} from '@element-plus/icons-vue';
 
-const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
-const FlagEvalFlow = defineAsyncComponent(() => import("@/components/FlagEvalFlow.vue"));
+const JsonEditorVue = defineAsyncComponent(() => import('json-editor-vue'));
+const FlagEvalFlow = defineAsyncComponent(() =>
+  import('@/components/FlagEvalFlow.vue'),
+);
 
-import constants from "@/constants";
-import helpers from "@/helpers/helpers";
-import { useAsyncAction } from "@/composables/useAsyncAction";
-import { useDirtyState } from "@/composables/useDirtyState";
-import { useClipboard } from "@/composables/useClipboard";
-import Spinner from "@/components/Spinner";
-import DebugConsole from "@/components/DebugConsole";
-const FlagHistory = defineAsyncComponent(() => import("@/components/FlagHistory"));
-const MarkdownEditor = defineAsyncComponent(() => import("@/components/MarkdownEditor.vue"));
-import { operators } from "@/operators.json";
+import constants from '@/constants';
+import helpers from '@/helpers/helpers';
+import { useAsyncAction } from '@/composables/useAsyncAction';
+import { useDirtyState } from '@/composables/useDirtyState';
+import { useClipboard } from '@/composables/useClipboard';
+import Spinner from '@/components/Spinner';
+import DebugConsole from '@/components/DebugConsole';
+const FlagHistory = defineAsyncComponent(() =>
+  import('@/components/FlagHistory'),
+);
+const MarkdownEditor = defineAsyncComponent(() =>
+  import('@/components/MarkdownEditor.vue'),
+);
+import { operators } from '@/operators.json';
 
 const { sum, pluck, handleErr } = helpers;
 const { API_URL, FLAGR_UI_POSSIBLE_ENTITY_TYPES } = constants;
 
 const DEFAULT_SEGMENT = {
-  description: "",
-  rolloutPercent: 50
+  description: '',
+  rolloutPercent: 50,
 };
 
 const DEFAULT_CONSTRAINT = {
-  operator: "EQ",
-  property: "",
-  value: ""
+  operator: 'EQ',
+  property: '',
+  value: '',
 };
 
 const DEFAULT_VARIANT = {
-  key: ""
+  key: '',
 };
 
 const SAFE_KEY_REGEX = /^[\w\d\-/.:]+$/;
@@ -1049,14 +1027,14 @@ const SAFE_VALUE_REGEX = /^[ \w\d\-/.:]+$/;
 const MAX_KEY_LENGTH = 63;
 
 const DEFAULT_TAG = {
-  value: ""
+  value: '',
 };
 
 const DEFAULT_DISTRIBUTION = {
-  bitmap: "",
+  bitmap: '',
   variantID: 0,
-  variantKey: "",
-  percent: 0
+  variantKey: '',
+  percent: 0,
 };
 
 function processSegment(segment) {
@@ -1064,31 +1042,38 @@ function processSegment(segment) {
 }
 
 function constraintValueHint(operator, value) {
-  if (!value || !value.trim()) return "Value is required";
+  if (!value || !value.trim()) return 'Value is required';
   const v = value.trim();
   switch (operator) {
-    case "IN":
-    case "NOTIN":
-      try { const arr = JSON.parse(v); if (!Array.isArray(arr)) return "Must be a JSON array, e.g. [\"a\",\"b\"]"; }
-      catch { return "Must be a valid JSON array"; }
+    case 'IN':
+    case 'NOTIN':
+      try {
+        const arr = JSON.parse(v);
+        if (!Array.isArray(arr)) return 'Must be a JSON array, e.g. ["a","b"]';
+      } catch {
+        return 'Must be a valid JSON array';
+      }
       break;
-    case "LT":
-    case "LTE":
-    case "GT":
-    case "GTE":
-      if (isNaN(Number(v))) return "Must be a number";
+    case 'LT':
+    case 'LTE':
+    case 'GT':
+    case 'GTE':
+      if (isNaN(Number(v))) return 'Must be a number';
       break;
-    case "EREG":
-    case "NEREG":
-      try { new RegExp(v.replace(/^"|"$/g, "")); }
-      catch { return "Invalid regex pattern"; }
+    case 'EREG':
+    case 'NEREG':
+      try {
+        new RegExp(v.replace(/^"|"$/g, ''));
+      } catch {
+        return 'Invalid regex pattern';
+      }
       break;
   }
-  return "";
+  return '';
 }
 
 function processVariant(variant) {
-  if (typeof variant.attachment === "string") {
+  if (typeof variant.attachment === 'string') {
     variant.attachment = JSON.parse(variant.attachment);
   }
 }
@@ -1123,18 +1108,18 @@ const allTags = ref([]);
 const allowCreateEntityType = ref(true);
 const tagInputVisible = ref(false);
 const flag = ref({
-  createdBy: "",
+  createdBy: '',
   dataRecordsEnabled: false,
-  entityType: "",
-  description: "",
+  entityType: '',
+  description: '',
   enabled: false,
   id: 0,
-  key: "",
+  key: '',
   tags: [],
   segments: [],
-  updatedAt: "",
+  updatedAt: '',
   variants: [],
-  notes: ""
+  notes: '',
 });
 const { isDirty, takeSnapshot } = useDirtyState(flag);
 
@@ -1146,13 +1131,16 @@ const newDistributions = reactive({});
 const operatorOptions = operators;
 const showMdEditor = ref(false);
 const historyLoaded = ref(false);
-const deleteFlagKeyConfirm = ref("");
+const deleteFlagKeyConfirm = ref('');
 
 const { loading: savingFlag, execute: execSaveFlag } = useAsyncAction();
-const { loading: creatingVariant, execute: execCreateVariant } = useAsyncAction();
+const { loading: creatingVariant, execute: execCreateVariant } =
+  useAsyncAction();
 const { loading: savingVariant, execute: execSaveVariant } = useAsyncAction();
-const { loading: savingDistribution, execute: execSaveDistribution } = useAsyncAction();
-const { loading: creatingSegment, execute: execCreateSegment } = useAsyncAction();
+const { loading: savingDistribution, execute: execSaveDistribution } =
+  useAsyncAction();
+const { loading: creatingSegment, execute: execCreateSegment } =
+  useAsyncAction();
 const { loading: savingSegment, execute: execSaveSegment } = useAsyncAction();
 const { execute: execReorderSegments } = useAsyncAction();
 const { loading: deletingFlag, execute: execDeleteFlag } = useAsyncAction();
@@ -1160,7 +1148,7 @@ const drag = ref(false);
 const saveTagInput = ref(null);
 
 const newDistributionPercentageSum = computed(() => {
-  return sum(pluck(Object.values(newDistributions), "percent"));
+  return sum(pluck(Object.values(newDistributions), 'percent'));
 });
 
 const newDistributionIsValid = computed(() => {
@@ -1173,61 +1161,72 @@ const flagId = computed(() => {
 
 const newVariantKeyError = computed(() => {
   const key = newVariant.value.key;
-  if (!key) return "";
-  if (key.length > MAX_KEY_LENGTH) return `Key must be at most ${MAX_KEY_LENGTH} characters`;
-  if (!SAFE_KEY_REGEX.test(key)) return "Key must contain only letters, numbers, hyphens, slashes, dots, colons";
-  return "";
+  if (!key) return '';
+  if (key.length > MAX_KEY_LENGTH)
+    return `Key must be at most ${MAX_KEY_LENGTH} characters`;
+  if (!SAFE_KEY_REGEX.test(key))
+    return 'Key must contain only letters, numbers, hyphens, slashes, dots, colons';
+  return '';
 });
 
 const newTagError = computed(() => {
   const val = newTag.value.value;
-  if (!val) return "";
-  if (val.length > MAX_KEY_LENGTH) return `Tag must be at most ${MAX_KEY_LENGTH} characters`;
-  if (!SAFE_VALUE_REGEX.test(val)) return "Tag must contain only letters, numbers, spaces, hyphens, slashes, dots, colons";
-  return "";
+  if (!val) return '';
+  if (val.length > MAX_KEY_LENGTH)
+    return `Tag must be at most ${MAX_KEY_LENGTH} characters`;
+  if (!SAFE_VALUE_REGEX.test(val))
+    return 'Tag must contain only letters, numbers, spaces, hyphens, slashes, dots, colons';
+  return '';
 });
 
 const toggleInnerConfigCard = computed(() => {
   if (!showMdEditor.value && !flag.value.notes) {
-    return "flag-inner-config-card";
+    return 'flag-inner-config-card';
   } else {
-    return "";
+    return '';
   }
 });
 
 function deleteFlag() {
   execDeleteFlag(() => Axios.delete(`${API_URL}/flags/${flagId.value}`), {
     onSuccess() {
-      router.replace({ name: "home" });
-      ElMessage.success("Flag deleted");
-    }
+      router.replace({ name: 'home' });
+      ElMessage.success('Flag deleted');
+    },
   });
 }
 
 function putFlag(f) {
-  execSaveFlag(() => Axios.put(`${API_URL}/flags/${flagId.value}`, {
-    description: f.description,
-    dataRecordsEnabled: f.dataRecordsEnabled,
-    key: f.key || "",
-    entityType: f.entityType || "",
-    notes: f.notes || ""
-  }), {
-    onSuccess() {
-      ElMessage.success("Flag updated");
-      nextTick(() => takeSnapshot());
-    }
-  });
+  execSaveFlag(
+    () =>
+      Axios.put(`${API_URL}/flags/${flagId.value}`, {
+        description: f.description,
+        dataRecordsEnabled: f.dataRecordsEnabled,
+        key: f.key || '',
+        entityType: f.entityType || '',
+        notes: f.notes || '',
+      }),
+    {
+      onSuccess() {
+        ElMessage.success('Flag updated');
+        nextTick(() => takeSnapshot());
+      },
+    },
+  );
 }
 
 function setFlagEnabled(checked) {
   Axios.put(`${API_URL}/flags/${flagId.value}/enabled`, {
-    enabled: checked
-  }).then(() => {
-    ElMessage.success(`Flag ${checked ? "enabled" : "disabled"}`);
-  }, (err) => {
-    flag.value.enabled = !checked;
-    handleErr(err);
-  });
+    enabled: checked,
+  }).then(
+    () => {
+      ElMessage.success(`Flag ${checked ? 'enabled' : 'disabled'}`);
+    },
+    (err) => {
+      flag.value.enabled = !checked;
+      handleErr(err);
+    },
+  );
 }
 
 function selectVariant($event, variant) {
@@ -1235,7 +1234,7 @@ function selectVariant($event, variant) {
   if (checked) {
     const distribution = Object.assign(structuredClone(DEFAULT_DISTRIBUTION), {
       variantKey: variant.key,
-      variantID: variant.id
+      variantID: variant.id,
     });
     newDistributions[variant.id] = distribution;
   } else {
@@ -1244,7 +1243,7 @@ function selectVariant($event, variant) {
 }
 
 const checkedVariantIds = computed(() => {
-  return Object.keys(newDistributions).filter(id => !!newDistributions[id]);
+  return Object.keys(newDistributions).filter((id) => !!newDistributions[id]);
 });
 
 function applyPreset(preset) {
@@ -1252,7 +1251,7 @@ function applyPreset(preset) {
   if (ids.length === 0) return;
 
   switch (preset) {
-    case "even": {
+    case 'even': {
       const base = Math.floor(100 / ids.length);
       const remainder = 100 % ids.length;
       ids.forEach((id, i) => {
@@ -1260,20 +1259,20 @@ function applyPreset(preset) {
       });
       break;
     }
-    case "control": {
+    case 'control': {
       ids.forEach((id, i) => {
         newDistributions[id].percent = i === 0 ? 100 : 0;
       });
       break;
     }
-    case "canary": {
+    case 'canary': {
       if (ids.length < 2) return;
       ids.forEach((id, i) => {
         newDistributions[id].percent = i === 0 ? 1 : i === 1 ? 99 : 0;
       });
       break;
     }
-    case "gradual": {
+    case 'gradual': {
       if (ids.length < 2) return;
       ids.forEach((id, i) => {
         newDistributions[id].percent = i === 0 ? 10 : i === 1 ? 90 : 0;
@@ -1287,104 +1286,119 @@ function editDistribution(segment) {
   selectedSegment.value = segment;
 
   // Clear all keys from reactive object
-  Object.keys(newDistributions).forEach(key => delete newDistributions[key]);
+  Object.keys(newDistributions).forEach((key) => delete newDistributions[key]);
 
-  segment.distributions.forEach(distribution => {
-    newDistributions[distribution.variantID] = JSON.parse(JSON.stringify(distribution));
+  segment.distributions.forEach((distribution) => {
+    newDistributions[distribution.variantID] = JSON.parse(
+      JSON.stringify(distribution),
+    );
   });
 
   dialogEditDistributionOpen.value = true;
 }
 
 function saveDistribution(segment) {
-  const distributions = Object.values(toRaw(newDistributions)).filter(
-    distribution => distribution.percent !== 0
-  ).map(distribution => {
-    const dist = JSON.parse(JSON.stringify(distribution));
-    delete dist.id;
-    return dist;
-  });
+  const distributions = Object.values(toRaw(newDistributions))
+    .filter((distribution) => distribution.percent !== 0)
+    .map((distribution) => {
+      const dist = JSON.parse(JSON.stringify(distribution));
+      delete dist.id;
+      return dist;
+    });
 
-  execSaveDistribution(() => Axios.put(
-    `${API_URL}/flags/${flagId.value}/segments/${segment.id}/distributions`,
-    { distributions }
-  ), {
-    onSuccess(response) {
-      let updatedDistributions = response.data;
-      selectedSegment.value.distributions = updatedDistributions;
-      dialogEditDistributionOpen.value = false;
-      ElMessage.success("Distribution updated");
-    }
-  });
+  execSaveDistribution(
+    () =>
+      Axios.put(
+        `${API_URL}/flags/${flagId.value}/segments/${segment.id}/distributions`,
+        { distributions },
+      ),
+    {
+      onSuccess(response) {
+        let updatedDistributions = response.data;
+        selectedSegment.value.distributions = updatedDistributions;
+        dialogEditDistributionOpen.value = false;
+        ElMessage.success('Distribution updated');
+      },
+    },
+  );
 }
 
 function createVariant() {
-  execCreateVariant(() => Axios.post(
-    `${API_URL}/flags/${flagId.value}/variants`,
-    newVariant.value
-  ), {
-    onSuccess(response) {
-      let variant = response.data;
-      newVariant.value = structuredClone(DEFAULT_VARIANT);
-      flag.value.variants.push(variant);
-      ElMessage.success("Variant created");
-    }
-  });
+  execCreateVariant(
+    () =>
+      Axios.post(`${API_URL}/flags/${flagId.value}/variants`, newVariant.value),
+    {
+      onSuccess(response) {
+        let variant = response.data;
+        newVariant.value = structuredClone(DEFAULT_VARIANT);
+        flag.value.variants.push(variant);
+        ElMessage.success('Variant created');
+      },
+    },
+  );
 }
 
 function deleteVariant(variant) {
-  const isVariantInUse = flag.value.segments.some(segment =>
+  const isVariantInUse = flag.value.segments.some((segment) =>
     segment.distributions.some(
-      distribution => distribution.variantID === variant.id
-    )
+      (distribution) => distribution.variantID === variant.id,
+    ),
   );
 
   if (isVariantInUse) {
     ElMessageBox.alert(
-      "This variant is being used by a segment distribution. Please remove the segment or edit the distribution in order to remove this variant.",
-      "Cannot delete variant",
-      { type: "warning" }
+      'This variant is being used by a segment distribution. Please remove the segment or edit the distribution in order to remove this variant.',
+      'Cannot delete variant',
+      { type: 'warning' },
     );
     return;
   }
 
-  ElMessageBox.confirm(
-    `Delete variant '${variant.key}'?`,
-    "Delete variant",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
-  ).then(() => {
-    Axios.delete(
-      `${API_URL}/flags/${flagId.value}/variants/${variant.id}`
-    ).then(() => {
-      ElMessage.success("Variant deleted");
-      fetchFlag();
-    }, handleErr);
-  }).catch(() => {});
+  ElMessageBox.confirm(`Delete variant '${variant.key}'?`, 'Delete variant', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    type: 'warning',
+  })
+    .then(() => {
+      Axios.delete(
+        `${API_URL}/flags/${flagId.value}/variants/${variant.id}`,
+      ).then(() => {
+        ElMessage.success('Variant deleted');
+        fetchFlag();
+      }, handleErr);
+    })
+    .catch(() => {});
 }
 
 function putVariant(variant) {
   if (variant.attachmentValid === false) {
-    ElMessage.error("variant attachment is not valid");
+    ElMessage.error('variant attachment is not valid');
     return;
   }
 
   // Prepare payload - parse attachment if it's a string (from text mode editor)
   let payload = { ...variant };
-  if (typeof payload.attachment === "string") {
+  if (typeof payload.attachment === 'string') {
     try {
       payload.attachment = JSON.parse(payload.attachment);
     } catch {
-      ElMessage.error("variant attachment is not valid JSON");
+      ElMessage.error('variant attachment is not valid JSON');
       return;
     }
   }
 
-  execSaveVariant(() => Axios.put(
-    `${API_URL}/flags/${flagId.value}/variants/${variant.id}`,
-    payload
-  ), {
-    onSuccess() { ElMessage.success("Variant updated"); }
-  });
+  execSaveVariant(
+    () =>
+      Axios.put(
+        `${API_URL}/flags/${flagId.value}/variants/${variant.id}`,
+        payload,
+      ),
+    {
+      onSuccess() {
+        ElMessage.success('Variant updated');
+      },
+    },
+  );
 }
 
 function createTag() {
@@ -1393,17 +1407,17 @@ function createTag() {
     return;
   }
   Axios.post(`${API_URL}/flags/${flagId.value}/tags`, newTag.value).then(
-    response => {
+    (response) => {
       let tag = response.data;
       newTag.value = structuredClone(DEFAULT_TAG);
-      if (!flag.value.tags.map(tag => tag.value).includes(tag.value)) {
+      if (!flag.value.tags.map((tag) => tag.value).includes(tag.value)) {
         flag.value.tags.push(tag);
-        ElMessage.success("Tag created");
+        ElMessage.success('Tag created');
       }
       tagInputVisible.value = false;
       loadAllTags();
     },
-    handleErr
+    handleErr,
   );
 }
 
@@ -1413,14 +1427,14 @@ function cancelCreateTag() {
 }
 
 function queryTags(queryString, cb) {
-  let results = allTags.value.filter(tag =>
-    tag.value.toLowerCase().includes(queryString.toLowerCase())
+  let results = allTags.value.filter((tag) =>
+    tag.value.toLowerCase().includes(queryString.toLowerCase()),
   );
   cb(results);
 }
 
 function loadAllTags() {
-  Axios.get(`${API_URL}/tags`).then(response => {
+  Axios.get(`${API_URL}/tags`).then((response) => {
     let result = response.data;
     allTags.value = result;
   }, handleErr);
@@ -1436,20 +1450,22 @@ function showTagInput() {
 }
 
 function deleteTag(tag) {
-  ElMessageBox.confirm(
-    `Delete tag '${tag.value}'?`,
-    "Delete tag",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
-  ).then(() => {
-    Axios.delete(`${API_URL}/flags/${flagId.value}/tags/${tag.id}`).then(
-      () => {
-        ElMessage.success("Tag deleted");
-        fetchFlag();
-        loadAllTags();
-      },
-      handleErr
-    );
-  }).catch(() => {});
+  ElMessageBox.confirm(`Delete tag '${tag.value}'?`, 'Delete tag', {
+    confirmButtonText: 'OK',
+    cancelButtonText: 'Cancel',
+    type: 'warning',
+  })
+    .then(() => {
+      Axios.delete(`${API_URL}/flags/${flagId.value}/tags/${tag.id}`).then(
+        () => {
+          ElMessage.success('Tag removed from flag');
+          fetchFlag();
+          loadAllTags();
+        },
+        handleErr,
+      );
+    })
+    .catch(() => {});
 }
 
 function createConstraint(segment) {
@@ -1457,12 +1473,12 @@ function createConstraint(segment) {
   segment.newConstraint.value = segment.newConstraint.value.trim();
   Axios.post(
     `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints`,
-    segment.newConstraint
-  ).then(response => {
+    segment.newConstraint,
+  ).then((response) => {
     let constraint = response.data;
     segment.constraints.push(constraint);
     segment.newConstraint = structuredClone(DEFAULT_CONSTRAINT);
-    ElMessage.success("Constraint created");
+    ElMessage.success('Constraint created');
   }, handleErr);
 }
 
@@ -1471,66 +1487,84 @@ function putConstraint(segment, constraint) {
   constraint.value = constraint.value.trim();
   Axios.put(
     `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints/${constraint.id}`,
-    constraint
+    constraint,
   ).then(() => {
-    ElMessage.success("Constraint updated");
+    ElMessage.success('Constraint updated');
   }, handleErr);
 }
 
 function deleteConstraint(segment, constraint) {
   ElMessageBox.confirm(
     `Delete constraint '${constraint.property} ${constraint.operator}'?`,
-    "Delete constraint",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
-  ).then(() => {
-    Axios.delete(
-      `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints/${constraint.id}`
-    ).then(() => {
-      const index = segment.constraints.findIndex(
-        c => c.id === constraint.id
-      );
-      segment.constraints.splice(index, 1);
-      ElMessage.success("Constraint deleted");
-    }, handleErr);
-  }).catch(() => {});
+    'Delete constraint',
+    { confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning' },
+  )
+    .then(() => {
+      Axios.delete(
+        `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints/${constraint.id}`,
+      ).then(() => {
+        const index = segment.constraints.findIndex(
+          (c) => c.id === constraint.id,
+        );
+        segment.constraints.splice(index, 1);
+        ElMessage.success('Constraint deleted');
+      }, handleErr);
+    })
+    .catch(() => {});
 }
 
 function putSegment(segment) {
-  execSaveSegment(() => Axios.put(`${API_URL}/flags/${flagId.value}/segments/${segment.id}`, {
-    description: segment.description,
-    rolloutPercent: parseInt(segment.rolloutPercent, 10)
-  }), {
-    onSuccess() { ElMessage.success("Segment updated"); }
-  });
+  execSaveSegment(
+    () =>
+      Axios.put(`${API_URL}/flags/${flagId.value}/segments/${segment.id}`, {
+        description: segment.description,
+        rolloutPercent: parseInt(segment.rolloutPercent, 10),
+      }),
+    {
+      onSuccess() {
+        ElMessage.success('Segment updated');
+      },
+    },
+  );
 }
 
 function putSegmentsReorder(segments) {
-  execReorderSegments(() => Axios.put(`${API_URL}/flags/${flagId.value}/segments/reorder`, {
-    segmentIDs: pluck(segments, "id")
-  }), {
-    onSuccess() { ElMessage.success("Segment reordered"); }
-  });
+  execReorderSegments(
+    () =>
+      Axios.put(`${API_URL}/flags/${flagId.value}/segments/reorder`, {
+        segmentIDs: pluck(segments, 'id'),
+      }),
+    {
+      onSuccess() {
+        ElMessage.success('Segment reordered');
+      },
+    },
+  );
 }
 
 function deleteSegment(segment) {
   ElMessageBox.confirm(
-    "Delete segment? Constraints and distributions will be removed.",
-    "Delete segment",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
-  ).then(() => {
-    Axios.delete(
-      `${API_URL}/flags/${flagId.value}/segments/${segment.id}`
-    ).then(() => {
-      const index = flag.value.segments.findIndex(el => el.id === segment.id);
-      flag.value.segments.splice(index, 1);
-      ElMessage.success("Segment deleted");
-    }, handleErr);
-  }).catch(() => {});
+    'Delete segment? Constraints and distributions will be removed.',
+    'Delete segment',
+    { confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning' },
+  )
+    .then(() => {
+      Axios.delete(
+        `${API_URL}/flags/${flagId.value}/segments/${segment.id}`,
+      ).then(() => {
+        const index = flag.value.segments.findIndex(
+          (el) => el.id === segment.id,
+        );
+        flag.value.segments.splice(index, 1);
+        ElMessage.success('Segment deleted');
+      }, handleErr);
+    })
+    .catch(() => {});
 }
 
 function moveSegment(segment, direction) {
   const segments = flag.value.segments;
-  const index = segments.findIndex(s => s.id === segment.id);
+  const index = segments.findIndex((s) => s.id === segment.id);
   if (index === -1) return;
   const newIndex = index + direction;
   if (newIndex < 0 || newIndex >= segments.length) return;
@@ -1545,27 +1579,28 @@ function onDragEnd() {
 }
 
 function createSegment() {
-  execCreateSegment(() => Axios.post(
-    `${API_URL}/flags/${flagId.value}/segments`,
-    newSegment.value
-  ), {
-    onSuccess(response) {
-      let segment = response.data;
-      processSegment(segment);
-      segment.constraints = [];
-      newSegment.value = structuredClone(DEFAULT_SEGMENT);
-      flag.value.segments.push(segment);
-      ElMessage.success("Segment created");
-      dialogCreateSegmentOpen.value = false;
-    }
-  });
+  execCreateSegment(
+    () =>
+      Axios.post(`${API_URL}/flags/${flagId.value}/segments`, newSegment.value),
+    {
+      onSuccess(response) {
+        let segment = response.data;
+        processSegment(segment);
+        segment.constraints = [];
+        newSegment.value = structuredClone(DEFAULT_SEGMENT);
+        flag.value.segments.push(segment);
+        ElMessage.success('Segment created');
+        dialogCreateSegmentOpen.value = false;
+      },
+    },
+  );
 }
 
 function fetchFlag() {
-  Axios.get(`${API_URL}/flags/${flagId.value}`).then(response => {
+  Axios.get(`${API_URL}/flags/${flagId.value}`).then((response) => {
     let f = response.data;
-    f.segments.forEach(segment => processSegment(segment));
-    f.variants.forEach(variant => processVariant(variant));
+    f.segments.forEach((segment) => processSegment(segment));
+    f.variants.forEach((variant) => processVariant(variant));
     flag.value = f;
     loaded.value = true;
     nextTick(() => takeSnapshot());
@@ -1575,27 +1610,27 @@ function fetchFlag() {
 
 function fetchEntityTypes() {
   function prepareEntityTypes(entityTypes) {
-    let arr = entityTypes.map(key => {
-      let label = key === "" ? "<null>" : key;
+    let arr = entityTypes.map((key) => {
+      let label = key === '' ? '<null>' : key;
       return { label: label, value: key };
     });
-    if (entityTypes.indexOf("") === -1) {
-      arr.unshift({ label: "<null>", value: "" });
+    if (entityTypes.indexOf('') === -1) {
+      arr.unshift({ label: '<null>', value: '' });
     }
     return arr;
   }
 
   if (
     FLAGR_UI_POSSIBLE_ENTITY_TYPES &&
-    FLAGR_UI_POSSIBLE_ENTITY_TYPES != "null"
+    FLAGR_UI_POSSIBLE_ENTITY_TYPES != 'null'
   ) {
-    let types = FLAGR_UI_POSSIBLE_ENTITY_TYPES.split(",");
+    let types = FLAGR_UI_POSSIBLE_ENTITY_TYPES.split(',');
     entityTypes.value = prepareEntityTypes(types);
     allowCreateEntityType.value = false;
     return;
   }
 
-  Axios.get(`${API_URL}/flags/entity_types`).then(response => {
+  Axios.get(`${API_URL}/flags/entity_types`).then((response) => {
     entityTypes.value = prepareEntityTypes(response.data);
   }, handleErr);
 }
@@ -1605,7 +1640,7 @@ function toggleShowMdEditor() {
 }
 
 function handleHistoryTabClick(tab) {
-  if (tab.props.label == "History" && !historyLoaded.value) {
+  if (tab.props.label == 'History' && !historyLoaded.value) {
     historyLoaded.value = true;
   }
 }
@@ -1614,9 +1649,13 @@ onBeforeRouteLeave(async () => {
   if (isDirty.value) {
     try {
       await ElMessageBox.confirm(
-        "You have unsaved changes. Leave anyway?",
-        "Unsaved changes",
-        { confirmButtonText: "Leave", cancelButtonText: "Stay", type: "warning" }
+        'You have unsaved changes. Leave anyway?',
+        'Unsaved changes',
+        {
+          confirmButtonText: 'Leave',
+          cancelButtonText: 'Stay',
+          type: 'warning',
+        },
       );
       return true;
     } catch {
@@ -1629,7 +1668,7 @@ onBeforeRouteLeave(async () => {
 function onBeforeUnload(e) {
   if (isDirty.value) {
     e.preventDefault();
-    e.returnValue = "";
+    e.returnValue = '';
   }
 }
 
@@ -1646,13 +1685,13 @@ function onSaveShortcut(e) {
 onMounted(() => {
   fetchFlag();
   loadAllTags();
-  window.addEventListener("beforeunload", onBeforeUnload);
-  window.addEventListener("keydown", onSaveShortcut);
+  window.addEventListener('beforeunload', onBeforeUnload);
+  window.addEventListener('keydown', onSaveShortcut);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("beforeunload", onBeforeUnload);
-  window.removeEventListener("keydown", onSaveShortcut);
+  window.removeEventListener('beforeunload', onBeforeUnload);
+  window.removeEventListener('keydown', onSaveShortcut);
 });
 </script>
 
@@ -1756,7 +1795,8 @@ h5 {
   cursor: pointer;
   color: var(--flagr-color-text-muted);
   opacity: 0.6;
-  transition: opacity var(--flagr-transition-fast, 150ms ease), color var(--flagr-transition-fast, 150ms ease);
+  transition: opacity var(--flagr-transition-fast, 150ms ease),
+    color var(--flagr-transition-fast, 150ms ease);
   border-radius: var(--flagr-radius-sm, 6px);
 
   &:hover {

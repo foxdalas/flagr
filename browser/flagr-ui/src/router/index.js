@@ -14,6 +14,11 @@ export default createRouter({
       component: () => import('@/components/Flag')
     },
     {
+      path: '/tags',
+      name: 'tags',
+      component: () => import('@/components/Tags')
+    },
+    {
       path: '/docs/:section?',
       name: 'docs',
       component: () => import('@/components/Docs')

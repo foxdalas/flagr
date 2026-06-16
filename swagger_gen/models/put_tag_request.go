@@ -14,30 +14,21 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// CreateTagRequest create tag request
+// PutTagRequest put tag request
 //
-// swagger:model createTagRequest
-type CreateTagRequest struct {
+// swagger:model putTagRequest
+type PutTagRequest struct {
 
 	// description
 	// Max Length: 512
 	Description string `json:"description,omitempty"`
-
-	// value
-	// Required: true
-	// Min Length: 1
-	Value *string `json:"value"`
 }
 
-// Validate validates this create tag request
-func (m *CreateTagRequest) Validate(formats strfmt.Registry) error {
+// Validate validates this put tag request
+func (m *PutTagRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateDescription(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateValue(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -47,7 +38,7 @@ func (m *CreateTagRequest) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CreateTagRequest) validateDescription(formats strfmt.Registry) error {
+func (m *PutTagRequest) validateDescription(formats strfmt.Registry) error {
 	if swag.IsZero(m.Description) { // not required
 		return nil
 	}
@@ -59,26 +50,13 @@ func (m *CreateTagRequest) validateDescription(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *CreateTagRequest) validateValue(formats strfmt.Registry) error {
-
-	if err := validate.Required("value", "body", m.Value); err != nil {
-		return err
-	}
-
-	if err := validate.MinLength("value", "body", *m.Value, 1); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ContextValidate validates this create tag request based on context it is used
-func (m *CreateTagRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+// ContextValidate validates this put tag request based on context it is used
+func (m *PutTagRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *CreateTagRequest) MarshalBinary() ([]byte, error) {
+func (m *PutTagRequest) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -86,8 +64,8 @@ func (m *CreateTagRequest) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *CreateTagRequest) UnmarshalBinary(b []byte) error {
-	var res CreateTagRequest
+func (m *PutTagRequest) UnmarshalBinary(b []byte) error {
+	var res PutTagRequest
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

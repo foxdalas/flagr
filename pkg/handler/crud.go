@@ -39,6 +39,9 @@ type CRUD interface {
 	DeleteTag(tag.DeleteTagParams) middleware.Responder
 	FindTags(tag.FindTagsParams) middleware.Responder
 	FindAllTags(params tag.FindAllTagsParams) middleware.Responder
+	CreateTagGlobal(tag.CreateTagGlobalParams) middleware.Responder
+	PutTag(tag.PutTagParams) middleware.Responder
+	DeleteTagGlobal(tag.DeleteTagGlobalParams) middleware.Responder
 
 	// Segments
 	CreateSegment(segment.CreateSegmentParams) middleware.Responder
@@ -401,6 +404,61 @@ func (c *crud) CreateTag(params tag.CreateTagParams) middleware.Responder {
 
 	entity.SaveFlagSnapshot(getDB(), util.SafeUint(params.FlagID), getSubjectFromRequest(params.HTTPRequest))
 	return resp
+}
+
+func (c *crud) CreateTagGlobal(params tag.CreateTagGlobalParams) middleware.Responder {
+	t := &entity.Tag{}
+	t.Value = util.SafeString(params.Body.Value)
+	if ok, reason := util.IsSafeValue(t.Value); !ok {
+		return tag.NewCreateTagGlobalDefault(400).WithPayload(ErrorMessage("%s", reason))
+	}
+	t.Description = params.Body.Description
+
+	existing := &entity.Tag{}
+	if err := getDB().Where("value = ?", t.Value).First(existing).Error; err == nil {
+		return tag.NewCreateTagGlobalDefault(400).WithPayload(ErrorMessage("tag with value %q already exists", t.Value))
+	}
+
+	if err := getDB().Create(t).Error; err != nil {
+		return tag.NewCreateTagGlobalDefault(500).WithPayload(ErrorMessage("%s", err))
+	}
+
+	resp := tag.NewCreateTagGlobalOK()
+	resp.SetPayload(e2r.MapTag(t))
+	return resp
+}
+
+func (c *crud) PutTag(params tag.PutTagParams) middleware.Responder {
+	t := &entity.Tag{}
+	if err := getDB().First(t, params.TagID).Error; err != nil {
+		return tag.NewPutTagDefault(404).WithPayload(ErrorMessage("%s", err))
+	}
+
+	if err := getDB().Model(t).Update("description", params.Body.Description).Error; err != nil {
+		return tag.NewPutTagDefault(500).WithPayload(ErrorMessage("%s", err))
+	}
+
+	resp := tag.NewPutTagOK()
+	resp.SetPayload(e2r.MapTag(t))
+	return resp
+}
+
+func (c *crud) DeleteTagGlobal(params tag.DeleteTagGlobalParams) middleware.Responder {
+	t := &entity.Tag{}
+	if err := getDB().First(t, params.TagID).Error; err != nil {
+		return tag.NewDeleteTagGlobalDefault(404).WithPayload(ErrorMessage("%s", err))
+	}
+
+	count := getDB().Model(t).Association("Flags").Count()
+	if count > 0 {
+		return tag.NewDeleteTagGlobalDefault(400).WithPayload(ErrorMessage("Cannot delete tag, it is used by one or more flags"))
+	}
+
+	if err := getDB().Select(clause.Associations).Delete(t).Error; err != nil {
+		return tag.NewDeleteTagGlobalDefault(500).WithPayload(ErrorMessage("%s", err))
+	}
+
+	return tag.NewDeleteTagGlobalOK()
 }
 
 func (c *crud) CreateSegment(params segment.CreateSegmentParams) middleware.Responder {

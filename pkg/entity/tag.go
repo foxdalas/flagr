@@ -8,6 +8,7 @@ import (
 type Tag struct {
 	gorm.Model
 
-	Value string  `gorm:"type:varchar(64);uniqueIndex:idx_tag_value"`
-	Flags []*Flag `gorm:"many2many:flags_tags;"`
+	Value       string  `gorm:"type:varchar(64);uniqueIndex:idx_tag_value"`
+	Description string  `gorm:"type:varchar(512)"`
+	Flags       []*Flag `gorm:"many2many:flags_tags;"`
 }

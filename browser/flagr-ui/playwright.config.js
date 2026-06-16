@@ -1,10 +1,10 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
   timeout: 30000,
   expect: {
-    timeout: 10000
+    timeout: 10000,
   },
   fullyParallel: false,
   retries: process.env.CI ? 2 : 0,
@@ -24,4 +24,4 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
-})
+});

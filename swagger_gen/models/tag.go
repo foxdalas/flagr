@@ -19,6 +19,15 @@ import (
 // swagger:model tag
 type Tag struct {
 
+	// created at
+	// Read Only: true
+	// Format: date-time
+	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
+
+	// description
+	// Max Length: 512
+	Description string `json:"description,omitempty"`
+
 	// id
 	// Read Only: true
 	// Minimum: 1
@@ -34,6 +43,14 @@ type Tag struct {
 func (m *Tag) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateCreatedAt(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDescription(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateID(formats); err != nil {
 		res = append(res, err)
 	}
@@ -45,6 +62,30 @@ func (m *Tag) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Tag) validateCreatedAt(formats strfmt.Registry) error {
+	if swag.IsZero(m.CreatedAt) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("createdAt", "body", "date-time", m.CreatedAt.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Tag) validateDescription(formats strfmt.Registry) error {
+	if swag.IsZero(m.Description) { // not required
+		return nil
+	}
+
+	if err := validate.MaxLength("description", "body", m.Description, 512); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -77,6 +118,10 @@ func (m *Tag) validateValue(formats strfmt.Registry) error {
 func (m *Tag) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.contextValidateCreatedAt(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.contextValidateID(ctx, formats); err != nil {
 		res = append(res, err)
 	}
@@ -84,6 +129,15 @@ func (m *Tag) ContextValidate(ctx context.Context, formats strfmt.Registry) erro
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Tag) contextValidateCreatedAt(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := validate.ReadOnly(ctx, "createdAt", "body", m.CreatedAt); err != nil {
+		return err
+	}
+
 	return nil
 }
 
