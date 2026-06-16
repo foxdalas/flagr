@@ -165,6 +165,10 @@ func TestReloadMapCacheWithNewRelic(t *testing.T) {
 	config.Global.NewrelicApp = app
 
 	ec := GetEvalCache()
+	// Reset singleton state mutated by earlier tests so the fetcher is rebuilt
+	// from the stubbed getDB above instead of reusing a closed DB handle.
+	ec.fetcher = nil
+	ec.lastSnapshotMaxID = 0
 	assert.NotPanics(t, func() {
 		err := ec.reloadMapCache()
 		assert.NoError(t, err)

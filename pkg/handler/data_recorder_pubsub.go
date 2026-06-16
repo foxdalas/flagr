@@ -11,15 +11,15 @@ import (
 )
 
 type pubsubRecorder struct {
-	producer *pubsub.Client
+	producer  *pubsub.Client
 	publisher *pubsub.Publisher
-	options  DataRecordFrameOptions
+	options   DataRecordFrameOptions
 }
 
 func pubsubClientOptions() []option.ClientOption {
 	if config.Config.RecorderPubsubKeyFile != "" {
 		return []option.ClientOption{
-			option.WithAuthCredentialsFile(option.ServiceAccount, config.Config.RecorderPubsubKeyFile),
+			option.WithCredentialsFile(config.Config.RecorderPubsubKeyFile),
 		}
 	}
 	return nil
@@ -43,7 +43,7 @@ var NewPubsubRecorder = func() DataRecorder {
 	}
 
 	return &pubsubRecorder{
-		producer: client,
+		producer:  client,
 		publisher: client.Publisher(config.Config.RecorderPubsubTopicName),
 		options: DataRecordFrameOptions{
 			Encrypted:       false, // not implemented yet

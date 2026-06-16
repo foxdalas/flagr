@@ -38,6 +38,12 @@ func (m *mockAsyncProducer) AddOffsetsToTxn(offsets map[string][]*sarama.Partiti
 func (m *mockAsyncProducer) AddMessageToTxn(msg *sarama.ConsumerMessage, groupId string, metadata *string) error {
 	return nil
 }
+func (m *mockAsyncProducer) AddOffsetsToTxnWithGroupMetadata(offsets map[string][]*sarama.PartitionOffsetMetadata, groupMetadata *sarama.ConsumerGroupMetadata) error {
+	return nil
+}
+func (m *mockAsyncProducer) AddMessageToTxnWithGroupMetadata(msg *sarama.ConsumerMessage, groupMetadata *sarama.ConsumerGroupMetadata, metadata *string) error {
+	return nil
+}
 
 var _ sarama.AsyncProducer = (*mockAsyncProducer)(nil)
 

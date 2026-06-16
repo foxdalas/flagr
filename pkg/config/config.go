@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"slices"
 
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/caarlos0/env"
@@ -139,7 +140,7 @@ func setupPrometheus() {
 			}, []string{"status", "path", "method"})
 		}
 
-		if Config.RecorderEnabled && Config.RecorderType == "kafka" {
+		if Config.RecorderEnabled && slices.Contains(Config.RecorderType, "kafka") {
 			Global.Prometheus.RecorderEnqueued = promauto.NewCounter(prometheus.CounterOpts{
 				Name: "flagr_recorder_enqueued_total",
 				Help: "Total number of eval results enqueued for recording",

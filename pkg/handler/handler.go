@@ -4,6 +4,8 @@ import (
 	"slices"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/sirupsen/logrus"
+
 	"github.com/foxdalas/flagr/pkg/config"
 	"github.com/foxdalas/flagr/pkg/entity"
 	"github.com/foxdalas/flagr/pkg/notification"
@@ -89,6 +91,14 @@ func setupEvaluation(api *operations.FlagrAPI) {
 
 	// Force-init the data recorder (may be noop, external, Datar, or fan-out).
 	GetDataRecorder()
+
+	// Flush/close recorders gracefully on server shutdown (e.g. drain the
+	// Kafka buffer so in-flight eval results are not lost on restart).
+	config.RegisterShutdownCallback(func() {
+		if err := CloseDataRecorder(); err != nil {
+			logrus.WithField("err", err).Error("failed to close data recorder")
+		}
+	})
 }
 
 func setupDatar(api *operations.FlagrAPI) {

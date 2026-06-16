@@ -7,7 +7,8 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
+	"github.com/go-openapi/swag/stringutils"
 )
 
 // GetExportEvalCacheJSONURL generates an URL for the get export eval cache JSON operation
@@ -54,7 +55,7 @@ func (o *GetExportEvalCacheJSONURL) Build() (*url.URL, error) {
 
 	var allQ string
 	if o.All != nil {
-		allQ = swag.FormatBool(*o.All)
+		allQ = conv.FormatBool(*o.All)
 	}
 	if allQ != "" {
 		qs.Set("all", allQ)
@@ -62,7 +63,7 @@ func (o *GetExportEvalCacheJSONURL) Build() (*url.URL, error) {
 
 	var enabledQ string
 	if o.Enabled != nil {
-		enabledQ = swag.FormatBool(*o.Enabled)
+		enabledQ = conv.FormatBool(*o.Enabled)
 	}
 	if enabledQ != "" {
 		qs.Set("enabled", enabledQ)
@@ -70,13 +71,13 @@ func (o *GetExportEvalCacheJSONURL) Build() (*url.URL, error) {
 
 	var idsIR []string
 	for _, idsI := range o.Ids {
-		idsIS := swag.FormatInt64(idsI)
+		idsIS := conv.FormatInteger(idsI)
 		if idsIS != "" {
 			idsIR = append(idsIR, idsIS)
 		}
 	}
 
-	ids := swag.JoinByFormat(idsIR, "csv")
+	ids := stringutils.JoinByFormat(idsIR, "csv")
 
 	if len(ids) > 0 {
 		qsv := ids[0]
@@ -93,7 +94,7 @@ func (o *GetExportEvalCacheJSONURL) Build() (*url.URL, error) {
 		}
 	}
 
-	keys := swag.JoinByFormat(keysIR, "csv")
+	keys := stringutils.JoinByFormat(keysIR, "csv")
 
 	if len(keys) > 0 {
 		qsv := keys[0]
@@ -110,7 +111,7 @@ func (o *GetExportEvalCacheJSONURL) Build() (*url.URL, error) {
 		}
 	}
 
-	tags := swag.JoinByFormat(tagsIR, "csv")
+	tags := stringutils.JoinByFormat(tagsIR, "csv")
 
 	if len(tags) > 0 {
 		qsv := tags[0]

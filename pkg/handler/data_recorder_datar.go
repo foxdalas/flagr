@@ -25,3 +25,10 @@ func (d *datarRecorder) AsyncRecord(r models.EvalResult) {
 func (d *datarRecorder) NewDataRecordFrame(_ models.EvalResult) DataRecordFrame {
 	return DataRecordFrame{}
 }
+
+// Close is a no-op: the underlying datar.Engine lifecycle is owned by GetDatar
+// and shut down via setupDatar's ServerShutdown hook, so closing it here would
+// risk a double shutdown.
+func (d *datarRecorder) Close() error {
+	return nil
+}

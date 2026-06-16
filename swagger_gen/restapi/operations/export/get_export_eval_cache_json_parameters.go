@@ -10,7 +10,8 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/conv"
+	"github.com/go-openapi/swag/stringutils"
 	"github.com/go-openapi/validate"
 )
 
@@ -114,7 +115,7 @@ func (o *GetExportEvalCacheJSONParams) bindAll(rawData []string, hasKey bool, fo
 		return nil
 	}
 
-	value, err := swag.ConvertBool(raw)
+	value, err := conv.ConvertBool(raw)
 	if err != nil {
 		return errors.InvalidType("all", "query", "bool", raw)
 	}
@@ -137,7 +138,7 @@ func (o *GetExportEvalCacheJSONParams) bindEnabled(rawData []string, hasKey bool
 		return nil
 	}
 
-	value, err := swag.ConvertBool(raw)
+	value, err := conv.ConvertBool(raw)
 	if err != nil {
 		return errors.InvalidType("enabled", "query", "bool", raw)
 	}
@@ -156,7 +157,7 @@ func (o *GetExportEvalCacheJSONParams) bindIds(rawData []string, hasKey bool, fo
 	}
 
 	// CollectionFormat: csv
-	idsIC := swag.SplitByFormat(qvIds, "csv")
+	idsIC := stringutils.SplitByFormat(qvIds, "csv")
 	if len(idsIC) == 0 {
 		return nil
 	}
@@ -164,7 +165,7 @@ func (o *GetExportEvalCacheJSONParams) bindIds(rawData []string, hasKey bool, fo
 	var idsIR []int64
 	for i, idsIV := range idsIC {
 		// items.Format: "int64"
-		idsI, err := swag.ConvertInt64(idsIV)
+		idsI, err := conv.ConvertInt64(idsIV)
 		if err != nil {
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "ids", i), "query", "int64", idsI)
 		}
@@ -206,7 +207,7 @@ func (o *GetExportEvalCacheJSONParams) bindKeys(rawData []string, hasKey bool, f
 	}
 
 	// CollectionFormat: csv
-	keysIC := swag.SplitByFormat(qvKeys, "csv")
+	keysIC := stringutils.SplitByFormat(qvKeys, "csv")
 	if len(keysIC) == 0 {
 		return nil
 	}
@@ -237,7 +238,7 @@ func (o *GetExportEvalCacheJSONParams) bindTags(rawData []string, hasKey bool, f
 	}
 
 	// CollectionFormat: csv
-	tagsIC := swag.SplitByFormat(qvTags, "csv")
+	tagsIC := stringutils.SplitByFormat(qvTags, "csv")
 	if len(tagsIC) == 0 {
 		return nil
 	}

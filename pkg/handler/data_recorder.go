@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -31,6 +32,18 @@ func (f fanOutRecorder) AsyncRecord(r models.EvalResult) {
 
 func (f fanOutRecorder) NewDataRecordFrame(_ models.EvalResult) DataRecordFrame {
 	return DataRecordFrame{}
+}
+
+// Close closes every underlying recorder, joining any errors so a single
+// failing backend does not prevent the others from shutting down cleanly.
+func (f fanOutRecorder) Close() error {
+	var errs []error
+	for _, rec := range f {
+		if err := rec.Close(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
 }
 
 // GetDataRecorder gets the data recorder

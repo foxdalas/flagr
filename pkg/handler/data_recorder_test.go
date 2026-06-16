@@ -74,6 +74,10 @@ func (m *mockRecorder) NewDataRecordFrame(_ models.EvalResult) DataRecordFrame {
 	return DataRecordFrame{}
 }
 
+func (m *mockRecorder) Close() error {
+	return nil
+}
+
 func TestFanOutRecorder_Empty(t *testing.T) {
 	var f fanOutRecorder
 	// Empty fan-out: AsyncRecord is a no-op (should not panic).
