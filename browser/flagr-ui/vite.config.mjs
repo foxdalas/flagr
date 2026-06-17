@@ -72,5 +72,18 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'static',
     chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        // Keep the Vue/Element Plus runtime in a single chunk. Splitting them
+        // makes the bundler emit a cross-chunk init reference
+        // (init_runtime_dom_esm_bundler) that runs before it is defined,
+        // crashing the app on load in the production build.
+        manualChunks(id) {
+          if (/node_modules\/(vue|@vue|@vueuse|element-plus|@element-plus)\//.test(id)) {
+            return 'vendor-core'
+          }
+        }
+      }
+    }
   }
 })
