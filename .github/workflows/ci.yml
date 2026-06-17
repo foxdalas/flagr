@@ -72,7 +72,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version-file: browser/flagr-ui/package.json
-      - run: cd browser/flagr-ui && npm ci
+      - run: cd browser/flagr-ui && npm install
       - run: cd browser/flagr-ui && npm run build
       - run: cd browser/flagr-ui && npx playwright install --with-deps chromium
 
