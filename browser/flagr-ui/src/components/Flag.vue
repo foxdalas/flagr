@@ -141,6 +141,7 @@
             </p>
             <el-button
               class="width--full"
+              type="primary"
               :disabled="!newSegment.description"
               :loading="creatingSegment"
               @click.prevent="createSegment"
@@ -894,35 +895,10 @@
                                 <el-icon><Edit /></el-icon> edit
                               </el-button>
                             </h5>
-                            <el-row
+                            <DistributionBar
                               v-if="segment.distributions.length"
-                              :gutter="20"
-                            >
-                              <el-col
-                                v-for="distribution in segment.distributions"
-                                :key="distribution.id"
-                                :xs="12"
-                                :sm="8"
-                              >
-                                <el-card
-                                  shadow="never"
-                                  class="distribution-card"
-                                >
-                                  <div>
-                                    <span size="small">
-                                      {{
-                                        distribution.variantKey
-                                      }}
-                                    </span>
-                                  </div>
-                                  <el-progress
-                                    type="circle"
-                                    :width="70"
-                                    :percentage="distribution.percent"
-                                  />
-                                </el-card>
-                              </el-col>
-                            </el-row>
+                              :distributions="segment.distributions"
+                            />
 
                             <div
                               v-else
@@ -1023,6 +999,7 @@ import { useDirtyState } from "@/composables/useDirtyState";
 import { useClipboard } from "@/composables/useClipboard";
 import Spinner from "@/components/Spinner";
 import DebugConsole from "@/components/DebugConsole";
+import DistributionBar from "@/components/DistributionBar.vue";
 const FlagHistory = defineAsyncComponent(() => import("@/components/FlagHistory"));
 const MarkdownEditor = defineAsyncComponent(() => import("@/components/MarkdownEditor.vue"));
 import { operators } from "@/operators.json";
@@ -1817,15 +1794,6 @@ h5 {
     &:hover {
       border-color: var(--flagr-color-border-strong);
     }
-  }
-  .distribution-card {
-    height: auto;
-    min-height: 120px;
-    text-align: center;
-    .el-card__body {
-      padding: var(--flagr-space-3, 12px) var(--flagr-space-4, 16px);
-    }
-    font-size: 0.9em;
   }
 }
 
