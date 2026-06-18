@@ -26,6 +26,12 @@ jobs:
       - name: Build UI
         run: cd browser/flagr-ui && npm install && npm run build
 
+      # npm install rewrites package-lock.json on the Linux runner (platform-specific
+      # optional deps like @emnapi/rolldown bindings). Restore it so the working tree
+      # is clean — goreleaser refuses to release from a dirty git state.
+      - name: Restore lockfile
+        run: git checkout -- browser/flagr-ui/package-lock.json
+
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
