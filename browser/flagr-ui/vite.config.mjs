@@ -5,15 +5,30 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath } from 'url'
 import { readFileSync, existsSync, cpSync } from 'fs'
+import { execSync } from 'node:child_process'
 
 const srcDir = fileURLToPath(new URL('src', import.meta.url))
 // Repo root holds docs/ and pkg/, imported as raw text by the Docs viewer.
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url))
 const docsDir = fileURLToPath(new URL('../../docs', import.meta.url))
 const pkg = JSON.parse(readFileSync(new URL('package.json', import.meta.url)))
-// App version: injected from the build environment (e.g. Docker/CI sets
-// VITE_VERSION to the real release/tag); falls back to package.json version.
-const appVersion = process.env.VITE_VERSION || pkg.version
+
+// App version shown in the UI. Priority:
+//   1. VITE_VERSION env (lets the build pipeline pin an explicit value)
+//   2. exact git tag, else short commit hash (the "show true version" feature)
+//   3. package.json version (when git is unavailable, e.g. a tarball build)
+function resolveAppVersion() {
+  if (process.env.VITE_VERSION) return process.env.VITE_VERSION
+  try {
+    return execSync(
+      'git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD',
+      { cwd: repoRoot, encoding: 'utf-8', shell: '/bin/sh' }
+    ).trim() || pkg.version
+  } catch {
+    return pkg.version
+  }
+}
+const appVersion = resolveAppVersion()
 
 export default defineConfig({
   plugins: [
