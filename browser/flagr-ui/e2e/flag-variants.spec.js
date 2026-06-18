@@ -98,7 +98,7 @@ test.describe('Flag Variants', () => {
     if (await deleteIcons.count() > 0) {
       await deleteIcons.last().click()
       // Confirm via ElMessageBox
-      const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'OK' })
+      const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'Delete' })
       await expect(okBtn).toBeVisible({ timeout: 3000 })
       await okBtn.click()
       await page.waitForTimeout(500)

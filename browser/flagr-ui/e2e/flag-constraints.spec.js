@@ -74,7 +74,7 @@ test.describe('Flag Constraints', () => {
     if (await deleteBtns.count() > 0) {
       await deleteBtns.first().click()
       // Confirm deletion dialog
-      const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: /confirm|ok/i })
+      const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: /delete/i })
       await expect(okBtn).toBeVisible({ timeout: 3000 })
       await okBtn.click()
       await page.waitForTimeout(500)

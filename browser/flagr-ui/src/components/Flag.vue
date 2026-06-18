@@ -785,6 +785,13 @@
                                           Value
                                         </template>
                                       </el-input>
+                                      <div
+                                        v-if="constraint.value && constraintValueHint(constraint.operator, constraint.value)"
+                                        class="constraint-hint"
+                                        role="alert"
+                                      >
+                                        {{ constraintValueHint(constraint.operator, constraint.value) }}
+                                      </div>
                                     </el-col>
                                     <el-col :span="2">
                                       <el-button
@@ -792,6 +799,7 @@
                                         plain
                                         class="width--full"
                                         size="small"
+                                        :disabled="!!constraintValueHint(constraint.operator, constraint.value)"
                                         @click="
                                           putConstraint(segment, constraint)
                                         "
@@ -1361,7 +1369,7 @@ function deleteVariant(variant) {
   ElMessageBox.confirm(
     `Delete variant '${variant.key}'?`,
     "Delete variant",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/variants/${variant.id}`
@@ -1449,7 +1457,7 @@ function deleteTag(tag) {
   ElMessageBox.confirm(
     `Delete tag '${tag.value}'?`,
     "Delete tag",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(`${API_URL}/flags/${flagId.value}/tags/${tag.id}`).then(
       () => {
@@ -1491,7 +1499,7 @@ function deleteConstraint(segment, constraint) {
   ElMessageBox.confirm(
     `Delete constraint '${constraint.property} ${constraint.operator}'?`,
     "Delete constraint",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints/${constraint.id}`
@@ -1526,7 +1534,7 @@ function deleteSegment(segment) {
   ElMessageBox.confirm(
     "Delete segment? Constraints and distributions will be removed.",
     "Delete segment",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/segments/${segment.id}`
