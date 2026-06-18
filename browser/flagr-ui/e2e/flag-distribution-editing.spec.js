@@ -58,8 +58,11 @@ function getEnabledInputs(dialog) {
   return dialog.locator('.el-input-number:not(.is-disabled) input')
 }
 
+// The saved distribution renders as a single stacked DistributionBar with one
+// legend entry per variant (each shows the variant key + its percentage), so we
+// assert against the legend items — one per variant, just like the old cards.
 function getDistributionCards(page) {
-  return page.locator('.segment-distributions .distribution-card')
+  return page.locator('.segment-distributions .dist-legend__item')
 }
 
 // --- Test Groups ---

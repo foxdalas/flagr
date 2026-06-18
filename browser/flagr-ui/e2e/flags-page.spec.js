@@ -20,7 +20,7 @@ test.describe('Flags Page', () => {
   })
 
   test('Create new flag', async ({ page }) => {
-    const descInput = page.locator('input[placeholder="Specific new flag description"]')
+    const descInput = page.locator('input[placeholder="Describe the new flag"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create New Flag' })
 
     // Empty description - button should be disabled
@@ -40,7 +40,7 @@ test.describe('Flags Page', () => {
   })
 
   test('Create Simple Boolean Flag', async ({ page }) => {
-    const descInput = page.locator('input[placeholder="Specific new flag description"]')
+    const descInput = page.locator('input[placeholder="Describe the new flag"]')
     const flagName = 'boolean-flag-e2e-' + Date.now()
     await descInput.fill(flagName)
 
@@ -56,7 +56,7 @@ test.describe('Flags Page', () => {
 
   test('Search by description', async ({ page }) => {
     // Create flags for search
-    const descInput = page.locator('input[placeholder="Specific new flag description"]')
+    const descInput = page.locator('input[placeholder="Describe the new flag"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create New Flag' })
 
     const alpha = 'alpha-search-' + Date.now()
@@ -105,7 +105,7 @@ test.describe('Flags Page', () => {
   })
 
   test('AND search with comma', async ({ page }) => {
-    const descInput = page.locator('input[placeholder="Specific new flag description"]')
+    const descInput = page.locator('input[placeholder="Describe the new flag"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create New Flag' })
 
     const ts = Date.now()
@@ -169,7 +169,7 @@ test.describe('Flags Page', () => {
   })
 
   test('Search by description is case-insensitive', async ({ page }) => {
-    const descInput = page.locator('input[placeholder="Specific new flag description"]')
+    const descInput = page.locator('input[placeholder="Describe the new flag"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create New Flag' })
 
     // Create flag with mixed case description
@@ -253,7 +253,7 @@ test.describe('Flags Page', () => {
 
   test('Search by key is case-insensitive', async ({ page }) => {
     // Create a flag and set its key via the flag detail page
-    const descInput = page.locator('input[placeholder="Specific new flag description"]')
+    const descInput = page.locator('input[placeholder="Describe the new flag"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create New Flag' })
 
     const ts = Date.now()

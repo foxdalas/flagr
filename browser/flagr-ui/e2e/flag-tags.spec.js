@@ -80,7 +80,7 @@ test.describe('Flag Tags', () => {
     const closeBtn = tag.locator('.el-tag__close, .el-icon-close')
     await closeBtn.click()
     // Confirm via ElMessageBox
-    const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'OK' })
+    const okBtn = page.locator('.el-message-box').locator('button').filter({ hasText: 'Delete' })
     await expect(okBtn).toBeVisible({ timeout: 3000 })
     await okBtn.click()
     await page.waitForTimeout(500)

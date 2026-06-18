@@ -1,5 +1,70 @@
 <template>
   <div class="eval-flow">
+    <!-- Tracer: drive a real evaluation and watch the path light up -->
+    <div class="ef-tracer">
+      <div class="ef-tracer__eyebrow">
+        Trace
+      </div>
+      <p class="ef-tracer__lead">
+        Send a sample entity through this flag and watch the exact path it takes.
+      </p>
+      <div class="ef-tracer__form">
+        <label class="ef-tracer__field">
+          <span class="ef-tracer__label">Entity ID</span>
+          <el-input
+            v-model="entityID"
+            size="small"
+            placeholder="u1"
+            @keyup.enter="runTrace"
+          />
+        </label>
+        <label class="ef-tracer__field ef-tracer__field--grow">
+          <span class="ef-tracer__label">Entity context (JSON)</span>
+          <el-input
+            v-model="contextText"
+            size="small"
+            placeholder='{"country":"DE"}'
+            @keyup.enter="runTrace"
+          />
+        </label>
+        <el-button
+          type="primary"
+          size="small"
+          :loading="running"
+          @click="runTrace"
+        >
+          Run trace
+        </el-button>
+        <el-button
+          v-if="trace"
+          text
+          size="small"
+          @click="clearTrace"
+        >
+          Clear
+        </el-button>
+      </div>
+      <div
+        v-if="trace"
+        class="ef-tracer__outcome"
+        :class="`ef-tracer__outcome--${outcome.type}`"
+      >
+        <span class="ef-tracer__outcome-icon">{{ outcomeIcon }}</span>
+        <span v-if="outcome.type === 'variant'">
+          Assigned variant <strong>{{ outcome.variantKey }}</strong>
+        </span>
+        <span v-else-if="outcome.type === 'excluded'">
+          Segment matched, but the entity was <strong>excluded by rollout</strong> — no variant
+        </span>
+        <span v-else-if="outcome.type === 'no-match'">
+          No segment matched — <strong>empty result</strong>
+        </span>
+        <span v-else>
+          Flag is disabled — <strong>empty result</strong>
+        </span>
+      </div>
+    </div>
+
     <!-- Entry node -->
     <div class="ef-node ef-node--entry">
       <div class="ef-node__icon">
@@ -10,7 +75,7 @@
           Evaluation Request
         </div>
         <div class="ef-node__subtitle">
-          entityID + entityContext
+          {{ trace ? entryLabel : 'entityID + entityContext' }}
         </div>
       </div>
     </div>
@@ -61,10 +126,20 @@
             >no match</span>
           </div>
 
-          <div class="ef-segment">
+          <div
+            class="ef-segment"
+            :class="trace ? `ef-segment--${segmentStatus(segment)}` : ''"
+          >
             <div class="ef-segment__header">
               <span class="ef-segment__rank">[{{ idx + 1 }}]</span>
               <span class="ef-segment__name">{{ segment.description || 'Unnamed segment' }}</span>
+              <span
+                v-if="trace && segmentStatus(segment)"
+                class="ef-segment__status"
+                :class="`ef-segment__status--${segmentStatus(segment)}`"
+              >
+                {{ statusLabel(segmentStatus(segment)) }}
+              </span>
               <span
                 class="ef-segment__rollout"
                 :class="{ 'ef-segment__rollout--zero': segment.rolloutPercent === 0 }"
@@ -107,37 +182,10 @@
                 Distribution
               </div>
               <template v-if="segmentDistributions(segment).length">
-                <div class="ef-dist-bar">
-                  <div
-                    v-for="(d, dIdx) in segmentDistributions(segment)"
-                    :key="d.variantKey"
-                    class="ef-dist-bar__slice"
-                    :style="{
-                      width: d.percent + '%',
-                      backgroundColor: variantColor(dIdx),
-                    }"
-                    :title="d.variantKey + ': ' + d.percent + '%'"
-                  />
-                </div>
-                <div class="ef-dist-legend">
-                  <span
-                    v-for="(d, dIdx) in segmentDistributions(segment)"
-                    :key="'legend-' + d.variantKey"
-                    class="ef-dist-legend__item"
-                  >
-                    <span
-                      class="ef-dist-legend__swatch"
-                      :style="{ backgroundColor: variantColor(dIdx) }"
-                    />
-                    {{ d.variantKey }} {{ d.percent }}%
-                  </span>
-                </div>
-                <div
-                  v-if="distributionTotal(segment) !== 100"
-                  class="ef-segment__warning"
-                >
-                  ⚠ Distribution totals {{ distributionTotal(segment) }}% (expected 100%)
-                </div>
+                <DistributionBar
+                  :distributions="segmentDistributions(segment)"
+                  :highlight="segmentStatus(segment) === 'matched' ? assignedVariantKey : null"
+                />
               </template>
               <div
                 v-else
@@ -153,7 +201,10 @@
         <div class="ef-connector">
           <span class="ef-connector__label">no match</span>
         </div>
-        <div class="ef-node ef-node--terminal">
+        <div
+          class="ef-node ef-node--terminal"
+          :class="trace ? (outcome.type === 'no-match' ? 'ef-node--terminal-active' : 'ef-node--faded') : ''"
+        >
           <div class="ef-node__content">
             <div class="ef-node__title">
               No Match
@@ -184,11 +235,18 @@
 </template>
 
 <script setup>
+import { ref, computed } from "vue";
+import Axios from "axios";
+import { ElMessage } from "element-plus";
 import operators from "@/operators.json";
+import constants from "@/constants";
+import DistributionBar from "@/components/DistributionBar.vue";
 
-defineProps({
+const props = defineProps({
   flag: { type: Object, required: true },
 });
+
+const { API_URL } = constants;
 
 const operatorMap = Object.fromEntries(
   operators.operators.map((op) => [op.value, op.label])
@@ -211,25 +269,103 @@ function segmentDistributions(segment) {
   }));
 }
 
-function distributionTotal(segment) {
-  if (!segment.distributions) return 0;
-  return segment.distributions.reduce((sum, d) => sum + d.percent, 0);
+/* ── Live trace ──────────────────────────── */
+
+const entityID = ref("u1");
+const contextText = ref('{"country":"DE"}');
+const running = ref(false);
+const trace = ref(null);
+
+async function runTrace() {
+  let ctx;
+  try {
+    ctx = contextText.value.trim() ? JSON.parse(contextText.value) : {};
+  } catch {
+    ElMessage.error("Entity context must be valid JSON");
+    return;
+  }
+  if (ctx === null || typeof ctx !== "object" || Array.isArray(ctx)) {
+    ElMessage.error("Entity context must be a JSON object");
+    return;
+  }
+  running.value = true;
+  try {
+    const { data } = await Axios.post(`${API_URL}/evaluation`, {
+      entityID: entityID.value || undefined,
+      entityContext: ctx,
+      enableDebug: true,
+      flagID: props.flag.id,
+    });
+    trace.value = data;
+  } catch {
+    ElMessage.error("Evaluation failed");
+  } finally {
+    running.value = false;
+  }
 }
 
-const VARIANT_COLORS = [
-  "var(--flagr-indigo-400)",
-  "var(--flagr-green-500)",
-  "var(--flagr-amber-500)",
-  "var(--flagr-red-500)",
-  "var(--flagr-cyan-500)",
-  "var(--flagr-violet-500)",
-  "var(--flagr-pink-500)",
-  "var(--flagr-teal-500)",
-];
-
-function variantColor(index) {
-  return VARIANT_COLORS[index % VARIANT_COLORS.length];
+function clearTrace() {
+  trace.value = null;
 }
+
+// Per-segment debug messages, keyed by segmentID. Segments absent from this map
+// were never reached (a prior segment's constraints already claimed the entity).
+const segmentLogs = computed(() => {
+  const map = {};
+  const logs = trace.value?.evalDebugLog?.segmentDebugLogs || [];
+  for (const l of logs) map[l.segmentID] = l.msg || "";
+  return map;
+});
+
+// Classify a segment from its debug message. Mirrors eval.go / distribution.go:
+// constraints decide first-match-wins; rollout then decides yes/no within it.
+function segmentStatus(segment) {
+  if (!trace.value) return null;
+  if (!(segment.id in segmentLogs.value)) return "skipped";
+  const m = segmentLogs.value[segment.id].toLowerCase();
+  if (m.includes("constraint not match")) return "failed";
+  if (m.includes("rollout yes")) return "matched";
+  if (m.includes("rollout no")) return "excluded";
+  return "error";
+}
+
+function statusLabel(status) {
+  return {
+    matched: "✓ Matched",
+    excluded: "Rollout excluded",
+    failed: "✗ No match",
+    skipped: "Not reached",
+    error: "Eval error",
+  }[status] || "";
+}
+
+const assignedVariantKey = computed(() => trace.value?.variantKey || null);
+
+const outcome = computed(() => {
+  if (!trace.value) return null;
+  if (!props.flag.enabled) return { type: "disabled" };
+  if (assignedVariantKey.value) return { type: "variant", variantKey: assignedVariantKey.value };
+  const excluded = (props.flag.segments || []).some((s) => segmentStatus(s) === "excluded");
+  return { type: excluded ? "excluded" : "no-match" };
+});
+
+const outcomeIcon = computed(() => {
+  if (!outcome.value) return "";
+  return { variant: "✓", excluded: "⚠", "no-match": "∅", disabled: "✗" }[outcome.value.type] || "";
+});
+
+// Compact summary of the traced entity for the entry node.
+const entryLabel = computed(() => {
+  const ec = trace.value?.evalContext;
+  if (!ec) return "";
+  const ctx = ec.entityContext;
+  let summary = ec.entityID || "(random)";
+  if (ctx && typeof ctx === "object") {
+    const parts = Object.entries(ctx).map(([k, v]) => `${k}=${JSON.stringify(v)}`);
+    if (parts.length) summary += " · " + parts.join(", ");
+  }
+  return truncate(summary, 64);
+});
 </script>
 
 <style scoped>
@@ -240,6 +376,90 @@ function variantColor(index) {
   max-width: 640px;
   margin: var(--flagr-space-5) auto;
   padding: var(--flagr-space-4) 0;
+}
+
+/* ── Tracer panel (signature element) ─────── */
+
+.ef-tracer {
+  width: 100%;
+  margin-bottom: var(--flagr-space-5);
+  padding: var(--flagr-space-4);
+  border-radius: var(--flagr-radius-md);
+  border: 1px solid var(--flagr-color-border);
+  background: var(--flagr-color-bg-surface);
+  box-shadow: var(--flagr-shadow-sm);
+}
+
+.ef-tracer__eyebrow {
+  font-family: var(--flagr-font-mono);
+  font-size: var(--flagr-text-xs);
+  font-weight: var(--flagr-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--flagr-color-primary);
+}
+
+.ef-tracer__lead {
+  margin: var(--flagr-space-1) 0 var(--flagr-space-3);
+  font-size: var(--flagr-text-sm);
+  color: var(--flagr-color-text-secondary);
+}
+
+.ef-tracer__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--flagr-space-3);
+}
+
+.ef-tracer__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.ef-tracer__field--grow {
+  flex: 1;
+  min-width: 200px;
+}
+
+.ef-tracer__label {
+  font-size: var(--flagr-text-xs);
+  font-weight: var(--flagr-font-weight-semibold);
+  color: var(--flagr-color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ef-tracer__outcome {
+  display: flex;
+  align-items: center;
+  gap: var(--flagr-space-2);
+  margin-top: var(--flagr-space-3);
+  padding: var(--flagr-space-2) var(--flagr-space-3);
+  border-radius: var(--flagr-radius-sm);
+  font-size: var(--flagr-text-sm);
+}
+
+.ef-tracer__outcome-icon {
+  font-weight: var(--flagr-font-weight-bold);
+}
+
+.ef-tracer__outcome--variant {
+  background: var(--flagr-color-success-bg);
+  color: var(--flagr-color-success);
+}
+
+.ef-tracer__outcome--excluded {
+  background: var(--flagr-color-warning-bg, #fef3c7);
+  color: var(--flagr-color-warning, #d97706);
+}
+
+.ef-tracer__outcome--no-match,
+.ef-tracer__outcome--disabled {
+  background: var(--flagr-color-bg-subtle);
+  color: var(--flagr-color-text-secondary);
 }
 
 /* ── Nodes ──────────────────────────────── */
@@ -296,6 +516,16 @@ function variantColor(index) {
   background: var(--flagr-color-bg-subtle);
 }
 
+.ef-node--terminal-active {
+  border-style: solid;
+  border-color: var(--flagr-color-text-secondary);
+  background: var(--flagr-color-bg-muted);
+}
+
+.ef-node--faded {
+  opacity: 0.4;
+}
+
 .ef-node__title {
   font-weight: var(--flagr-font-weight-semibold);
   font-size: var(--flagr-text-base);
@@ -339,6 +569,25 @@ function variantColor(index) {
   background: var(--flagr-color-bg-surface);
   box-shadow: var(--flagr-shadow-sm);
   overflow: hidden;
+  transition: opacity var(--flagr-transition-base), border-color var(--flagr-transition-base);
+}
+
+/* Trace states */
+.ef-segment--matched {
+  border-color: var(--flagr-color-success);
+  box-shadow: 0 0 0 1px var(--flagr-color-success), var(--flagr-shadow-sm);
+}
+
+.ef-segment--excluded {
+  border-color: var(--flagr-color-warning, #d97706);
+}
+
+.ef-segment--failed {
+  opacity: 0.55;
+}
+
+.ef-segment--skipped {
+  opacity: 0.4;
 }
 
 .ef-segment__header {
@@ -362,6 +611,33 @@ function variantColor(index) {
   font-weight: var(--flagr-font-weight-semibold);
   font-size: var(--flagr-text-base);
   color: var(--flagr-color-text);
+}
+
+.ef-segment__status {
+  font-family: var(--flagr-font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px var(--flagr-space-2);
+  border-radius: var(--flagr-radius-full);
+  font-weight: var(--flagr-font-weight-semibold);
+}
+
+.ef-segment__status--matched {
+  background: var(--flagr-color-success-bg);
+  color: var(--flagr-color-success);
+}
+
+.ef-segment__status--excluded {
+  background: var(--flagr-color-warning-bg, #fef3c7);
+  color: var(--flagr-color-warning, #d97706);
+}
+
+.ef-segment__status--failed,
+.ef-segment__status--skipped,
+.ef-segment__status--error {
+  background: var(--flagr-color-bg-muted);
+  color: var(--flagr-color-text-muted);
 }
 
 .ef-segment__rollout {
@@ -402,12 +678,6 @@ function variantColor(index) {
   font-style: italic;
 }
 
-.ef-segment__warning {
-  font-size: var(--flagr-text-xs);
-  color: var(--flagr-color-warning);
-  margin-top: var(--flagr-space-1);
-}
-
 /* ── Constraint pills ───────────────────── */
 
 .ef-constraint-pills {
@@ -436,43 +706,5 @@ function variantColor(index) {
 .ef-pill__op {
   color: var(--flagr-color-primary);
   font-weight: var(--flagr-font-weight-semibold);
-}
-
-/* ── Distribution bar ───────────────────── */
-
-.ef-dist-bar {
-  display: flex;
-  height: 20px;
-  border-radius: var(--flagr-radius-sm);
-  overflow: hidden;
-  border: 1px solid var(--flagr-color-border);
-}
-
-.ef-dist-bar__slice {
-  height: 100%;
-  min-width: 2px;
-  transition: width var(--flagr-transition-base);
-}
-
-.ef-dist-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--flagr-space-2) var(--flagr-space-4);
-  margin-top: var(--flagr-space-2);
-}
-
-.ef-dist-legend__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--flagr-text-xs);
-  color: var(--flagr-color-text-secondary);
-}
-
-.ef-dist-legend__swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
 }
 </style>

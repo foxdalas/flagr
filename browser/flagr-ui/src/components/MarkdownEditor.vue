@@ -65,6 +65,7 @@
 import { ref, computed, watch, onMounted, nextTick } from "vue"
 import MarkdownIt from "markdown-it"
 import mk from "@vscode/markdown-it-katex"
+import taskLists from "markdown-it-task-lists"
 import xss from "xss"
 
 import "github-markdown-css/github-markdown.css"
@@ -83,8 +84,11 @@ const props = defineProps({
 })
 const emit = defineEmits(["update:markdown"])
 
-const md = MarkdownIt("commonmark")
+// Default preset (not "commonmark") so GFM tables and ~~strikethrough~~ render —
+// the toolbar exposes both. task-lists adds read-only "- [x]" checkboxes.
+const md = MarkdownIt({ breaks: false, linkify: true })
 md.use(mk)
+md.use(taskLists, { enabled: false, label: false })
 
 const xssOptions = {
   whiteList: {
@@ -94,6 +98,11 @@ const xssOptions = {
     div: ["class", "style"],
     code: ["class"],
     pre: ["class"],
+    // GFM task lists (read-only checkboxes from markdown-it-task-lists)
+    input: ["type", "checked", "disabled", "class"],
+    ul: ["class"],
+    ol: ["class"],
+    li: ["class"],
     // KaTeX MathML (accessibility)
     math: ["xmlns"],
     semantics: [],
@@ -168,7 +177,7 @@ function syncMarkdown(val) {
 
 .markdown-editor--focused {
   border-color: var(--flagr-color-border-focus);
-  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
+  box-shadow: var(--flagr-shadow-focus);
 }
 
 .markdown-editor__input-wrap {
@@ -179,7 +188,7 @@ function syncMarkdown(val) {
     border: none;
     border-radius: 0;
     box-shadow: none;
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-family: var(--flagr-font-mono);
     font-size: var(--flagr-text-base, 14px);
     line-height: 1.6;
     padding: 12px;

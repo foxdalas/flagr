@@ -12,28 +12,21 @@
       >
         <template v-if="activeCollapseItems.includes('evaluation')">
           <el-row :gutter="10">
-            <el-col :span="5">
-              <span>Request</span>
-            </el-col>
             <el-col
-              :span="7"
-              class="evaluation-button-col"
+              :xs="24"
+              :sm="12"
             >
-              <el-button
-                size="small"
-                type="primary"
-                plain
-                @click="postEvaluation(evalContext)"
-              >
-                POST /api/v1/evaluation
-              </el-button>
-            </el-col>
-            <el-col :span="6">
-              <span>Response</span>
-            </el-col>
-          </el-row>
-          <el-row :gutter="10">
-            <el-col :span="12">
+              <div class="dc-pane-head">
+                <span>Request</span>
+                <el-button
+                  size="small"
+                  type="primary"
+                  plain
+                  @click="postEvaluation(evalContext)"
+                >
+                  POST /api/v1/evaluation
+                </el-button>
+              </div>
               <JsonEditorVue
                 v-model="evalContext"
                 :mode="'text'"
@@ -43,7 +36,13 @@
                 class="json-editor"
               />
             </el-col>
-            <el-col :span="12">
+            <el-col
+              :xs="24"
+              :sm="12"
+            >
+              <div class="dc-pane-head">
+                <span>Response</span>
+              </div>
               <JsonEditorVue
                 v-model="evalResult"
                 :mode="'text'"
@@ -63,28 +62,21 @@
       >
         <template v-if="activeCollapseItems.includes('batch')">
           <el-row :gutter="10">
-            <el-col :span="5">
-              <span>Request</span>
-            </el-col>
             <el-col
-              :span="7"
-              class="evaluation-button-col"
+              :xs="24"
+              :sm="12"
             >
-              <el-button
-                size="small"
-                type="primary"
-                plain
-                @click="postEvaluationBatch(batchEvalContext)"
-              >
-                POST /api/v1/evaluation/batch
-              </el-button>
-            </el-col>
-            <el-col :span="6">
-              <span>Response</span>
-            </el-col>
-          </el-row>
-          <el-row :gutter="10">
-            <el-col :span="12">
+              <div class="dc-pane-head">
+                <span>Request</span>
+                <el-button
+                  size="small"
+                  type="primary"
+                  plain
+                  @click="postEvaluationBatch(batchEvalContext)"
+                >
+                  POST /api/v1/evaluation/batch
+                </el-button>
+              </div>
               <JsonEditorVue
                 v-model="batchEvalContext"
                 :mode="'text'"
@@ -94,7 +86,13 @@
                 class="json-editor"
               />
             </el-col>
-            <el-col :span="12">
+            <el-col
+              :xs="24"
+              :sm="12"
+            >
+              <div class="dc-pane-head">
+                <span>Response</span>
+              </div>
               <JsonEditorVue
                 v-model="batchEvalResult"
                 :mode="'text'"
@@ -130,9 +128,11 @@ const activeCollapseItems = ref([]);
 
 const { API_URL } = constants;
 
+// Seed a sensible request: use the flag's own entity type when it defines one,
+// otherwise "user" (the common case) rather than the legacy "report" placeholder.
 const evalContext = ref({
   entityID: "a1234",
-  entityType: "report",
+  entityType: props.flag.entityType || "user",
   entityContext: {
     hello: "world"
   },
@@ -146,14 +146,14 @@ const batchEvalContext = ref({
   entities: [
     {
       entityID: "a1234",
-      entityType: "report",
+      entityType: props.flag.entityType || "user",
       entityContext: {
         hello: "world"
       }
     },
     {
       entityID: "a5678",
-      entityType: "report",
+      entityType: props.flag.entityType || "user",
       entityContext: {
         hello: "world"
       }
@@ -196,7 +196,18 @@ function postEvaluationBatch(batchEvalCtx) {
     height: 400px;
   }
 }
-.evaluation-button-col {
-  text-align: right;
+.dc-pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 32px;
+}
+/* When the panes stack on narrow screens, separate them vertically. */
+@media (max-width: 767px) {
+  .el-col + .el-col .dc-pane-head {
+    margin-top: var(--flagr-space-4, 16px);
+  }
 }
 </style>

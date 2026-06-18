@@ -141,6 +141,7 @@
             </p>
             <el-button
               class="width--full"
+              type="primary"
               :disabled="!newSegment.description"
               :loading="creatingSegment"
               @click.prevent="createSegment"
@@ -188,9 +189,30 @@
               </el-tooltip>
             </div>
           </div>
-          <el-tabs @tab-click="handleHistoryTabClick">
+          <el-tabs
+            class="flag-config-tabs"
+            @tab-click="handleHistoryTabClick"
+          >
             <el-tab-pane label="Config">
-              <el-card class="flag-config-card">
+              <nav
+                class="section-nav"
+                aria-label="Config sections"
+              >
+                <button
+                  v-for="s in sectionNav"
+                  :key="s.id"
+                  type="button"
+                  class="section-nav__item"
+                  :class="{ 'is-active': activeSection === s.id }"
+                  @click="scrollToSection(s.id)"
+                >
+                  {{ s.label }}
+                </button>
+              </nav>
+              <el-card
+                id="sec-flag"
+                class="flag-config-card"
+              >
                 <template #header>
                   <div class="el-card-header">
                     <div class="flex-row">
@@ -415,6 +437,7 @@
                           v-model="newTag.value"
                           size="small"
                           class="width--full"
+                          placeholder="Tag name, then Enter"
                           :trigger-on-focus="false"
                           :fetch-suggestions="queryTags"
                           @select="createTag"
@@ -435,7 +458,10 @@
                 </el-card>
               </el-card>
 
-              <el-card class="variants-container">
+              <el-card
+                id="sec-variants"
+                class="variants-container"
+              >
                 <template #header>
                   <div class="clearfix">
                     <h2>Variants</h2>
@@ -552,6 +578,7 @@
                   </div>
                   <el-button
                     class="width--full"
+                    type="primary"
                     :disabled="!newVariant.key || !!newVariantKeyError"
                     :loading="creatingVariant"
                     @click.prevent="createVariant"
@@ -561,7 +588,10 @@
                 </div>
               </el-card>
 
-              <el-card class="segments-container">
+              <el-card
+                id="sec-segments"
+                class="segments-container"
+              >
                 <template #header>
                   <div class="el-card-header">
                     <div class="flex-row">
@@ -755,6 +785,13 @@
                                           Value
                                         </template>
                                       </el-input>
+                                      <div
+                                        v-if="constraint.value && constraintValueHint(constraint.operator, constraint.value)"
+                                        class="constraint-hint"
+                                        role="alert"
+                                      >
+                                        {{ constraintValueHint(constraint.operator, constraint.value) }}
+                                      </div>
                                     </el-col>
                                     <el-col :span="2">
                                       <el-button
@@ -762,6 +799,7 @@
                                         plain
                                         class="width--full"
                                         size="small"
+                                        :disabled="!!constraintValueHint(constraint.operator, constraint.value)"
                                         @click="
                                           putConstraint(segment, constraint)
                                         "
@@ -894,35 +932,10 @@
                                 <el-icon><Edit /></el-icon> edit
                               </el-button>
                             </h5>
-                            <el-row
+                            <DistributionBar
                               v-if="segment.distributions.length"
-                              :gutter="20"
-                            >
-                              <el-col
-                                v-for="distribution in segment.distributions"
-                                :key="distribution.id"
-                                :xs="12"
-                                :sm="8"
-                              >
-                                <el-card
-                                  shadow="never"
-                                  class="distribution-card"
-                                >
-                                  <div>
-                                    <span size="small">
-                                      {{
-                                        distribution.variantKey
-                                      }}
-                                    </span>
-                                  </div>
-                                  <el-progress
-                                    type="circle"
-                                    :width="70"
-                                    :percentage="distribution.percent"
-                                  />
-                                </el-card>
-                              </el-col>
-                            </el-row>
+                              :distributions="segment.distributions"
+                            />
 
                             <div
                               v-else
@@ -966,8 +979,11 @@
                   </el-button>
                 </div>
               </el-card>
-              <debug-console :flag="flag" />
-              <el-card>
+              <debug-console
+                id="sec-debug"
+                :flag="flag"
+              />
+              <el-card id="sec-settings">
                 <template #header>
                   <div class="el-card-header">
                     <h2>Flag Settings</h2>
@@ -1006,7 +1022,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, defineAsyncComponent, toRaw } from "vue";
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, defineAsyncComponent, toRaw } from "vue";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import draggable from "vuedraggable";
 import Axios from "axios";
@@ -1023,6 +1039,7 @@ import { useDirtyState } from "@/composables/useDirtyState";
 import { useClipboard } from "@/composables/useClipboard";
 import Spinner from "@/components/Spinner";
 import DebugConsole from "@/components/DebugConsole";
+import DistributionBar from "@/components/DistributionBar.vue";
 const FlagHistory = defineAsyncComponent(() => import("@/components/FlagHistory"));
 const MarkdownEditor = defineAsyncComponent(() => import("@/components/MarkdownEditor.vue"));
 import { operators } from "@/operators.json";
@@ -1352,7 +1369,7 @@ function deleteVariant(variant) {
   ElMessageBox.confirm(
     `Delete variant '${variant.key}'?`,
     "Delete variant",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/variants/${variant.id}`
@@ -1440,7 +1457,7 @@ function deleteTag(tag) {
   ElMessageBox.confirm(
     `Delete tag '${tag.value}'?`,
     "Delete tag",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(`${API_URL}/flags/${flagId.value}/tags/${tag.id}`).then(
       () => {
@@ -1482,7 +1499,7 @@ function deleteConstraint(segment, constraint) {
   ElMessageBox.confirm(
     `Delete constraint '${constraint.property} ${constraint.operator}'?`,
     "Delete constraint",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints/${constraint.id}`
@@ -1517,7 +1534,7 @@ function deleteSegment(segment) {
   ElMessageBox.confirm(
     "Delete segment? Constraints and distributions will be removed.",
     "Delete segment",
-    { confirmButtonText: "OK", cancelButtonText: "Cancel", type: "warning" }
+    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/segments/${segment.id}`
@@ -1644,6 +1661,51 @@ function onSaveShortcut(e) {
   }
 }
 
+// ── Config section navigation (sticky pills + scroll-spy) ──
+const sectionNav = [
+  { id: "sec-flag", label: "Flag" },
+  { id: "sec-variants", label: "Variants" },
+  { id: "sec-segments", label: "Segments" },
+  { id: "sec-debug", label: "Debug" },
+  { id: "sec-settings", label: "Settings" },
+];
+const activeSection = ref("sec-flag");
+// Combined height of the stuck navbar + flag header + section nav, so a clicked
+// section lands just below the sticky bars rather than under them.
+const SECTION_SCROLL_OFFSET = 158;
+let sectionObserver = null;
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY - SECTION_SCROLL_OFFSET;
+  window.scrollTo({ top: y, behavior: "smooth" });
+}
+
+function setupScrollSpy() {
+  if (sectionObserver) sectionObserver.disconnect();
+  // Active zone runs from just below the sticky bars to ~45% of the viewport;
+  // the section nearest the top of that zone wins.
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      const visible = entries.filter((e) => e.isIntersecting);
+      if (!visible.length) return;
+      visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      activeSection.value = visible[0].target.id;
+    },
+    { rootMargin: "-150px 0px -55% 0px", threshold: 0 }
+  );
+  sectionNav.forEach((s) => {
+    const el = document.getElementById(s.id);
+    if (el) sectionObserver.observe(el);
+  });
+}
+
+// Sections only exist once the flag has loaded and rendered.
+watch(loaded, (isLoaded) => {
+  if (isLoaded) nextTick(setupScrollSpy);
+});
+
 onMounted(() => {
   fetchFlag();
   loadAllTags();
@@ -1654,6 +1716,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", onBeforeUnload);
   window.removeEventListener("keydown", onSaveShortcut);
+  if (sectionObserver) sectionObserver.disconnect();
 });
 </script>
 
@@ -1661,6 +1724,57 @@ onBeforeUnmount(() => {
 h5 {
   padding: 0;
   margin: var(--flagr-space-2, 8px) 0 var(--flagr-space-1, 4px);
+}
+
+/* ── Config section nav (sticky pills + scroll-spy) ── */
+/* el-tabs__content defaults to overflow:hidden, which would make it the sticky
+   containing block and pin the nav inside the tab box. Let it overflow so the
+   nav sticks relative to the page instead. */
+.flag-config-tabs > .el-tabs__content {
+  overflow: visible;
+}
+
+.section-nav {
+  position: sticky;
+  /* Stick just below the navbar + flag header (≈49 + 57). */
+  top: calc(var(--flagr-navbar-height, 49px) + 58px);
+  z-index: 98;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--flagr-space-1, 4px);
+  padding: var(--flagr-space-2, 8px) 0;
+  margin-bottom: var(--flagr-space-3, 12px);
+  background: var(--flagr-color-bg-page);
+  border-bottom: 1px solid var(--flagr-color-border);
+}
+
+.section-nav__item {
+  border: 0;
+  background: transparent;
+  padding: 4px 12px;
+  border-radius: var(--flagr-radius-full, 999px);
+  font-family: inherit;
+  font-size: var(--flagr-text-sm, 13px);
+  font-weight: var(--flagr-font-weight-medium, 500);
+  color: var(--flagr-color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--flagr-transition-fast, 150ms ease),
+    color var(--flagr-transition-fast, 150ms ease);
+}
+
+.section-nav__item:hover {
+  background: var(--flagr-color-bg-muted);
+  color: var(--flagr-color-text);
+}
+
+.section-nav__item.is-active {
+  background: var(--flagr-color-primary-light);
+  color: var(--flagr-color-primary);
+}
+
+.section-nav__item:focus-visible {
+  box-shadow: var(--flagr-shadow-focus);
+  outline: none;
 }
 
 .sticky-flag-header {
@@ -1817,15 +1931,6 @@ h5 {
     &:hover {
       border-color: var(--flagr-color-border-strong);
     }
-  }
-  .distribution-card {
-    height: auto;
-    min-height: 120px;
-    text-align: center;
-    .el-card__body {
-      padding: var(--flagr-space-3, 12px) var(--flagr-space-4, 16px);
-    }
-    font-size: 0.9em;
   }
 }
 
