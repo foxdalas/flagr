@@ -93,9 +93,30 @@ body {
   transition: background-color var(--flagr-transition-base), color var(--flagr-transition-base);
 }
 
+/* Display landmarks: section headers, the flag title, the brand, and table
+   column headers carry the grotesk so the page reads as an intentional system
+   rather than default Inter everywhere. */
+h1,
+h2,
+h3,
+h4,
+h5,
+.el-table th .cell {
+  font-family: var(--flagr-font-display);
+  font-weight: var(--flagr-font-weight-medium);
+  letter-spacing: -0.02em;
+}
+
 h1,
 h2 {
   font-weight: var(--flagr-font-weight-semibold);
+}
+
+/* Numeric/data readouts the user reasons about belong in mono (flags are
+   config-as-code). Applied narrowly here; component-level numbers follow. */
+.flags-count {
+  font-family: var(--flagr-font-mono);
+  font-feature-settings: 'tnum' 1;
 }
 
 ol {
