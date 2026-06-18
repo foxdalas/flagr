@@ -19,7 +19,7 @@ test.describe('Deleted Flags', () => {
     await page.goto('/')
     await page.waitForSelector('.flags-container')
 
-    const descInput = page.locator('input[placeholder="Specific new flag description"]')
+    const descInput = page.locator('input[placeholder="Describe the new flag"]')
     const createBtn = page.locator('button').filter({ hasText: 'Create New Flag' })
 
     const flagName = 'to-delete-' + Date.now()
