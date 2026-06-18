@@ -31,6 +31,10 @@ function resolveAppVersion() {
 const appVersion = resolveAppVersion()
 
 export default defineConfig({
+  // Public base path. Mirrors the fork's vue.config `publicPath: BASE_URL`,
+  // allowing deployment under a sub-path. Also drives import.meta.env.BASE_URL
+  // used by the Docs/ApiDocs viewers. Defaults to '/' (serve at root).
+  base: process.env.BASE_URL || '/',
   plugins: [
     vue(),
     // On-demand Element Plus: auto-import programmatic APIs (ElMessage, ...)
