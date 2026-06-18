@@ -405,4 +405,12 @@ ol {
     margin-top: 12px;
   }
 }
+
+/* Dark mode: input-group prepend labels (field names such as "Flag Key",
+   "Property", "Value") inherit --el-color-info (#909399) over the zinc-600
+   prepend background — only ~2.5:1 contrast, which fails WCAG AA. Use the
+   regular text colour (zinc-300) for ~5.2:1. */
+html.dark .el-input-group__prepend {
+  color: var(--el-text-color-regular);
+}
 </style>
