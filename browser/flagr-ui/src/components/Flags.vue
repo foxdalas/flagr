@@ -13,7 +13,7 @@
               <el-input
                 v-model="newFlag.description"
                 class="create-flag-input"
-                placeholder="Specific new flag description"
+                placeholder="Describe the new flag"
               >
                 <template #prepend>
                   <el-icon><Plus /></el-icon>
@@ -93,15 +93,16 @@
               align="center"
               label="Flag ID"
               sortable
-              fixed
-              width="95"
+              :fixed="isNarrow ? false : 'left'"
+              :width="isNarrow ? 72 : 95"
             />
             <el-table-column
               prop="description"
               label="Description"
-              min-width="300"
+              :min-width="isNarrow ? 130 : 300"
             />
             <el-table-column
+              v-if="!isNarrow"
               prop="tags"
               label="Tags"
               min-width="150"
@@ -117,12 +118,14 @@
               </template>
             </el-table-column>
             <el-table-column
+              v-if="!isNarrow"
               prop="updatedBy"
               label="Last Updated By"
               sortable
               width="160"
             />
             <el-table-column
+              v-if="!isNarrow"
               prop="updatedAt"
               label="Updated At (UTC)"
               sortable
@@ -145,8 +148,8 @@
               label="Enabled"
               sortable
               align="center"
-              fixed="right"
-              width="140"
+              :fixed="isNarrow ? false : 'right'"
+              :width="isNarrow ? 84 : 140"
               :filters="[{ text: 'Enabled', value: true }, { text: 'Disabled', value: false }]"
               :filter-method="filterStatus"
             >
@@ -161,6 +164,7 @@
               </template>
             </el-table-column>
             <el-table-column
+              v-if="!isNarrow"
               fixed="right"
               width="50"
               align="center"
@@ -281,7 +285,7 @@ import constants from "@/constants";
 import Spinner from "@/components/Spinner";
 import helpers from "@/helpers/helpers";
 
-const { handleErr, timeAgo } = helpers;
+const { handleErr, timeAgo, formatDateUTC } = helpers;
 const { API_URL } = constants;
 
 const router = useRouter();
@@ -298,6 +302,13 @@ let searchDebounceTimer = null;
 
 const PAGE_SIZE = 50;
 const currentPage = ref(1);
+
+// On phones the fixed left/right table columns squeeze Description down to a few
+// characters, so below this breakpoint we drop the secondary columns (Tags, Last
+// Updated By, Updated At) and un-pin the rest — Flag ID, Description and status stay.
+const isNarrow = ref(false);
+let mediaQuery = null;
+const onBreakpointChange = (e) => { isNarrow.value = e.matches; };
 
 watch(searchTerm, (val) => {
   clearTimeout(searchDebounceTimer);
@@ -350,8 +361,7 @@ const paginatedFlags = computed(() => {
 watch(debouncedSearchTerm, () => { currentPage.value = 1; });
 
 function datetimeFormatter(row, col, val) {
-  if (!val) return "";
-  return val.split(".")[0].replace("T", " ").slice(0, 16);
+  return formatDateUTC(val);
 }
 
 function getFlagUrl(flagId) {
@@ -434,11 +444,15 @@ function onSlashKey(e) {
 
 onMounted(() => {
   document.addEventListener('keydown', onSlashKey);
+  mediaQuery = window.matchMedia('(max-width: 768px)');
+  isNarrow.value = mediaQuery.matches;
+  mediaQuery.addEventListener('change', onBreakpointChange);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onSlashKey);
   clearTimeout(searchDebounceTimer);
+  if (mediaQuery) mediaQuery.removeEventListener('change', onBreakpointChange);
 });
 </script>
 
@@ -514,13 +528,12 @@ onBeforeUnmount(() => {
 
   .flag-actions-icon {
     cursor: pointer;
-    color: var(--flagr-color-text-muted);
-    opacity: 0.5;
-    transition: opacity var(--flagr-transition-fast, 150ms ease);
+    color: var(--flagr-color-text-secondary);
+    transition: color var(--flagr-transition-fast, 150ms ease);
     font-size: 16px;
 
     &:hover {
-      opacity: 1;
+      color: var(--flagr-color-primary);
     }
   }
 
