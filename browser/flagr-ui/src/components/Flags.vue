@@ -12,6 +12,7 @@
             <el-col>
               <el-input
                 v-model="newFlag.description"
+                class="create-flag-input"
                 placeholder="Specific new flag description"
               >
                 <template #prepend>
@@ -539,6 +540,30 @@ onBeforeUnmount(() => {
   }
   .deleted-flags-table {
     margin-top: 2rem;
+  }
+}
+
+/* On phones the "Create New Flag" split-button (an el-input append) squeezes
+   the description field down to a few characters. Below the Element Plus `sm`
+   breakpoint, wrap the append onto its own full-width row under the input. */
+@media (max-width: 767.98px) {
+  .create-flag-input.el-input-group {
+    flex-wrap: wrap;
+  }
+  .create-flag-input > .el-input-group__append {
+    flex: 1 0 100%;
+    margin-top: var(--flagr-space-2, 8px);
+    /* It is no longer an attached cell — drop the inset border + side padding. */
+    box-shadow: none;
+    padding: 0;
+  }
+  .create-flag-input > .el-input-group__append .el-dropdown,
+  .create-flag-input > .el-input-group__append .el-button-group {
+    width: 100%;
+    display: flex;
+  }
+  .create-flag-input > .el-input-group__append .el-button-group > .el-button:first-child {
+    flex: 1;
   }
 }
 </style>
