@@ -901,7 +901,8 @@
                               <el-col
                                 v-for="distribution in segment.distributions"
                                 :key="distribution.id"
-                                :span="8"
+                                :xs="12"
+                                :sm="8"
                               >
                                 <el-card
                                   shadow="never"
@@ -2012,6 +2013,25 @@ ol.constraints-inner {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Below the Element Plus `sm` breakpoint (<768px) the fixed-span el-col rows
+   (flag config, segment constraints, segment description + rollout) squash and
+   clip their contents. Stack those columns to full width so labels, the
+   operator select and the Save/Delete buttons stay legible on small screens.
+   The data-records group also left-aligns instead of hugging the right edge. */
+@media (max-width: 767.98px) {
+  .flag-config-card .flag-content > .el-col,
+  .segment-constraint > .el-col,
+  .id-row > .el-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .flag-config-card .flag-content .data-records-group {
+    justify-content: flex-start;
+    margin-top: var(--flagr-space-1, 4px);
   }
 }
 
