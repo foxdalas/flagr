@@ -23,17 +23,17 @@ test.describe('Sticky Flag Header', () => {
   })
 
   test('Save button visible in sticky header', async ({ page }) => {
-    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save Flag' })
+    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save all changes' })
     await expect(saveBtn).toBeVisible()
   })
 
   test('Save button disabled when no changes made', async ({ page }) => {
-    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save Flag' })
+    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save all changes' })
     await expect(saveBtn).toBeDisabled()
   })
 
   test('Editing flag description shows "Unsaved changes" tag', async ({ page }) => {
-    const descInput = page.locator('.flag-content input[placeholder="Description"]')
+    const descInput = page.locator('.flag-fields input[placeholder="Description"]')
     await descInput.fill('modified description ' + Date.now())
     await page.waitForTimeout(300)
     const tag = page.locator('.sticky-flag-header .el-tag').filter({ hasText: 'Unsaved changes' })
@@ -41,21 +41,21 @@ test.describe('Sticky Flag Header', () => {
   })
 
   test('Save button becomes enabled when changes detected', async ({ page }) => {
-    const descInput = page.locator('.flag-content input[placeholder="Description"]')
+    const descInput = page.locator('.flag-fields input[placeholder="Description"]')
     await descInput.fill('modified description ' + Date.now())
     await page.waitForTimeout(300)
-    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save Flag' })
+    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save all changes' })
     await expect(saveBtn).not.toBeDisabled()
   })
 
   test('After saving, "Unsaved changes" tag disappears', async ({ page }) => {
-    const descInput = page.locator('.flag-content input[placeholder="Description"]')
+    const descInput = page.locator('.flag-fields input[placeholder="Description"]')
     await descInput.fill('saved description ' + Date.now())
     await page.waitForTimeout(300)
 
-    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save Flag' })
+    const saveBtn = page.locator('.sticky-flag-header .el-button').filter({ hasText: 'Save all changes' })
     await saveBtn.click()
-    await expect(page.locator('.el-message').last()).toContainText('Flag updated')
+    await expect(page.locator('.el-message').last()).toContainText('All changes saved')
     await page.waitForTimeout(500)
 
     const tag = page.locator('.sticky-flag-header .el-tag').filter({ hasText: 'Unsaved changes' })

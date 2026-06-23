@@ -55,7 +55,9 @@
   /* Text */
   --flagr-color-text:           var(--flagr-zinc-900);
   --flagr-color-text-secondary: var(--flagr-zinc-600);
-  --flagr-color-text-muted:     var(--flagr-zinc-400);
+  /* Muted text must still clear WCAG AA (4.5:1): zinc-400 was only ~2.6:1 on
+     light surfaces; zinc-500 is ~4.8:1. */
+  --flagr-color-text-muted:     var(--flagr-zinc-500);
   --flagr-color-text-on-primary: #ffffff;
 
   /* Primary */
@@ -94,7 +96,7 @@
   /* Empty states */
   --flagr-color-empty-bg:     var(--flagr-zinc-50);
   --flagr-color-empty-border: var(--flagr-zinc-300);
-  --flagr-color-empty-text:   var(--flagr-zinc-400);
+  --flagr-color-empty-text:   var(--flagr-zinc-500);
 
   /* ── Spacing (base-4, 7 steps) ─────── */
   --flagr-space-1: 4px;
@@ -143,7 +145,8 @@
   --flagr-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ── Layout ────────────────────────── */
-  --flagr-navbar-height: 49px;
+  /* Actual sticky navbar height; sticky sub-headers offset from this. */
+  --flagr-navbar-height: 67px;
 
   /* ── Element Plus overrides (Light) ─── */
   --el-color-primary: var(--flagr-color-primary);
@@ -205,6 +208,20 @@
   --jse-collapsed-items-background-color:          var(--flagr-zinc-100);
   --jse-collapsed-items-selected-background-color: var(--flagr-zinc-200);
   --jse-collapsed-items-link-color:                var(--flagr-indigo-500);
+
+  /* ── Syntax highlighting (docs code blocks, Light) ──
+     Mirrors the json-editor tree palette above so doc snippets read the same
+     as the in-app JSON editor. */
+  --flagr-syntax-keyword:  var(--flagr-indigo-600);
+  --flagr-syntax-string:   #b45309;
+  --flagr-syntax-number:   #0d9488;
+  --flagr-syntax-literal:  var(--flagr-indigo-500);
+  --flagr-syntax-comment:  var(--flagr-zinc-500);
+  --flagr-syntax-function: #7c3aed;
+  --flagr-syntax-attr:     var(--flagr-indigo-600);
+  --flagr-syntax-type:     #0d9488;
+  --flagr-syntax-variable: var(--flagr-color-text);
+  --flagr-syntax-meta:     var(--flagr-zinc-500);
 }
 
 /* ── Dark Mode ────────────────────────── */
@@ -331,6 +348,18 @@ html.dark {
   --jse-value-color-null:       #569cd6;
   --jse-value-color-string:     #ce9178;
   --jse-delimiter-color:        var(--flagr-zinc-400);
+
+  /* ── Syntax highlighting (docs code blocks, Dark) ── */
+  --flagr-syntax-keyword:  var(--flagr-indigo-300);
+  --flagr-syntax-string:   #ce9178;
+  --flagr-syntax-number:   #b5cea8;
+  --flagr-syntax-literal:  #569cd6;
+  --flagr-syntax-comment:  var(--flagr-zinc-400);
+  --flagr-syntax-function: #dcdcaa;
+  --flagr-syntax-attr:     #93c5fd;
+  --flagr-syntax-type:     #4ec9b0;
+  --flagr-syntax-variable: #e4e4e7;
+  --flagr-syntax-meta:     var(--flagr-zinc-400);
 
   /* Selection & hover */
   --jse-selection-background-color:          rgba(99, 102, 241, 0.2);

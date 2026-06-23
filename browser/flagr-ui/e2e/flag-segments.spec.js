@@ -41,7 +41,7 @@ test.describe('Flag Segments', () => {
     await expect(page.locator('.el-message')).toContainText('Segment created')
     await page.waitForTimeout(300)
     await expect(page.locator('.segments-container-inner')).toBeVisible()
-    await expect(page.locator('.segments-container-inner')).toContainText('Segment ID')
+    await expect(page.locator('.segments-container-inner .entity-id-caption').first()).toContainText('#')
   })
 
   test('Default rollout is 50', async ({ page }) => {
@@ -60,7 +60,7 @@ test.describe('Flag Segments', () => {
     if (await segmentCard.isVisible().catch(() => false)) {
       const descInput = segmentCard.locator('input[placeholder="Description"]')
       await descInput.fill('updated-segment')
-      await segmentCard.locator('button').filter({ hasText: 'Save Segment Setting' }).click()
+      await segmentCard.locator('button').filter({ hasText: 'Save Segment' }).click()
       await expect(page.locator('.el-message')).toContainText('Segment updated')
     }
   })

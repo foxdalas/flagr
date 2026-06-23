@@ -8,13 +8,17 @@ import 'element-plus/es/components/message-box/style/css'
 import 'element-plus/es/components/message/style/css'
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 import { useTheme } from './composables/useTheme'
+import { useLocale } from './composables/useLocale'
 
-// Init theme before mount to prevent flash
+// Init theme + locale before mount to prevent flash
 useTheme().init()
+useLocale().init()
 
 const app = createApp(App)
 app.use(router)
+app.use(i18n)
 
 app.directive('focus', {
   mounted(el) {

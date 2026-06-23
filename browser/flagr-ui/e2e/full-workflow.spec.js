@@ -67,8 +67,10 @@ test.describe('Full E2E Workflow', () => {
     await tagInput.press('Enter')
     await page.waitForTimeout(1000)
 
-    // 11. Save Flag
-    await page.locator('button').filter({ hasText: 'Save Flag' }).first().click()
+    // 11. Save Flag — Save buttons are disabled until dirty, so edit a flag field
+    // first (the variants/segments above auto-saved and don't dirty the flag).
+    await page.locator('.flag-fields input[placeholder="Description"]').fill(flagName + '-saved')
+    await page.locator('button').filter({ hasText: 'Save Flag' }).last().click()
     await expect(page.locator('.el-message').last()).toContainText('Flag updated')
     await page.waitForTimeout(1000)
 
@@ -105,7 +107,7 @@ test.describe('Full E2E Workflow', () => {
     // Type flag key to confirm deletion
     const deleteDialog = page.locator('.el-dialog').filter({ hasText: 'Delete feature flag' })
     await expect(deleteDialog).toBeVisible({ timeout: 3000 })
-    const flagKeyInput = page.locator('.flag-config-card .flag-content input').first()
+    const flagKeyInput = page.locator('.flag-config-card .flag-fields input').first()
     const flagKey = await flagKeyInput.inputValue()
     await deleteDialog.locator('input[placeholder="Type flag key to confirm"]').fill(flagKey)
     const confirmDeleteBtn = deleteDialog.locator('button').filter({ hasText: 'Delete' })

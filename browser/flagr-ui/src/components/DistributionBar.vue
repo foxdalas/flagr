@@ -30,21 +30,24 @@
         <span
           v-if="isAssigned(d)"
           class="dist-legend__tag"
-        >assigned</span>
+        >{{ t('eval.assignedTag') }}</span>
       </span>
     </div>
     <div
       v-if="total !== 100"
       class="dist-warning"
     >
-      ⚠ Distribution totals {{ total }}% (expected 100%)
+      ⚠ {{ t('eval.distTotal', { total }) }}
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { variantColor } from '@/composables/useVariantColors'
+
+const { t } = useI18n({ useScope: 'global' })
 
 const props = defineProps({
   distributions: { type: Array, default: () => [] },
@@ -66,8 +69,9 @@ function isDimmed(d) {
 }
 
 const ariaLabel = computed(() =>
-  'Traffic distribution: ' +
-  props.distributions.map(d => `${d.variantKey} ${d.percent}%`).join(', ')
+  t('eval.distAriaLabel', {
+    list: props.distributions.map(d => `${d.variantKey} ${d.percent}%`).join(', '),
+  })
 )
 </script>
 

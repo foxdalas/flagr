@@ -76,8 +76,8 @@ test.describe('F1: el-row flex shrink — layout bugs', () => {
   })
 
   test('F1c+F1d: Tags section should take full width', async ({ page }) => {
-    // The tags section heading and tags container are inside el-row without el-col
-    const tagsHeading = page.locator('h5').filter({ hasText: 'Tags' })
+    // Tags label + container sit in a .field block (was an el-row/h5 originally)
+    const tagsHeading = page.locator('.flag-fields .field__label').filter({ hasText: 'Tags' })
     await expect(tagsHeading).toBeVisible()
 
     // Screenshot the tags area

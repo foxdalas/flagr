@@ -9,14 +9,13 @@
         <div class="el-card-header">
           <el-row>
             <el-col :span="14">
-              <div class="diff-snapshot-id-change">
-                <el-tag :disable-transitions="true">
-                  Snapshot ID: {{ diff.oldId }}
-                </el-tag>
+              <div
+                class="diff-snapshot-id-change"
+                :title="t('history.snapshotRevision')"
+              >
+                <span class="snapshot-id">#{{ diff.oldId }}</span>
                 <el-icon><DArrowRight /></el-icon>
-                <el-tag :disable-transitions="true">
-                  Snapshot ID: {{ diff.newId }}
-                </el-tag>
+                <span class="snapshot-id">#{{ diff.newId }}</span>
               </div>
             </el-col>
             <el-col
@@ -43,13 +42,38 @@
                 v-if="diff.updatedBy"
                 class="compact"
               >
-                <span size="small">UPDATED BY: {{ diff.updatedBy }}</span>
+                <span size="small">{{ t('history.updatedBy', { by: diff.updatedBy }) }}</span>
               </div>
             </el-col>
           </el-row>
         </div>
       </template>
+      <ul
+        v-if="diff.summary.length"
+        class="diff-summary"
+      >
+        <li
+          v-for="(s, i) in diff.summary"
+          :key="i"
+        >
+          {{ s }}
+        </li>
+      </ul>
+      <p
+        v-else
+        class="diff-summary-empty"
+      >
+        {{ t('history.metadataOnly') }}
+      </p>
+      <button
+        type="button"
+        class="diff-toggle"
+        @click="toggleDiff(diff.newId)"
+      >
+        {{ expandedDiffs.has(diff.newId) ? t('history.hideDiff') : t('history.showDiff') }}
+      </button>
       <pre
+        v-if="expandedDiffs.has(diff.newId)"
         class="diff"
         v-html="diff.flagDiff"
       />
@@ -59,6 +83,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import Axios from "axios";
 import { diffJson } from "diff";
 import { ElMessage } from "element-plus";
@@ -75,6 +100,7 @@ const props = defineProps({
   },
 });
 
+const { t } = useI18n({ useScope: "global" });
 const { timeAgo, formatDateUTC } = helpers;
 
 // How many unchanged lines of context to keep around each change before eliding.
@@ -98,7 +124,8 @@ const diffs = computed(() => {
       oldId: snapshots[i + 1].id || "NULL",
       flagDiff: d.html,
       linesAdded: d.added,
-      linesRemoved: d.removed
+      linesRemoved: d.removed,
+      summary: summarizeChanges(snapshots[i].flag, snapshots[i + 1].flag)
     });
   }
   return ret;
@@ -110,9 +137,70 @@ function getFlagSnapshots() {
       flagSnapshots.value = response.data;
     },
     () => {
-      ElMessage({ message: "Failed to load flag snapshots", type: "error", duration: 5000 });
+      ElMessage({ message: t("history.loadError"), type: "error", duration: 5000 });
     }
   );
+}
+
+// Raw JSON diff is opt-in per snapshot; the plain-language summary is the default.
+const expandedDiffs = ref(new Set());
+function toggleDiff(id) {
+  const s = new Set(expandedDiffs.value);
+  if (s.has(id)) s.delete(id); else s.add(id);
+  expandedDiffs.value = s;
+}
+
+// Compare two arrays of entities by id, pushing add/remove lines and delegating
+// per-entity field changes to onChanged(old, new).
+function summarizeList(out, oldArr, newArr, addedKey, removedKey, nameFn, onChanged) {
+  oldArr = oldArr || [];
+  newArr = newArr || [];
+  const oldById = Object.fromEntries(oldArr.map((x) => [x.id, x]));
+  const newById = Object.fromEntries(newArr.map((x) => [x.id, x]));
+  for (const n of newArr) {
+    if (!(n.id in oldById)) out.push(t(addedKey, { name: nameFn(n) }));
+    else onChanged(oldById[n.id], n);
+  }
+  for (const o of oldArr) {
+    if (!(o.id in newById)) out.push(t(removedKey, { name: nameFn(o) }));
+  }
+}
+
+// Best-effort plain-language summary of what changed between two flag snapshots.
+function summarizeChanges(newFlag, oldFlag) {
+  // The oldest snapshot is diffed against the {} sentinel.
+  if (!oldFlag || oldFlag.id === undefined) return [t("history.flagCreated")];
+  const out = [];
+
+  if (newFlag.enabled !== oldFlag.enabled) out.push(newFlag.enabled ? t("history.flagEnabled") : t("history.flagDisabled"));
+  if (newFlag.key !== oldFlag.key) out.push(t("history.keyChanged", { old: oldFlag.key, new: newFlag.key }));
+  if (newFlag.description !== oldFlag.description) out.push(t("history.descriptionChanged"));
+  if (newFlag.dataRecordsEnabled !== oldFlag.dataRecordsEnabled)
+    out.push(newFlag.dataRecordsEnabled ? t("history.dataRecordsEnabled") : t("history.dataRecordsDisabled"));
+  if ((newFlag.notes || "") !== (oldFlag.notes || "")) out.push(t("history.notesUpdated"));
+  if ((newFlag.entityType || "") !== (oldFlag.entityType || ""))
+    out.push(t("history.entityTypeChanged", { old: oldFlag.entityType || t("history.emDash"), new: newFlag.entityType || t("history.emDash") }));
+
+  summarizeList(out, oldFlag.variants, newFlag.variants, "history.addedVariant", "history.removedVariant", (v) => v.key, (o, n) => {
+    if (o.key !== n.key) out.push(t("history.variantRenamed", { old: o.key, new: n.key }));
+    if (JSON.stringify(o.attachment || {}) !== JSON.stringify(n.attachment || {}))
+      out.push(t("history.attachmentChanged", { name: n.key }));
+  });
+
+  summarizeList(out, oldFlag.segments, newFlag.segments, "history.addedSegment", "history.removedSegment", (s) => s.description || t("history.unnamed"), (o, n) => {
+    const name = n.description || t("history.unnamed");
+    if (o.description !== n.description) out.push(t("history.segmentRenamed", { old: o.description, new: n.description }));
+    if (o.rolloutPercent !== n.rolloutPercent) out.push(t("history.rolloutChanged", { name, old: o.rolloutPercent, new: n.rolloutPercent }));
+    if (JSON.stringify(o.constraints || []) !== JSON.stringify(n.constraints || [])) out.push(t("history.constraintsChanged", { name }));
+    if (JSON.stringify(o.distributions || []) !== JSON.stringify(n.distributions || [])) out.push(t("history.distributionChanged", { name }));
+  });
+
+  const oldTags = (oldFlag.tags || []).map((x) => x.value);
+  const newTags = (newFlag.tags || []).map((x) => x.value);
+  newTags.filter((x) => !oldTags.includes(x)).forEach((tag) => out.push(t("history.tagAdded", { tag })));
+  oldTags.filter((x) => !newTags.includes(x)).forEach((tag) => out.push(t("history.tagRemoved", { tag })));
+
+  return out;
 }
 
 function escapeHtml(s) {
@@ -143,7 +231,7 @@ function renderUnchanged(value, keepHead, keepTail) {
   const out = [];
   if (head.length) out.push(escapeHtml(head.join("\n")));
   out.push(
-    `<span class="diff-fold">⋯ ${hidden} unchanged line${hidden === 1 ? "" : "s"} ⋯</span>`
+    `<span class="diff-fold">${escapeHtml(t("history.unchangedLines", { n: hidden }, hidden))}</span>`
   );
   if (tail.length) out.push(escapeHtml(tail.join("\n")));
   return out.join("\n") + "\n";
@@ -162,7 +250,7 @@ function buildDiff(newFlag, oldFlag) {
     else if (p.removed) removed += countLines(p.value);
   });
   if (!added && !removed) {
-    return { html: "No changes", added: 0, removed: 0 };
+    return { html: t("history.noChanges"), added: 0, removed: 0 };
   }
   let html = "";
   parts.forEach((part, i) => {
@@ -210,13 +298,55 @@ onMounted(() => {
     margin-left: var(--flagr-space-2, 8px);
   }
 }
+.diff-summary {
+  list-style: none;
+  margin: 0 0 var(--flagr-space-3, 12px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--flagr-space-1, 4px);
+}
+.diff-summary li {
+  position: relative;
+  padding-left: var(--flagr-space-4, 16px);
+  font-size: var(--flagr-text-sm, 13px);
+  color: var(--flagr-color-text);
+}
+.diff-summary li::before {
+  content: "›";
+  position: absolute;
+  left: 2px;
+  color: var(--flagr-color-primary);
+  font-weight: var(--flagr-font-weight-bold, 700);
+}
+.diff-summary-empty {
+  margin: 0 0 var(--flagr-space-3, 12px);
+  font-size: var(--flagr-text-sm, 13px);
+  color: var(--flagr-color-text-muted);
+  font-style: italic;
+}
+.diff-toggle {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-family: var(--flagr-font-mono);
+  font-size: var(--flagr-text-xs, 12px);
+  color: var(--flagr-color-text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.diff-toggle:hover {
+  color: var(--flagr-color-primary);
+}
 .snapshot-container {
   .diff-snapshot-id-change {
-    color: var(--flagr-color-card-header-text);
-    .el-tag {
-      color: var(--flagr-color-text);
-      background-color: var(--flagr-color-bg-surface);
-    }
+    display: flex;
+    align-items: center;
+    gap: var(--flagr-space-2, 8px);
+    font-family: var(--flagr-font-mono);
+    font-size: var(--flagr-text-sm, 13px);
+    color: var(--flagr-color-text-muted);
   }
   .diff {
     margin: 0;

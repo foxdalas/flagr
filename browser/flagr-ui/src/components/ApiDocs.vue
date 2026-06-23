@@ -2,7 +2,7 @@
   <div
     v-loading="loading"
     class="api-docs"
-    element-loading-text="Loading API documentation..."
+    :element-loading-text="t('docsNav.apiLoading')"
   >
     <div id="redoc-container" />
   </div>
@@ -10,8 +10,10 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import constants from '@/constants'
 
+const { t } = useI18n({ useScope: 'global' })
 const loading = ref(true)
 let scriptEl = null
 

@@ -3,14 +3,14 @@
     <!-- Tracer: drive a real evaluation and watch the path light up -->
     <div class="ef-tracer">
       <div class="ef-tracer__eyebrow">
-        Trace
+        {{ t('eval.trace') }}
       </div>
       <p class="ef-tracer__lead">
-        Send a sample entity through this flag and watch the exact path it takes.
+        {{ t('eval.traceLead') }}
       </p>
       <div class="ef-tracer__form">
         <label class="ef-tracer__field">
-          <span class="ef-tracer__label">Entity ID</span>
+          <span class="ef-tracer__label">{{ t('eval.entityId') }}</span>
           <el-input
             v-model="entityID"
             size="small"
@@ -19,7 +19,7 @@
           />
         </label>
         <label class="ef-tracer__field ef-tracer__field--grow">
-          <span class="ef-tracer__label">Entity context (JSON)</span>
+          <span class="ef-tracer__label">{{ t('eval.entityContext') }}</span>
           <el-input
             v-model="contextText"
             size="small"
@@ -33,7 +33,7 @@
           :loading="running"
           @click="runTrace"
         >
-          Run trace
+          {{ t('eval.runTrace') }}
         </el-button>
         <el-button
           v-if="trace"
@@ -41,7 +41,7 @@
           size="small"
           @click="clearTrace"
         >
-          Clear
+          {{ t('eval.clear') }}
         </el-button>
       </div>
       <div
@@ -50,18 +50,42 @@
         :class="`ef-tracer__outcome--${outcome.type}`"
       >
         <span class="ef-tracer__outcome-icon">{{ outcomeIcon }}</span>
-        <span v-if="outcome.type === 'variant'">
-          Assigned variant <strong>{{ outcome.variantKey }}</strong>
-        </span>
-        <span v-else-if="outcome.type === 'excluded'">
-          Segment matched, but the entity was <strong>excluded by rollout</strong> — no variant
-        </span>
-        <span v-else-if="outcome.type === 'no-match'">
-          No segment matched — <strong>empty result</strong>
-        </span>
-        <span v-else>
-          Flag is disabled — <strong>empty result</strong>
-        </span>
+        <i18n-t
+          v-if="outcome.type === 'variant'"
+          keypath="eval.assignedVariant"
+          tag="span"
+        >
+          <template #variant>
+            <strong>{{ outcome.variantKey }}</strong>
+          </template>
+        </i18n-t>
+        <i18n-t
+          v-else-if="outcome.type === 'excluded'"
+          keypath="eval.excludedByRollout"
+          tag="span"
+        >
+          <template #s>
+            <strong>{{ t('eval.excludedStrong') }}</strong>
+          </template>
+        </i18n-t>
+        <i18n-t
+          v-else-if="outcome.type === 'no-match'"
+          keypath="eval.noMatchResult"
+          tag="span"
+        >
+          <template #s>
+            <strong>{{ t('eval.emptyResult') }}</strong>
+          </template>
+        </i18n-t>
+        <i18n-t
+          v-else
+          keypath="eval.disabledResult"
+          tag="span"
+        >
+          <template #s>
+            <strong>{{ t('eval.emptyResult') }}</strong>
+          </template>
+        </i18n-t>
       </div>
     </div>
 
@@ -72,10 +96,10 @@
       </div>
       <div class="ef-node__content">
         <div class="ef-node__title">
-          Evaluation Request
+          {{ t('eval.evalRequest') }}
         </div>
         <div class="ef-node__subtitle">
-          {{ trace ? entryLabel : 'entityID + entityContext' }}
+          {{ trace ? entryLabel : t('eval.entryPlaceholder') }}
         </div>
       </div>
     </div>
@@ -92,7 +116,7 @@
       </div>
       <div class="ef-node__content">
         <div class="ef-node__title">
-          Flag {{ flag.enabled ? 'Enabled' : 'Disabled' }}
+          {{ flag.enabled ? t('eval.flagEnabledTitle') : t('eval.flagDisabledTitle') }}
         </div>
       </div>
     </div>
@@ -104,10 +128,10 @@
         <div class="ef-node ef-node--terminal">
           <div class="ef-node__content">
             <div class="ef-node__title">
-              No Segments
+              {{ t('eval.noSegmentsTitle') }}
             </div>
             <div class="ef-node__subtitle">
-              Empty result — no segments configured
+              {{ t('eval.noSegmentsSub') }}
             </div>
           </div>
         </div>
@@ -123,7 +147,7 @@
             <span
               v-if="idx > 0"
               class="ef-connector__label"
-            >no match</span>
+            >{{ t('eval.noMatchConnector') }}</span>
           </div>
 
           <div
@@ -132,7 +156,7 @@
           >
             <div class="ef-segment__header">
               <span class="ef-segment__rank">[{{ idx + 1 }}]</span>
-              <span class="ef-segment__name">{{ segment.description || 'Unnamed segment' }}</span>
+              <span class="ef-segment__name">{{ segment.description || t('eval.unnamedSegment') }}</span>
               <span
                 v-if="trace && segmentStatus(segment)"
                 class="ef-segment__status"
@@ -144,14 +168,14 @@
                 class="ef-segment__rollout"
                 :class="{ 'ef-segment__rollout--zero': segment.rolloutPercent === 0 }"
               >
-                Rollout {{ segment.rolloutPercent }}%
+                {{ t('eval.rollout', { percent: segment.rolloutPercent }) }}
               </span>
             </div>
 
             <!-- Constraints -->
             <div class="ef-segment__section">
               <div class="ef-segment__section-title">
-                Constraints (AND)
+                {{ t('eval.constraintsAnd') }}
               </div>
               <div
                 v-if="segment.constraints && segment.constraints.length"
@@ -172,14 +196,14 @@
                 v-else
                 class="ef-segment__muted"
               >
-                No constraints — all entities match
+                {{ t('eval.noConstraints') }}
               </div>
             </div>
 
             <!-- Distribution -->
             <div class="ef-segment__section">
               <div class="ef-segment__section-title">
-                Distribution
+                {{ t('eval.distribution') }}
               </div>
               <template v-if="segmentDistributions(segment).length">
                 <DistributionBar
@@ -191,7 +215,7 @@
                 v-else
                 class="ef-segment__muted"
               >
-                No distribution configured
+                {{ t('eval.noDistribution') }}
               </div>
             </div>
           </div>
@@ -199,7 +223,7 @@
 
         <!-- Terminal: no match -->
         <div class="ef-connector">
-          <span class="ef-connector__label">no match</span>
+          <span class="ef-connector__label">{{ t('eval.noMatchConnector') }}</span>
         </div>
         <div
           class="ef-node ef-node--terminal"
@@ -207,10 +231,10 @@
         >
           <div class="ef-node__content">
             <div class="ef-node__title">
-              No Match
+              {{ t('eval.noMatchTitle') }}
             </div>
             <div class="ef-node__subtitle">
-              Empty result
+              {{ t('eval.emptyResultPlain') }}
             </div>
           </div>
         </div>
@@ -223,10 +247,10 @@
       <div class="ef-node ef-node--terminal">
         <div class="ef-node__content">
           <div class="ef-node__title">
-            Flag Disabled
+            {{ t('eval.flagDisabledTitle') }}
           </div>
           <div class="ef-node__subtitle">
-            Empty result — flag is not enabled
+            {{ t('eval.disabledSub') }}
           </div>
         </div>
       </div>
@@ -236,11 +260,14 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import Axios from "axios";
 import { ElMessage } from "element-plus";
 import operators from "@/operators.json";
 import constants from "@/constants";
 import DistributionBar from "@/components/DistributionBar.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   flag: { type: Object, required: true },
@@ -281,11 +308,11 @@ async function runTrace() {
   try {
     ctx = contextText.value.trim() ? JSON.parse(contextText.value) : {};
   } catch {
-    ElMessage.error("Entity context must be valid JSON");
+    ElMessage.error(t("eval.errInvalidJson"));
     return;
   }
   if (ctx === null || typeof ctx !== "object" || Array.isArray(ctx)) {
-    ElMessage.error("Entity context must be a JSON object");
+    ElMessage.error(t("eval.errNotObject"));
     return;
   }
   running.value = true;
@@ -298,7 +325,7 @@ async function runTrace() {
     });
     trace.value = data;
   } catch {
-    ElMessage.error("Evaluation failed");
+    ElMessage.error(t("eval.errEvalFailed"));
   } finally {
     running.value = false;
   }
@@ -331,11 +358,11 @@ function segmentStatus(segment) {
 
 function statusLabel(status) {
   return {
-    matched: "✓ Matched",
-    excluded: "Rollout excluded",
-    failed: "✗ No match",
-    skipped: "Not reached",
-    error: "Eval error",
+    matched: t("eval.statusMatched"),
+    excluded: t("eval.statusExcluded"),
+    failed: t("eval.statusFailed"),
+    skipped: t("eval.statusSkipped"),
+    error: t("eval.statusError"),
   }[status] || "";
 }
 
@@ -359,7 +386,7 @@ const entryLabel = computed(() => {
   const ec = trace.value?.evalContext;
   if (!ec) return "";
   const ctx = ec.entityContext;
-  let summary = ec.entityID || "(random)";
+  let summary = ec.entityID || t("eval.random");
   if (ctx && typeof ctx === "object") {
     const parts = Object.entries(ctx).map(([k, v]) => `${k}=${JSON.stringify(v)}`);
     if (parts.length) summary += " · " + parts.join(", ");

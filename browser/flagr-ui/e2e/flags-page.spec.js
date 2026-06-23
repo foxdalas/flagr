@@ -264,7 +264,7 @@ test.describe('Flags Page', () => {
     // Auto-navigated to flag detail page
     await page.waitForSelector('.flag-container', { timeout: 10000 })
 
-    const keyInput = page.locator('.flag-content input[placeholder="Key"]')
+    const keyInput = page.locator('.flag-fields input[placeholder="Key"]')
     const mixedCaseKey = 'MyTestKey-' + ts
     await keyInput.fill(mixedCaseKey)
     await page.locator('button').filter({ hasText: 'Save Flag' }).first().click()
