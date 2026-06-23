@@ -4,18 +4,28 @@ Flagr provides an integrated notification system that allows you to monitor chan
 
 ## Tracked Operations
 
-Flagr monitors changes to **flags** and their related configuration. All notifications have `EntityType: "flag"` in the payload.
+Flagr emits a notification for every change to a flag **and to any of its parts** — segments, variants, constraints, distributions, and tags. Each notification carries two fields that together say exactly what happened: an **`operation`** and a **`component_type`**.
 
-The following operations trigger notifications:
-
-| Operation | Description |
+| `operation` | Meaning |
 |-----------|-------------|
-| `create` | A new flag is created |
-| `update` | Any change to a flag's metadata, enabled state, or any of its associated entities (segments, variants, constraints, distributions, tags) |
-| `delete` | A flag is soft-deleted |
-| `restore` | A soft-deleted flag is restored |
+| `create` | A flag or one of its parts was created |
+| `update` | A flag or one of its parts was modified |
+| `delete` | A flag (soft-delete) or one of its parts was removed |
+| `restore` | A soft-deleted flag was restored |
 
-**Note**: Operations such as adding/removing tags, updating segment rollout percentages, modifying constraints, or changing variant attachments all trigger an `update` notification for the parent flag. Enabling or disabling a flag is also considered an update.
+| `component_type` | The part that changed |
+|------------------|-----------------------|
+| `flag` | The flag itself — metadata, enabled state |
+| `segment` · `variant` · `constraint` · `distribution` · `tag` | That specific child of the flag |
+
+The two fields combine, so the notification is precise about the sub-change:
+
+- Adding a variant → `operation: create`, `component_type: variant`
+- Editing a segment's rollout → `operation: update`, `component_type: segment`
+- Removing a tag → `operation: delete`, `component_type: tag`
+- Toggling the flag on/off → `operation: update`, `component_type: flag`
+
+Every notification also includes the parent `flag_id` / `flag_key`, so a receiver can group child changes under their flag.
 
 ## Configuration
 
@@ -24,16 +34,16 @@ To enable notifications, set the following environment variables:
 - `FLAGR_NOTIFICATION_WEBHOOK_ENABLED=true` (Default: `false`) — Enable webhook notifications.
 - `FLAGR_NOTIFICATION_WEBHOOK_URL=https://api.your-org.com/webhooks/flagr` — HTTP destination endpoint for POST requests.
 - `FLAGR_NOTIFICATION_WEBHOOK_HEADERS=Authorization: Bearer secret-token, X-Custom-Header: value` — (Optional) Custom comma-separated HTTP headers, often utilized for securing your webhook receiver with an API token.
-- `FLAGR_NOTIFICATION_TIMEOUT=10s` (Default: `10s`) — Configures the timeout window for dialing the webhook endpoint.
+- `FLAGR_NOTIFICATION_TIMEOUT=10s` (Default: `10s`) — Overall timeout for delivering a single notification, **including all retries** (not just the initial connection).
 - `FLAGR_NOTIFICATION_DETAILED_DIFF_ENABLED=true` (Default: `false`) — When enabled, Flagr will embed the precise visual JSON diff of the modified flag within the notification payload.
-- `FLAGR_NOTIFICATION_MAX_RETRIES=3` (Default: `3`) — Maximum number of retry attempts for transient HTTP failures (5xx errors). Set to `0` to disable retries.
+- `FLAGR_NOTIFICATION_MAX_RETRIES=3` (Default: `3`) — Maximum number of retry attempts for transient failures (network/transport errors and 5xx responses). Set to `0` to disable retries.
 - `FLAGR_NOTIFICATION_RETRY_BASE=1s` (Default: `1s`) — Base delay for exponential backoff between retries.
 - `FLAGR_NOTIFICATION_RETRY_MAX=10s` (Default: `10s`) — Maximum delay between retries.
 
 ### Concurrency & Observability
 
-- Notifications are sent asynchronously with a default concurrency limit of 100 to prevent resource exhaustion under load.
-- Metric `notification.sent` is emitted when statsd is enabled, tagged with `provider`, `operation`, `entity_type`, and `status` (`success`/`failure`).
+- Notifications are sent asynchronously with a fixed concurrency limit of 100 (not configurable) to prevent resource exhaustion under load.
+- Metric `notification.sent` is emitted when statsd is enabled, tagged with `provider`, `operation`, and `status` (`success`/`failure`).
 
 ### Important Notes
 

@@ -318,6 +318,7 @@ Identify users through cookies (e.g. via Cloudflare Zero Trust JWT tokens).
 | `FLAGR_EVALCACHE_REFRESHINTERVAL` | `3s` | Interval between evaluation cache refreshes |
 | `FLAGR_EVAL_ONLY_MODE` | `false` | Only expose evaluation endpoints (auto-set for json_file/json_http drivers) |
 | `FLAGR_EVAL_BATCH_SIZE` | `0` | Max evaluations per batch request; 0 = unlimited |
+| `FLAGR_OFREP_ENABLED` | `true` | Expose the [OpenFeature Remote Evaluation Protocol](flagr_ofrep) endpoints (`/ofrep/v1/...`) |
 
 ### Logging and Middleware
 
@@ -332,12 +333,12 @@ Identify users through cookies (e.g. via Cloudflare Zero Trust JWT tokens).
 
 ### Data Recorder
 
-Flagr can record evaluation results for analytics. Supported backends: `kafka`, `kinesis`, `pubsub`.
+Flagr can record evaluation results for analytics. Supported backends: `kafka`, `kinesis`, `pubsub`, and the in-process `datar` aggregator. `FLAGR_RECORDER_TYPE` is a **comma-separated list** — Flagr fans every result out to each listed backend (e.g. `kafka,datar` streams to Kafka *and* powers the built-in [Analytics](flagr_datar)). See [Analytics & Data Records](flagr_datar) for the record schema.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `FLAGR_RECORDER_ENABLED` | `false` | Enable data recording |
-| `FLAGR_RECORDER_TYPE` | `kafka` | Recorder backend: `kafka`, `kinesis`, or `pubsub` |
+| `FLAGR_RECORDER_TYPE` | `kafka` | Recorder backend(s), comma-separated: `kafka`, `kinesis`, `pubsub`, `datar` |
 | `FLAGR_RECORDER_FRAME_OUTPUT_MODE` | `payload_string` | Output format: `payload_string` (respects encryption) or `payload_raw_json` |
 
 #### Kafka Configuration
@@ -362,8 +363,18 @@ Flagr can record evaluation results for analytics. Supported backends: `kafka`, 
 | `FLAGR_RECORDER_KAFKA_REQUIRED_ACKS` | `1` | Required acks: 0=none, 1=leader, -1=all |
 | `FLAGR_RECORDER_KAFKA_IDEMPOTENT` | `false` | Enable idempotent producer |
 | `FLAGR_RECORDER_KAFKA_FLUSHFREQUENCY` | `500ms` | Batch flush frequency |
-| `FLAGR_RECORDER_KAFKA_ENCRYPTED` | `false` | Encrypt payloads |
+| `FLAGR_RECORDER_KAFKA_BUFFER_SIZE` | `10000` | Size of the in-memory buffer of results awaiting send. When full, results are dropped (see `flagr_recorder_dropped_total`) — raise it for bursty traffic. |
+| `FLAGR_RECORDER_KAFKA_WORKER_COUNT` | `4` | Number of worker goroutines draining the buffer to Kafka — the main throughput knob. |
+| `FLAGR_RECORDER_KAFKA_ENCRYPTED` | `false` | Encrypt payloads (AES `simplebox`; only in `payload_string` mode, Kafka only) |
 | `FLAGR_RECORDER_KAFKA_ENCRYPTION_KEY` | _(empty)_ | Encryption key for payloads |
+
+#### Datar Configuration
+
+The `datar` recorder aggregates results in memory to power the built-in [Analytics](flagr_datar) (no external broker required).
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FLAGR_RECORDER_DATAR_FLUSH_INTERVAL` | `60s` | How often aggregated counters are flushed to the analytics store |
 
 #### Kinesis Configuration
 
@@ -388,3 +399,18 @@ Flagr can record evaluation results for analytics. Supported backends: `kafka`, 
 | `FLAGR_RECORDER_PUBSUB_KEYFILE` | _(empty)_ | Service account JSON key file path |
 | `FLAGR_RECORDER_PUBSUB_VERBOSE` | `false` | Verbose Pubsub logging |
 | `FLAGR_RECORDER_PUBSUB_VERBOSE_CANCEL_TIMEOUT` | `5s` | Cancel timeout for verbose logging |
+
+### Notifications
+
+Webhook notifications on flag changes. See [Notifications](flagr_notifications) for the payload format and triggers.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FLAGR_NOTIFICATION_WEBHOOK_ENABLED` | `false` | Enable outgoing webhook notifications |
+| `FLAGR_NOTIFICATION_WEBHOOK_URL` | _(empty)_ | Destination URL for `POST` webhooks |
+| `FLAGR_NOTIFICATION_WEBHOOK_HEADERS` | _(empty)_ | Extra HTTP headers, comma-separated (e.g. `Authorization: Bearer x`) |
+| `FLAGR_NOTIFICATION_TIMEOUT` | `10s` | Overall timeout per notification, including retries |
+| `FLAGR_NOTIFICATION_DETAILED_DIFF_ENABLED` | `false` | Embed `pre_value`/`post_value`/`diff` in the payload |
+| `FLAGR_NOTIFICATION_MAX_RETRIES` | `3` | Retry attempts on transient failure; `0` disables retries |
+| `FLAGR_NOTIFICATION_RETRY_BASE` | `1s` | Base delay for exponential backoff between retries |
+| `FLAGR_NOTIFICATION_RETRY_MAX` | `10s` | Maximum delay between retries |

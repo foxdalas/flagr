@@ -1,4 +1,13 @@
-# Datar Aggregate Analytics
+# Analytics & Data Records
+
+Flagr can do two things with each evaluation result — independently or together. Both are **recorders**, switched on with `FLAGR_RECORDER_ENABLED=true` and selected (comma-separated) via `FLAGR_RECORDER_TYPE`:
+
+- **Built-in analytics (`datar`)** — tally counts in memory and expose them through two REST endpoints. Zero external dependencies. Covered first, below.
+- **Streaming (`kafka` / `kinesis` / `pubsub`)** — emit every result to an external pipeline for your own warehouse or experimentation platform. See **Streaming records** at the end of this page.
+
+Whichever you use, the **per-flag `dataRecordsEnabled` toggle gates recording for that flag across *all* recorders** — set it in the UI (the flag editor's *Data records* control) or via `PUT /api/v1/flags/{id}`. A flag with recording off is never written to Datar, Kafka, Kinesis, or Pub-Sub.
+
+## Built-in analytics (Datar)
 
 Datar is an optional in-memory aggregate analytics engine built into Flagr. It tallies evaluation counts by flag, variant, segment, and hour, then exposes the results through two REST endpoints — no external pipeline, no Kafka consumer, no separate analytics stack required.
 
@@ -119,3 +128,41 @@ A unique index on `(flag_id, variant_id, segment_id, bucket_hour)` ensures addit
 - Data is in-memory until the periodic flush. If the process crashes, up to one flush interval of aggregate data is lost (acceptable for dashboard analytics).
 - No data retention policy is built in — the table grows unbounded. Deploy a cron job or retention policy if needed.
 - No unique entity counting (HyperLogLog or similar). Each evaluation is counted once regardless of the entity identity.
+
+## Streaming records
+
+When `FLAGR_RECORDER_TYPE` includes `kafka`, `kinesis`, or `pubsub`, Flagr emits **one message per evaluation** to that backend (and to several at once if you list more than one). Configure brokers/credentials in [Server Config → Data Recorder](flagr_env); this section documents the **message format** your consumer receives.
+
+### Frame envelope
+
+Each message is a `DataRecordFrame`. Its shape depends on `FLAGR_RECORDER_FRAME_OUTPUT_MODE`:
+
+- **`payload_string`** (default) — the eval result is JSON-encoded into a string, so the envelope is stable even if the result schema evolves, and the payload can be encrypted:
+
+```json
+{ "payload": "{\"flagID\":42,\"variantKey\":\"treatment\", ... }", "encrypted": false }
+```
+
+- **`payload_raw_json`** — the eval result is embedded as a nested object, easier to query directly in a warehouse:
+
+```json
+{ "payload": { "flagID": 42, "variantKey": "treatment", "...": "..." } }
+```
+
+### Record payload
+
+The payload is the same **eval result** the [Evaluation API](flagr_eval_api) returns, plus the evaluation context:
+
+| Field | Description |
+|-------|-------------|
+| `flagID` / `flagKey` | The evaluated flag |
+| `flagSnapshotID` | Flag revision used — correlate with the history/audit log |
+| `segmentID` | Matched segment (`0` if none) |
+| `variantID` / `variantKey` | Assigned variant (empty / `0` if none) |
+| `variantAttachment` | The variant's JSON attachment |
+| `evalContext` | The full request context: `entityID`, `entityType`, `entityContext`, … |
+| `timestamp` | When the evaluation happened (UTC) |
+
+### Encryption (Kafka only)
+
+In `payload_string` mode the **Kafka** recorder can encrypt the payload — set `FLAGR_RECORDER_KAFKA_ENCRYPTED=true` and `FLAGR_RECORDER_KAFKA_ENCRYPTION_KEY`. The frame then carries a base64 ciphertext with `"encrypted": true`; your consumer decrypts it with the same key (AES, `simplebox` scheme). Encryption applies only to `payload_string` mode — Kinesis and Pub-Sub always send `"encrypted": false`.
