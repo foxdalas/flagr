@@ -16,7 +16,7 @@ test.describe('Flag Config', () => {
 
   test('Flag page loads', async ({ page }) => {
     await expect(page.locator('.flag-config-card')).toBeVisible()
-    await expect(page.locator('.el-tag').first()).toContainText(`Flag ID:`)
+    await expect(page.locator('.flag-id-caption').first()).toContainText('#')
   })
 
   test('Config and History tabs visible', async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe('Flag Config', () => {
   })
 
   test('Edit flag key', async ({ page }) => {
-    const keyInput = page.locator('.flag-content input[placeholder="Key"]')
+    const keyInput = page.locator('.flag-fields input[placeholder="Key"]')
     const newKey = 'test-key-' + Date.now()
     await keyInput.fill(newKey)
 
@@ -36,12 +36,12 @@ test.describe('Flag Config', () => {
 
     // Reload and verify
     await page.reload()
-    await page.waitForSelector('.flag-content input[placeholder="Key"]')
-    await expect(page.locator('.flag-content input[placeholder="Key"]')).toHaveValue(newKey)
+    await page.waitForSelector('.flag-fields input[placeholder="Key"]')
+    await expect(page.locator('.flag-fields input[placeholder="Key"]')).toHaveValue(newKey)
   })
 
   test('Edit flag description', async ({ page }) => {
-    const descInput = page.locator('.flag-content input[placeholder="Description"]')
+    const descInput = page.locator('.flag-fields input[placeholder="Description"]')
     const newDesc = 'updated-desc-' + Date.now()
     await descInput.fill(newDesc)
 
@@ -64,14 +64,14 @@ test.describe('Flag Config', () => {
 
   test('Data Records toggle', async ({ page }) => {
     // Find data records switch
-    const switches = page.locator('.flag-content .el-switch')
+    const switches = page.locator('.flag-fields .el-switch')
     await expect(switches.first()).toBeVisible()
   })
 
   test('Entity Type select', async ({ page }) => {
     // Entity type select may be hidden if data records disabled, just check it exists on page.
     // Use an auto-retrying assertion so this isn't racy under parallel load.
-    await expect(page.locator('.flag-content .el-select').first()).toBeAttached()
+    await expect(page.locator('.flag-fields .el-select').first()).toBeAttached()
   })
 
   test('Delete Flag shows confirmation dialog', async ({ page }) => {
@@ -90,16 +90,18 @@ test.describe('Flag Config', () => {
   })
 
   test('Save Flag sends all fields', async ({ page }) => {
-    // Use .last() to get the inner card button (sticky header button is disabled when no changes)
+    // Save buttons are disabled until there's a change, so edit a field first.
+    await page.locator('.flag-fields input[placeholder="Description"]').fill('save-test-' + Date.now())
     await page.locator('button').filter({ hasText: 'Save Flag' }).last().click()
     await expect(page.locator('.el-message')).toContainText('Flag updated')
   })
 
   test('Flag ID is not editable', async ({ page }) => {
-    const flagIdTag = page.locator('.el-tag').filter({ hasText: /Flag ID:/ }).first()
-    await expect(flagIdTag).toBeVisible()
-    // It's a tag, not an input
-    const input = flagIdTag.locator('input')
+    const flagIdCaption = page.locator('.flag-id-caption').first()
+    await expect(flagIdCaption).toBeVisible()
+    await expect(flagIdCaption).toContainText('#')
+    // It's a caption, not an input
+    const input = flagIdCaption.locator('input')
     expect(await input.count()).toBe(0)
   })
 })

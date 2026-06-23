@@ -8,22 +8,29 @@
         <el-dialog
           v-model="dialogDeleteFlagVisible"
           destroy-on-close
-          title="Delete feature flag"
+          :title="t('flag.deleteFlagTitle')"
         >
-          <p>This action cannot be undone. Type the flag key <b>{{ flag.key }}</b> to confirm.</p>
+          <i18n-t
+            keypath="flag.deleteFlagConfirm"
+            tag="p"
+          >
+            <template #key>
+              <b>{{ flag.key }}</b>
+            </template>
+          </i18n-t>
           <el-input
             v-model="deleteFlagKeyConfirm"
-            placeholder="Type flag key to confirm"
+            :placeholder="t('flag.deleteFlagKeyPlaceholder')"
           />
           <template #footer>
             <span class="dialog-footer">
-              <el-button @click="dialogDeleteFlagVisible = false">Cancel</el-button>
+              <el-button @click="dialogDeleteFlagVisible = false">{{ t('common.cancel') }}</el-button>
               <el-button
                 type="danger"
                 :disabled="deleteFlagKeyConfirm !== flag.key"
                 :loading="deletingFlag"
                 @click.prevent="deleteFlag"
-              >Delete</el-button>
+              >{{ t('common.delete') }}</el-button>
             </span>
           </template>
         </el-dialog>
@@ -31,24 +38,23 @@
         <el-dialog
           v-model="dialogEditDistributionOpen"
           destroy-on-close
-          title="Edit distribution"
+          :title="t('flag.editDistributionTitle')"
         >
           <div v-if="loaded && flag">
             <div
-              v-for="variant in flag.variants"
+              v-for="(variant, variantIndex) in flag.variants"
               :key="'distribution-variant-' + variant.id"
             >
-              <div>
+              <div class="dist-variant-row">
                 <el-checkbox
                   :model-value="!!newDistributions[variant.id]"
                   @change="(e) => selectVariant(e, variant)"
                 />
-                <el-tag
-                  type="danger"
-                  :disable-transitions="true"
-                >
-                  {{ variant.key }}
-                </el-tag>
+                <span
+                  class="dist-variant-swatch"
+                  :style="{ backgroundColor: variantColor(variantIndex) }"
+                />
+                <span class="dist-variant-key">{{ variant.key }}</span>
               </div>
               <el-slider
                 v-if="!newDistributions[variant.id]"
@@ -66,32 +72,32 @@
             </div>
           </div>
           <div class="distribution-presets">
-            <span class="distribution-presets__label">Presets:</span>
+            <span class="distribution-presets__label">{{ t('flag.presets') }}</span>
             <el-button
               size="small"
               @click="applyPreset('even')"
             >
-              Even Split
+              {{ t('flag.presetEven') }}
             </el-button>
             <el-button
               size="small"
               @click="applyPreset('control')"
             >
-              100% Control
+              {{ t('flag.presetControl') }}
             </el-button>
             <el-button
               size="small"
               :disabled="checkedVariantIds.length < 2"
               @click="applyPreset('canary')"
             >
-              Canary 1/99
+              {{ t('flag.presetCanary') }}
             </el-button>
             <el-button
               size="small"
               :disabled="checkedVariantIds.length < 2"
               @click="applyPreset('gradual')"
             >
-              Gradual 10/90
+              {{ t('flag.presetGradual') }}
             </el-button>
           </div>
           <el-button
@@ -100,17 +106,13 @@
             :loading="savingDistribution"
             @click.prevent="() => saveDistribution(selectedSegment)"
           >
-            Save
+            {{ t('common.save') }}
           </el-button>
 
           <el-alert
             v-if="!newDistributionIsValid"
             class="edit-distribution-alert"
-            :title="
-              'Percentages must add up to 100% (currently at ' +
-                newDistributionPercentageSum +
-                '%)'
-            "
+            :title="t('flag.distributionSumError', { sum: newDistributionPercentageSum })"
             type="error"
             show-icon
           />
@@ -119,17 +121,17 @@
         <el-dialog
           v-model="dialogCreateSegmentOpen"
           destroy-on-close
-          title="Create segment"
+          :title="t('flag.createSegmentTitle')"
         >
           <div>
             <p>
               <el-input
                 v-model="newSegment.description"
-                placeholder="Segment description"
+                :placeholder="t('flag.segmentDescriptionPlaceholder')"
               />
             </p>
             <p>
-              <span class="segment-rollout-label">Rollout %</span>
+              <span class="segment-rollout-label">{{ t('flag.rolloutPercent') }}</span>
               <el-input-number
                 v-model="newSegment.rolloutPercent"
                 :min="0"
@@ -146,32 +148,34 @@
               :loading="creatingSegment"
               @click.prevent="createSegment"
             >
-              Create Segment
+              {{ t('flag.createSegment') }}
             </el-button>
           </div>
         </el-dialog>
 
         <el-breadcrumb separator="/">
           <el-breadcrumb-item :to="{ name: 'home' }">
-            Flags
+            {{ t('flag.breadcrumbFlags') }}
           </el-breadcrumb-item>
-          <el-breadcrumb-item>Flag ID: {{ route.params.flagId }}</el-breadcrumb-item>
+          <el-breadcrumb-item>{{ flag.key || t('flag.flagN', { id: route.params.flagId }) }}</el-breadcrumb-item>
         </el-breadcrumb>
+
+        <spinner v-if="!loaded" />
 
         <div v-if="loaded && flag">
           <div class="sticky-flag-header">
-            <span class="sticky-flag-header__key">{{ flag.key || 'Flag ' + flag.id }}</span>
+            <span class="sticky-flag-header__key">{{ flag.key || t('flag.flagN', { id: flag.id }) }}</span>
             <span
               class="sticky-flag-header__status"
               :class="flag.enabled ? 'is-enabled' : 'is-disabled'"
               aria-hidden="true"
             />
             <el-tag
-              v-if="isDirty"
+              v-if="anyDirty"
               type="warning"
               size="small"
             >
-              Unsaved changes
+              {{ t('flag.unsavedChanges') }}
             </el-tag>
             <div class="sticky-flag-header__actions">
               <el-tooltip
@@ -180,23 +184,28 @@
                 effect="light"
               >
                 <el-button
-                  :disabled="!isDirty"
-                  :loading="savingFlag"
-                  @click="putFlag(flag)"
+                  type="primary"
+                  :disabled="!anyDirty"
+                  :loading="savingAll"
+                  @click="saveAll"
                 >
-                  Save Flag
+                  {{ t('flag.saveAllChanges') }}
                 </el-button>
               </el-tooltip>
             </div>
           </div>
           <el-tabs
+            v-model="activeTab"
             class="flag-config-tabs"
             @tab-click="handleHistoryTabClick"
           >
-            <el-tab-pane label="Config">
+            <el-tab-pane
+              name="config"
+              :label="t('flag.tabConfig')"
+            >
               <nav
                 class="section-nav"
-                aria-label="Config sections"
+                :aria-label="t('flag.configSectionsAria')"
               >
                 <button
                   v-for="s in sectionNav"
@@ -204,11 +213,37 @@
                   type="button"
                   class="section-nav__item"
                   :class="{ 'is-active': activeSection === s.id }"
+                  :aria-current="activeSection === s.id ? 'true' : undefined"
                   @click="scrollToSection(s.id)"
                 >
                   {{ s.label }}
                 </button>
               </nav>
+              <div
+                v-if="flagWarnings.length"
+                class="flag-warnings-summary"
+                role="alert"
+              >
+                <el-icon><WarningFilled /></el-icon>
+                <div class="flag-warnings-summary__body">
+                  <strong>{{ t('flag.warningsSummary', { n: flagWarnings.length }, flagWarnings.length) }}</strong>
+                  <ul>
+                    <li
+                      v-for="(w, i) in flagWarnings"
+                      :key="i"
+                    >
+                      <button
+                        type="button"
+                        class="flag-warnings-summary__link"
+                        @click="scrollToSegment(w.segId)"
+                      >
+                        {{ w.label }}
+                      </button>
+                      — {{ w.text }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
               <el-card
                 id="sec-flag"
                 class="flag-config-card"
@@ -217,7 +252,7 @@
                   <div class="el-card-header">
                     <div class="flex-row">
                       <div class="flex-row-left">
-                        <h2>Flag</h2>
+                        <h2>{{ t('flag.cardFlag') }}</h2>
                       </div>
                       <div
                         v-if="flag"
@@ -227,10 +262,10 @@
                           class="flag-enable-label"
                           :class="flag.enabled ? 'is-enabled' : 'is-disabled'"
                         >
-                          {{ flag.enabled ? 'Enabled' : 'Disabled' }}
+                          {{ flag.enabled ? t('flag.enabled') : t('flag.disabled') }}
                         </span>
                         <el-tooltip
-                          content="Enable/Disable Flag"
+                          :content="t('flag.enableDisableTooltip')"
                           placement="top"
                           effect="light"
                         >
@@ -238,7 +273,7 @@
                             v-model="flag.enabled"
                             :active-value="true"
                             :inactive-value="false"
-                            aria-label="Enable or disable this feature flag"
+                            :aria-label="t('flag.enableDisableAria')"
                             @change="setFlagEnabled"
                           />
                         </el-tooltip>
@@ -246,150 +281,129 @@
                     </div>
                   </div>
                 </template>
-                <el-card
-                  shadow="hover"
-                  :class="toggleInnerConfigCard"
-                >
-                  <div class="flex-row id-row">
-                    <div class="flex-row-left">
-                      <el-tag
-                        type="primary"
-                        :disable-transitions="true"
-                      >
-                        Flag ID: {{ route.params.flagId }}
-                      </el-tag>
+                <p class="section-subhead">
+                  {{ t('flag.flagSubhead') }}
+                </p>
+                <div class="flag-fields">
+                  <div class="flag-fields__top">
+                    <span class="flag-id-caption">
+                      #{{ route.params.flagId }}
                       <el-tooltip
-                        content="Copy Flag ID"
+                        :content="t('flag.copyFlagId')"
                         placement="top"
                         effect="light"
                       >
                         <button
                           class="copy-btn"
-                          aria-label="Copy Flag ID to clipboard"
+                          :aria-label="t('flag.copyFlagIdAria')"
                           @click="copyId"
                         >
-                          <el-icon :size="14">
+                          <el-icon :size="13">
                             <Check v-if="idCopied" />
                             <CopyDocument v-else />
                           </el-icon>
                         </button>
                       </el-tooltip>
-                    </div>
-                    <div class="flex-row-right">
-                      <el-button
+                    </span>
+                    <el-button
+                      size="small"
+                      :type="flagDirty ? 'primary' : ''"
+                      :disabled="!flagDirty"
+                      :loading="savingFlag"
+                      @click="putFlag(flag)"
+                    >
+                      {{ t('flag.saveFlag') }}
+                    </el-button>
+                  </div>
+
+                  <div class="field">
+                    <label class="field__label">{{ t('flag.flagKey') }}</label>
+                    <el-input
+                      v-model="flag.key"
+                      :placeholder="t('flag.keyPlaceholder')"
+                    >
+                      <template #append>
+                        <el-tooltip
+                          :content="t('flag.copyFlagKey')"
+                          placement="top"
+                          effect="light"
+                        >
+                          <button
+                            class="copy-btn"
+                            :aria-label="t('flag.copyFlagKeyAria')"
+                            @click="copyKey"
+                          >
+                            <el-icon :size="14">
+                              <Check v-if="keyCopied" />
+                              <CopyDocument v-else />
+                            </el-icon>
+                          </button>
+                        </el-tooltip>
+                      </template>
+                    </el-input>
+                  </div>
+
+                  <div class="field">
+                    <label class="field__label">{{ t('flag.description') }}</label>
+                    <el-input
+                      v-model="flag.description"
+                      :placeholder="t('flag.description')"
+                    />
+                  </div>
+
+                  <div class="field-inline">
+                    <div class="data-records-group">
+                      <el-switch
+                        v-model="flag.dataRecordsEnabled"
                         size="small"
-                        :loading="savingFlag"
-                        @click="putFlag(flag)"
+                        :active-value="true"
+                        :inactive-value="false"
+                      />
+                      <span class="data-records-label">
+                        {{ t('flag.dataRecords') }}
+                        <el-tooltip
+                          :content="t('flag.dataRecordsTooltip')"
+                          placement="top-end"
+                          effect="light"
+                        >
+                          <el-icon><InfoFilled /></el-icon>
+                        </el-tooltip>
+                      </span>
+                    </div>
+                    <div
+                      v-show="!!flag.dataRecordsEnabled"
+                      class="entity-type-field"
+                    >
+                      <span class="data-records-label">
+                        {{ t('flag.entityType') }}
+                        <el-tooltip
+                          :content="t('flag.entityTypeTooltip')"
+                          placement="top-end"
+                          effect="light"
+                        >
+                          <el-icon><InfoFilled /></el-icon>
+                        </el-tooltip>
+                      </span>
+                      <el-select
+                        v-model="flag.entityType"
+                        size="small"
+                        filterable
+                        :allow-create="allowCreateEntityType"
+                        default-first-option
+                        :placeholder="t('flag.entityTypePlaceholder')"
                       >
-                        Save Flag
-                      </el-button>
+                        <el-option
+                          v-for="item in entityTypes"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        />
+                      </el-select>
                     </div>
                   </div>
-                  <el-row
-                    class="flag-content"
-                    align="middle"
-                  >
-                    <el-col :span="19">
-                      <el-input
-                        v-model="flag.key"
-                        size="small"
-                        placeholder="Key"
-                      >
-                        <template #prepend>
-                          Flag Key
-                        </template>
-                        <template #append>
-                          <el-tooltip
-                            content="Copy Flag Key"
-                            placement="top"
-                            effect="light"
-                          >
-                            <button
-                              class="copy-btn copy-btn--inline"
-                              aria-label="Copy Flag Key to clipboard"
-                              @click="copyKey"
-                            >
-                              <el-icon :size="14">
-                                <Check v-if="keyCopied" />
-                                <CopyDocument v-else />
-                              </el-icon>
-                            </button>
-                          </el-tooltip>
-                        </template>
-                      </el-input>
-                    </el-col>
-                    <el-col :span="5">
-                      <div class="data-records-group">
-                        <el-switch
-                          v-model="flag.dataRecordsEnabled"
-                          size="small"
-                          :active-value="true"
-                          :inactive-value="false"
-                        />
-                        <div class="data-records-label">
-                          Data Records
-                          <el-tooltip
-                            content="Controls whether to log to data pipeline, e.g. Kafka, Kinesis, Pubsub"
-                            placement="top-end"
-                            effect="light"
-                          >
-                            <el-icon><InfoFilled /></el-icon>
-                          </el-tooltip>
-                        </div>
-                      </div>
-                    </el-col>
-                  </el-row>
-                  <el-row
-                    class="flag-content"
-                    align="middle"
-                  >
-                    <el-col :span="19">
-                      <el-input
-                        v-model="flag.description"
-                        size="small"
-                        placeholder="Description"
-                      >
-                        <template #prepend>
-                          Flag Description
-                        </template>
-                      </el-input>
-                    </el-col>
-                    <el-col :span="5">
-                      <div
-                        v-show="!!flag.dataRecordsEnabled"
-                        class="data-records-group"
-                      >
-                        <el-select
-                          v-model="flag.entityType"
-                          size="small"
-                          filterable
-                          :allow-create="allowCreateEntityType"
-                          default-first-option
-                          placeholder="Entity Type"
-                        >
-                          <el-option
-                            v-for="item in entityTypes"
-                            :key="item.value"
-                            :label="item.label"
-                            :value="item.value"
-                          />
-                        </el-select>
-                        <div class="data-records-label">
-                          Entity Type
-                          <el-tooltip
-                            content="Overrides the entityType in data records logging"
-                            placement="top-end"
-                            effect="light"
-                          >
-                            <el-icon><InfoFilled /></el-icon>
-                          </el-tooltip>
-                        </div>
-                      </div>
-                    </el-col>
-                  </el-row>
-                  <div class="section-heading">
-                    <h5>
-                      <span class="section-heading__label">Flag Notes</span>
+                  <div class="field">
+                    <div class="field-head">
+                      <span class="field__label">{{ t('flag.flagNotes') }}</span>
                       <el-button
                         round
                         size="small"
@@ -403,22 +417,16 @@
                         <el-icon v-else>
                           <View />
                         </el-icon>
-                        {{ !showMdEditor ? "edit" : "view" }}
+                        <span>{{ !showMdEditor ? t('flag.edit') : t('flag.view') }}</span>
                       </el-button>
-                    </h5>
-                  </div>
-                  <div>
+                    </div>
                     <markdown-editor
                       v-model:markdown="flag.notes"
                       :show-editor="showMdEditor"
                     />
                   </div>
-                  <div class="section-heading">
-                    <h5>
-                      <span class="section-heading__label">Tags</span>
-                    </h5>
-                  </div>
-                  <div>
+                  <div class="field">
+                    <span class="field__label">{{ t('flag.tags') }}</span>
                     <div class="tags-container-inner">
                       <el-tag
                         v-for="tag in flag.tags"
@@ -437,13 +445,28 @@
                           v-model="newTag.value"
                           size="small"
                           class="width--full"
-                          placeholder="Tag name, then Enter"
+                          :placeholder="t('flag.tagPlaceholder')"
                           :trigger-on-focus="false"
                           :fetch-suggestions="queryTags"
                           @select="createTag"
                           @keyup.enter="createTag"
                           @keyup.esc="cancelCreateTag"
+                          @blur="onTagInputBlur"
                         />
+                        <el-tooltip
+                          :content="t('flag.cancelEsc')"
+                          placement="top"
+                          effect="light"
+                        >
+                          <button
+                            class="tag-cancel-btn"
+                            :aria-label="t('flag.cancelAddTagAria')"
+                            @mousedown.prevent
+                            @click="cancelCreateTag"
+                          >
+                            <el-icon><Close /></el-icon>
+                          </button>
+                        </el-tooltip>
                       </div>
                       <el-button
                         v-else
@@ -451,11 +474,11 @@
                         size="small"
                         @click="showTagInput"
                       >
-                        + New Tag
+                        {{ t('flag.newTag') }}
                       </el-button>
                     </div>
                   </div>
-                </el-card>
+                </div>
               </el-card>
 
               <el-card
@@ -464,9 +487,12 @@
               >
                 <template #header>
                   <div class="clearfix">
-                    <h2>Variants</h2>
+                    <h2>{{ t('flag.cardVariants') }}</h2>
                   </div>
                 </template>
+                <p class="section-subhead">
+                  {{ t('flag.variantsSubhead') }}
+                </p>
                 <div
                   v-if="flag.variants.length"
                   class="variants-container-inner"
@@ -474,76 +500,62 @@
                   <div
                     v-for="variant in flag.variants"
                     :key="variant.id"
+                    class="variant-item"
                   >
-                    <el-card shadow="hover">
-                      <el-form
-                        label-position="left"
-                        label-width="100px"
-                      >
-                        <div class="flex-row id-row">
-                          <el-tag
-                            type="primary"
-                            :disable-transitions="true"
-                          >
-                            Variant ID:
-                            <b>{{ variant.id }}</b>
-                          </el-tag>
-                          <el-input
-                            v-model="variant.key"
-                            class="variant-key-input"
+                    <div class="variant-item__top">
+                      <span class="entity-id-caption">#{{ variant.id }}</span>
+                      <div class="save-remove-variant-row">
+                        <el-button
+                          size="small"
+                          :type="isVariantDirty(variant) ? 'primary' : ''"
+                          :disabled="!isVariantDirty(variant)"
+                          :loading="savingVariant"
+                          @click="putVariant(variant)"
+                        >
+                          {{ t('flag.saveVariant') }}
+                        </el-button>
+                        <el-tooltip
+                          :content="t('flag.deleteVariantTooltip')"
+                          placement="top"
+                          effect="light"
+                        >
+                          <el-button
                             size="small"
-                            placeholder="Key"
+                            :aria-label="t('flag.deleteVariantTooltip')"
+                            @click="deleteVariant(variant)"
                           >
-                            <template #prepend>
-                              Key
-                            </template>
-                          </el-input>
-                          <div class="flex-row-right save-remove-variant-row">
-                            <el-button
-                              size="small"
-                              :loading="savingVariant"
-                              @click="putVariant(variant)"
-                            >
-                              Save Variant
-                            </el-button>
-                            <el-tooltip
-                              content="Delete variant"
-                              placement="top"
-                              effect="light"
-                            >
-                              <el-button
-                                size="small"
-                                aria-label="Delete variant"
-                                @click="deleteVariant(variant)"
-                              >
-                                <el-icon><Delete /></el-icon>
-                              </el-button>
-                            </el-tooltip>
-                          </div>
-                        </div>
-                        <el-collapse class="flex-row">
-                          <el-collapse-item
-                            title="Variant attachment"
-                            class="variant-attachment-collapsable-title"
-                          >
-                            <p
-                              class="variant-attachment-title"
-                            >
-                              You can add JSON in key/value pairs format.
-                            </p>
-                            <JsonEditorVue
-                              v-model="variant.attachment"
-                              mode="tree"
-                              :main-menu-bar="true"
-                              :navigation-bar="false"
-                              :status-bar="false"
-                              class="variant-attachment-content"
-                              @change="(content, prev, { contentErrors }) => handleAttachmentChange(variant, content, contentErrors)"
-                            />
-                          </el-collapse-item>
-                        </el-collapse>
-                      </el-form>
-                    </el-card>
+                            <el-icon><Delete /></el-icon>
+                          </el-button>
+                        </el-tooltip>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="field__label">{{ t('flag.variantKey') }}</label>
+                      <el-input
+                        v-model="variant.key"
+                        class="variant-key-input"
+                        :placeholder="t('flag.keyPlaceholder')"
+                      />
+                    </div>
+                    <el-collapse class="variant-attachment-collapse">
+                      <el-collapse-item
+                        :title="t('flag.variantAttachment')"
+                        class="variant-attachment-collapsable-title"
+                      >
+                        <p class="variant-attachment-title">
+                          {{ t('flag.variantAttachmentHint') }}
+                        </p>
+                        <JsonEditorVue
+                          v-model="variant.attachment"
+                          mode="tree"
+                          :main-menu-bar="true"
+                          :navigation-bar="false"
+                          :status-bar="false"
+                          class="variant-attachment-content"
+                          @change="(content, prev, { contentErrors }) => handleAttachmentChange(variant, content, contentErrors)"
+                        />
+                      </el-collapse-item>
+                    </el-collapse>
                   </div>
                 </div>
                 <div
@@ -554,10 +566,10 @@
                     <el-icon><Operation /></el-icon>
                   </div>
                   <div class="empty-title">
-                    No variants defined yet
+                    {{ t('flag.noVariantsTitle') }}
                   </div>
                   <div class="empty-hint">
-                    Variants represent the different values this flag can return.
+                    {{ t('flag.noVariantsHint') }}
                   </div>
                 </div>
                 <div class="variants-input">
@@ -565,7 +577,7 @@
                     <div>
                       <el-input
                         v-model="newVariant.key"
-                        placeholder="Variant Key"
+                        :placeholder="t('flag.variantKeyPlaceholder')"
                         :class="{ 'is-error': newVariantKeyError }"
                       />
                       <div
@@ -583,7 +595,7 @@
                     :loading="creatingVariant"
                     @click.prevent="createVariant"
                   >
-                    Create Variant
+                    {{ t('flag.createVariant') }}
                   </el-button>
                 </div>
               </el-card>
@@ -596,21 +608,24 @@
                   <div class="el-card-header">
                     <div class="flex-row">
                       <div class="flex-row-left">
-                        <h2>Segments</h2>
+                        <h2>{{ t('flag.cardSegments') }}</h2>
                       </div>
                       <div class="flex-row-right">
                         <el-button @click="dialogCreateSegmentOpen = true">
-                          New Segment
+                          {{ t('flag.newSegment') }}
                         </el-button>
                       </div>
                     </div>
                   </div>
                 </template>
+                <p class="section-subhead">
+                  {{ t('flag.segmentsSubhead') }}
+                </p>
                 <div
                   v-if="flag.segments.length"
                   class="segment-order-hint"
                 >
-                  Segments are evaluated top to bottom — first match wins.
+                  {{ t('flag.segmentOrderHint') }}
                 </div>
                 <div
                   v-if="flag.segments.length"
@@ -624,8 +639,8 @@
                     @end="onDragEnd"
                   >
                     <template #item="{ element: segment, index: segmentIndex }">
-                      <el-card
-                        shadow="hover"
+                      <div
+                        :id="'seg-' + segment.id"
                         class="segment"
                       >
                         <div class="flex-row id-row">
@@ -634,43 +649,39 @@
                               <el-icon><Rank /></el-icon>
                             </span>
                             <span class="segment-order-badge">[{{ segmentIndex + 1 }}]</span>
-                            <el-tag
-                              type="primary"
-                              :disable-transitions="true"
-                            >
-                              Segment ID:
-                              <b>{{ segment.id }}</b>
-                            </el-tag>
+                            <span class="entity-id-caption">#{{ segment.id }}</span>
                           </div>
                           <div class="flex-row-right">
                             <el-button
                               size="small"
+                              :type="isSegmentDirty(segment) ? 'primary' : ''"
+                              :disabled="!isSegmentDirty(segment)"
                               :loading="savingSegment"
                               @click="putSegment(segment)"
                             >
-                              Save Segment Setting
+                              {{ t('flag.saveSegment') }}
                             </el-button>
                             <el-tooltip
-                              content="Delete segment"
+                              :content="t('flag.deleteSegmentTooltip')"
                               placement="top"
                               effect="light"
                             >
                               <el-button
                                 size="small"
-                                aria-label="Delete segment"
+                                :aria-label="t('flag.deleteSegmentTooltip')"
                                 @click="deleteSegment(segment)"
                               >
                                 <el-icon><Delete /></el-icon>
                               </el-button>
                             </el-tooltip>
                             <el-tooltip
-                              content="Move up"
+                              :content="t('flag.moveUp')"
                               placement="top"
                               effect="light"
                             >
                               <el-button
                                 size="small"
-                                aria-label="Move segment up"
+                                :aria-label="t('flag.moveUpAria')"
                                 :disabled="segmentIndex === 0"
                                 @click="moveSegment(segment, -1)"
                               >
@@ -678,13 +689,13 @@
                               </el-button>
                             </el-tooltip>
                             <el-tooltip
-                              content="Move down"
+                              :content="t('flag.moveDown')"
                               placement="top"
                               effect="light"
                             >
                               <el-button
                                 size="small"
-                                aria-label="Move segment down"
+                                :aria-label="t('flag.moveDownAria')"
                                 :disabled="segmentIndex === flag.segments.length - 1"
                                 @click="moveSegment(segment, 1)"
                               >
@@ -693,46 +704,54 @@
                             </el-tooltip>
                           </div>
                         </div>
-                        <el-row
-                          :gutter="10"
-                          class="id-row"
+                        <div
+                          v-if="segmentWarnings(segment).length"
+                          class="segment-warnings"
+                          role="alert"
                         >
-                          <el-col :span="18">
+                          <el-icon><WarningFilled /></el-icon>
+                          <ul>
+                            <li
+                              v-for="(w, i) in segmentWarnings(segment)"
+                              :key="i"
+                            >
+                              {{ w }}
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="segment-meta">
+                          <div class="field segment-desc-field">
+                            <label class="field__label">{{ t('flag.description') }}</label>
                             <el-input
                               v-model="segment.description"
-                              size="small"
-                              placeholder="Description"
-                            >
-                              <template #prepend>
-                                Description
-                              </template>
-                            </el-input>
-                          </el-col>
-                          <el-col :span="6">
-                            <div class="segment-rollout-row">
+                              :placeholder="t('flag.description')"
+                            />
+                          </div>
+                          <div class="field segment-rollout-field">
+                            <label class="field__label">
+                              {{ t('flag.rolloutPercent') }}
                               <el-tooltip
-                                content="Percentage of matching entities included in this segment"
+                                :content="t('flag.rolloutTooltip')"
                                 placement="top"
                                 effect="light"
                               >
-                                <span class="segment-rollout-label">Rollout %</span>
+                                <el-icon><InfoFilled /></el-icon>
                               </el-tooltip>
-                              <el-input-number
-                                v-model="segment.rolloutPercent"
-                                class="segment-rollout-percent"
-                                size="small"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                                :precision="0"
-                                controls-position="right"
-                              />
-                            </div>
-                          </el-col>
-                        </el-row>
+                            </label>
+                            <el-input-number
+                              v-model="segment.rolloutPercent"
+                              class="segment-rollout-percent"
+                              :min="0"
+                              :max="100"
+                              :step="1"
+                              :precision="0"
+                              controls-position="right"
+                            />
+                          </div>
+                        </div>
                         <el-row>
                           <el-col :span="24">
-                            <h5>Constraints (match ALL of them)</h5>
+                            <h5>{{ t('flag.constraintsTitle') }}</h5>
                             <div class="constraints">
                               <div
                                 v-if="segment.constraints.length"
@@ -743,26 +762,22 @@
                                   :key="constraint.id"
                                 >
                                   <el-row
-                                    :gutter="3"
+                                    :gutter="6"
                                     class="segment-constraint"
                                   >
-                                    <el-col :span="20">
+                                    <el-col :span="8">
                                       <el-input
                                         v-model="constraint.property"
                                         size="small"
-                                        placeholder="Property"
-                                      >
-                                        <template #prepend>
-                                          Property
-                                        </template>
-                                      </el-input>
+                                        :placeholder="t('flag.propertyPlaceholder')"
+                                      />
                                     </el-col>
-                                    <el-col :span="4">
+                                    <el-col :span="6">
                                       <el-select
                                         v-model="constraint.operator"
                                         class="width--full"
                                         size="small"
-                                        placeholder="operator"
+                                        :placeholder="t('flag.operatorPlaceholder')"
                                       >
                                         <el-option
                                           v-for="item in operatorOptions"
@@ -771,20 +786,16 @@
                                           :value="item.value"
                                         >
                                           <span>{{ item.label }}</span>
-                                          <span class="operator-desc">{{ item.description }}</span>
+                                          <span class="operator-desc">{{ t('operators.' + item.value) }}</span>
                                         </el-option>
                                       </el-select>
                                     </el-col>
-                                    <el-col :span="20">
+                                    <el-col :span="6">
                                       <el-input
                                         v-model="constraint.value"
                                         size="small"
-                                        placeholder="e.g. &quot;CA&quot; for strings, 18 for numbers"
-                                      >
-                                        <template #prepend>
-                                          Value
-                                        </template>
-                                      </el-input>
+                                        :placeholder="t('flag.constraintValuePlaceholder')"
+                                      />
                                       <div
                                         v-if="constraint.value && constraintValueHint(constraint.operator, constraint.value)"
                                         class="constraint-hint"
@@ -795,21 +806,20 @@
                                     </el-col>
                                     <el-col :span="2">
                                       <el-button
-                                        type="success"
-                                        plain
+                                        :type="isConstraintDirty(constraint) ? 'primary' : ''"
                                         class="width--full"
                                         size="small"
-                                        :disabled="!!constraintValueHint(constraint.operator, constraint.value)"
+                                        :disabled="!isConstraintDirty(constraint) || !!constraintValueHint(constraint.operator, constraint.value)"
                                         @click="
                                           putConstraint(segment, constraint)
                                         "
                                       >
-                                        Save
+                                        {{ t('common.save') }}
                                       </el-button>
                                     </el-col>
                                     <el-col :span="2">
                                       <el-tooltip
-                                        content="Delete constraint"
+                                        :content="t('flag.deleteConstraintTooltip')"
                                         placement="top"
                                         effect="light"
                                       >
@@ -818,7 +828,7 @@
                                           plain
                                           class="width--full"
                                           size="small"
-                                          aria-label="Delete constraint"
+                                          :aria-label="t('flag.deleteConstraintTooltip')"
                                           @click="
                                             deleteConstraint(segment, constraint)
                                           "
@@ -838,34 +848,30 @@
                                   <el-icon><Setting /></el-icon>
                                 </div>
                                 <div class="empty-title">
-                                  No constraints
+                                  {{ t('flag.noConstraintsTitle') }}
                                 </div>
                                 <div class="empty-hint">
-                                  All entities will match this segment.
+                                  {{ t('flag.noConstraintsHint') }}
                                 </div>
                               </div>
                               <div>
                                 <el-row
-                                  :gutter="3"
+                                  :gutter="6"
                                   class="segment-constraint"
                                 >
-                                  <el-col :span="20">
+                                  <el-col :span="8">
                                     <el-input
                                       v-model="segment.newConstraint.property"
                                       size="small"
-                                      placeholder="Property"
-                                    >
-                                      <template #prepend>
-                                        Property
-                                      </template>
-                                    </el-input>
+                                      :placeholder="t('flag.propertyPlaceholder')"
+                                    />
                                   </el-col>
-                                  <el-col :span="4">
+                                  <el-col :span="6">
                                     <el-select
                                       v-model="segment.newConstraint.operator"
                                       class="width--full"
                                       size="small"
-                                      placeholder="operator"
+                                      :placeholder="t('flag.operatorPlaceholder')"
                                     >
                                       <el-option
                                         v-for="item in operatorOptions"
@@ -874,20 +880,16 @@
                                         :value="item.value"
                                       >
                                         <span>{{ item.label }}</span>
-                                        <span class="operator-desc">{{ item.description }}</span>
+                                        <span class="operator-desc">{{ t('operators.' + item.value) }}</span>
                                       </el-option>
                                     </el-select>
                                   </el-col>
-                                  <el-col :span="20">
+                                  <el-col :span="6">
                                     <el-input
                                       v-model="segment.newConstraint.value"
                                       size="small"
-                                      placeholder="Value"
-                                    >
-                                      <template #prepend>
-                                        Value
-                                      </template>
-                                    </el-input>
+                                      :placeholder="t('flag.valuePlaceholder')"
+                                    />
                                     <div
                                       v-if="segment.newConstraint.value && constraintValueHint(segment.newConstraint.operator, segment.newConstraint.value)"
                                       class="constraint-hint"
@@ -911,7 +913,7 @@
                                         () => createConstraint(segment)
                                       "
                                     >
-                                      Add Constraint
+                                      {{ t('flag.addConstraint') }}
                                     </el-button>
                                   </el-col>
                                 </el-row>
@@ -923,13 +925,20 @@
                             class="segment-distributions"
                           >
                             <h5>
-                              <span>Distribution</span>
+                              <span>{{ t('flag.distribution') }}</span>
+                              <el-tooltip
+                                :content="t('flag.distributionTooltip')"
+                                placement="top"
+                                effect="light"
+                              >
+                                <el-icon class="section-info-icon"><InfoFilled /></el-icon>
+                              </el-tooltip>
                               <el-button
                                 round
                                 size="small"
                                 @click="editDistribution(segment)"
                               >
-                                <el-icon><Edit /></el-icon> edit
+                                <el-icon><Edit /></el-icon><span>{{ t('flag.edit') }}</span>
                               </el-button>
                             </h5>
                             <DistributionBar
@@ -945,15 +954,15 @@
                                 <el-icon><DataAnalysis /></el-icon>
                               </div>
                               <div class="empty-title">
-                                No distribution configured
+                                {{ t('flag.noDistributionTitle') }}
                               </div>
                               <div class="empty-hint">
-                                Click 'edit' to control traffic allocation.
+                                {{ t('flag.noDistributionHint') }}
                               </div>
                             </div>
                           </el-col>
                         </el-row>
-                      </el-card>
+                      </div>
                     </template>
                   </draggable>
                 </div>
@@ -965,17 +974,17 @@
                     <el-icon><Aim /></el-icon>
                   </div>
                   <div class="empty-title">
-                    No segments yet
+                    {{ t('flag.noSegmentsTitle') }}
                   </div>
                   <div class="empty-hint">
-                    Segments define targeting rules for this flag.
+                    {{ t('flag.noSegmentsHint') }}
                   </div>
                   <el-button
                     size="small"
                     style="margin-top: 8px;"
                     @click="dialogCreateSegmentOpen = true"
                   >
-                    New Segment
+                    {{ t('flag.newSegment') }}
                   </el-button>
                 </div>
               </el-card>
@@ -986,29 +995,35 @@
               <el-card id="sec-settings">
                 <template #header>
                   <div class="el-card-header">
-                    <h2>Flag Settings</h2>
+                    <h2>{{ t('flag.cardSettings') }}</h2>
                   </div>
                 </template>
+                <p class="section-subhead">
+                  {{ t('flag.settingsSubhead') }}
+                </p>
                 <el-button
                   type="danger"
                   plain
                   @click="deleteFlagKeyConfirm = ''; dialogDeleteFlagVisible = true"
                 >
                   <el-icon><Delete /></el-icon>
-                  Delete Flag
+                  <span>{{ t('flag.deleteFlag') }}</span>
                 </el-button>
               </el-card>
-              <spinner v-if="!loaded" />
             </el-tab-pane>
 
             <el-tab-pane
-              label="Evaluation Flow"
+              name="eval"
+              :label="t('flag.tabEvalFlow')"
               lazy
             >
               <flag-eval-flow :flag="flag" />
             </el-tab-pane>
 
-            <el-tab-pane label="History">
+            <el-tab-pane
+              name="history"
+              :label="t('flag.tabHistory')"
+            >
               <flag-history
                 v-if="historyLoaded"
                 :flag-id="parseInt(route.params.flagId, 10)"
@@ -1024,10 +1039,11 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, defineAsyncComponent, toRaw } from "vue";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
+import { useI18n } from "vue-i18n";
 import draggable from "vuedraggable";
 import Axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Delete, Edit, View, InfoFilled, ArrowUp, ArrowDown, Operation, Aim, Setting, DataAnalysis, CopyDocument, Check, Rank } from "@element-plus/icons-vue";
+import { Delete, Edit, View, InfoFilled, ArrowUp, ArrowDown, Operation, Aim, Setting, DataAnalysis, CopyDocument, Check, Rank, Close, WarningFilled } from "@element-plus/icons-vue";
 
 const JsonEditorVue = defineAsyncComponent(() => import("json-editor-vue"));
 const FlagEvalFlow = defineAsyncComponent(() => import("@/components/FlagEvalFlow.vue"));
@@ -1035,17 +1051,19 @@ const FlagEvalFlow = defineAsyncComponent(() => import("@/components/FlagEvalFlo
 import constants from "@/constants";
 import helpers from "@/helpers/helpers";
 import { useAsyncAction } from "@/composables/useAsyncAction";
-import { useDirtyState } from "@/composables/useDirtyState";
 import { useClipboard } from "@/composables/useClipboard";
 import Spinner from "@/components/Spinner";
 import DebugConsole from "@/components/DebugConsole";
 import DistributionBar from "@/components/DistributionBar.vue";
+import { variantColor } from "@/composables/useVariantColors";
 const FlagHistory = defineAsyncComponent(() => import("@/components/FlagHistory"));
 const MarkdownEditor = defineAsyncComponent(() => import("@/components/MarkdownEditor.vue"));
 import { operators } from "@/operators.json";
 
 const { sum, pluck, handleErr } = helpers;
 const { API_URL, FLAGR_UI_POSSIBLE_ENTITY_TYPES } = constants;
+
+const { t } = useI18n({ useScope: "global" });
 
 const DEFAULT_SEGMENT = {
   description: "",
@@ -1081,25 +1099,79 @@ function processSegment(segment) {
   segment.newConstraint = structuredClone(DEFAULT_CONSTRAINT);
 }
 
+// Surface silent segment misconfigurations the user survey flagged: a 0% rollout
+// (the segment matches no one — "experiment looked live but wasn't") and a
+// missing distribution (matched entities receive no variant). Returned as plain
+// strings, rendered in a warning banner at the top of the segment.
+function segmentWarnings(segment) {
+  const warnings = [];
+  if (Number(segment.rolloutPercent) === 0) {
+    warnings.push(t("flag.warnRollout0"));
+  }
+  if (!segment.distributions || segment.distributions.length === 0) {
+    warnings.push(t("flag.warnNoDistribution"));
+  }
+  return warnings;
+}
+
+// Aggregate every segment's warnings so they can be surfaced at the top of the
+// flag — you see misconfigured segments at a glance without scrolling.
+const flagWarnings = computed(() => {
+  const out = [];
+  (flag.value?.segments || []).forEach((s, i) => {
+    segmentWarnings(s).forEach((text) => {
+      out.push({
+        segId: s.id,
+        label: `[${i + 1}]${s.description ? ` ${s.description}` : ""}`,
+        text,
+      });
+    });
+  });
+  return out;
+});
+
+function scrollToSegment(segId) {
+  const el = document.getElementById(`seg-${segId}`);
+  if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY - SECTION_SCROLL_OFFSET;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: y, behavior: reduceMotion ? "auto" : "smooth" });
+}
+
 function constraintValueHint(operator, value) {
-  if (!value || !value.trim()) return "Value is required";
+  if (!value || !value.trim()) return t("flag.hintValueRequired");
   const v = value.trim();
   switch (operator) {
     case "IN":
     case "NOTIN":
-      try { const arr = JSON.parse(v); if (!Array.isArray(arr)) return "Must be a JSON array, e.g. [\"a\",\"b\"]"; }
-      catch { return "Must be a valid JSON array"; }
+      try { const arr = JSON.parse(v); if (!Array.isArray(arr)) return t("flag.hintJsonArrayExample"); }
+      catch { return t("flag.hintJsonArrayValid"); }
       break;
     case "LT":
     case "LTE":
     case "GT":
     case "GTE":
-      if (isNaN(Number(v))) return "Must be a number";
+      if (isNaN(Number(v))) return t("flag.hintMustBeNumber");
       break;
     case "EREG":
     case "NEREG":
       try { new RegExp(v.replace(/^"|"$/g, "")); }
-      catch { return "Invalid regex pattern"; }
+      catch { return t("flag.hintInvalidRegex"); }
+      break;
+    case "EQ":
+    case "NEQ": {
+      // Text must be quoted ("CA"); an unquoted word parses as a variable and
+      // silently never matches. Numbers and true/false/null are fine unquoted.
+      const quoted = /^".*"$/.test(v);
+      const numeric = v !== "" && !isNaN(Number(v));
+      const literal = v === "true" || v === "false" || v === "null";
+      if (!quoted && !numeric && !literal)
+        return t("flag.hintQuoteText");
+      break;
+    }
+    case "CONTAINS":
+    case "NOTCONTAINS":
+      if (!/^".*"$/.test(v)) return t("flag.hintQuoteContains");
       break;
   }
   return "";
@@ -1154,7 +1226,58 @@ const flag = ref({
   variants: [],
   notes: ""
 });
-const { isDirty, takeSnapshot } = useDirtyState(flag);
+// ── Per-entity dirty tracking ──────────────────────────────
+// Each editable entity keeps a JSON baseline of the fields its own Save button
+// persists. "Save Flag" is enabled only by flag-level edits (flagDirty); the
+// global "Unsaved changes" badge and the navigation guard light up if ANY entity
+// (flag, variant, segment, constraint) has unsaved edits (anyDirty); and each
+// Save resets only its own baseline — so a granular save no longer leaves a stale
+// badge, and "Save Flag" no longer silently discards an unsaved variant edit.
+const baselines = reactive({ flag: "", variants: {}, segments: {}, constraints: {} });
+
+const flagFields = (f) => JSON.stringify({
+  key: f.key, description: f.description, notes: f.notes,
+  dataRecordsEnabled: f.dataRecordsEnabled, entityType: f.entityType,
+});
+const variantFields = (v) => JSON.stringify({ key: v.key, attachment: v.attachment });
+const segmentFields = (s) => JSON.stringify({ description: s.description, rolloutPercent: s.rolloutPercent });
+const constraintFields = (c) => JSON.stringify({ property: c.property, operator: c.operator, value: c.value });
+
+const captureFlagBaseline = () => { baselines.flag = flagFields(flag.value); };
+const captureVariantBaseline = (v) => { baselines.variants[v.id] = variantFields(v); };
+const captureSegmentBaseline = (s) => { baselines.segments[s.id] = segmentFields(s); };
+const captureConstraintBaseline = (c) => { baselines.constraints[c.id] = constraintFields(c); };
+
+function captureBaselines() {
+  const f = flag.value;
+  if (!f) return;
+  baselines.flag = flagFields(f);
+  baselines.variants = {};
+  baselines.segments = {};
+  baselines.constraints = {};
+  (f.variants || []).forEach(captureVariantBaseline);
+  (f.segments || []).forEach((s) => {
+    captureSegmentBaseline(s);
+    (s.constraints || []).forEach(captureConstraintBaseline);
+  });
+}
+
+const flagDirty = computed(() => baselines.flag !== "" && baselines.flag !== flagFields(flag.value));
+const isVariantDirty = (v) => v.id in baselines.variants && baselines.variants[v.id] !== variantFields(v);
+const isSegmentDirty = (s) => s.id in baselines.segments && baselines.segments[s.id] !== segmentFields(s);
+const isConstraintDirty = (c) => c.id in baselines.constraints && baselines.constraints[c.id] !== constraintFields(c);
+
+const anyDirty = computed(() => {
+  const f = flag.value;
+  if (!f) return false;
+  if (flagDirty.value) return true;
+  if ((f.variants || []).some(isVariantDirty)) return true;
+  for (const s of (f.segments || [])) {
+    if (isSegmentDirty(s)) return true;
+    if ((s.constraints || []).some(isConstraintDirty)) return true;
+  }
+  return false;
+});
 
 const newSegment = ref(structuredClone(DEFAULT_SEGMENT));
 const newVariant = ref(structuredClone(DEFAULT_VARIANT));
@@ -1163,6 +1286,7 @@ const selectedSegment = ref(null);
 const newDistributions = reactive({});
 const operatorOptions = operators;
 const showMdEditor = ref(false);
+const activeTab = ref("config");
 const historyLoaded = ref(false);
 const deleteFlagKeyConfirm = ref("");
 
@@ -1174,6 +1298,7 @@ const { loading: creatingSegment, execute: execCreateSegment } = useAsyncAction(
 const { loading: savingSegment, execute: execSaveSegment } = useAsyncAction();
 const { execute: execReorderSegments } = useAsyncAction();
 const { loading: deletingFlag, execute: execDeleteFlag } = useAsyncAction();
+const savingAll = ref(false);
 const drag = ref(false);
 const saveTagInput = ref(null);
 
@@ -1192,38 +1317,30 @@ const flagId = computed(() => {
 const newVariantKeyError = computed(() => {
   const key = newVariant.value.key;
   if (!key) return "";
-  if (key.length > MAX_KEY_LENGTH) return `Key must be at most ${MAX_KEY_LENGTH} characters`;
-  if (!SAFE_KEY_REGEX.test(key)) return "Key must contain only letters, numbers, hyphens, slashes, dots, colons";
+  if (key.length > MAX_KEY_LENGTH) return t("flag.keyMaxLength", { max: MAX_KEY_LENGTH });
+  if (!SAFE_KEY_REGEX.test(key)) return t("flag.keyInvalidChars");
   return "";
 });
 
 const newTagError = computed(() => {
   const val = newTag.value.value;
   if (!val) return "";
-  if (val.length > MAX_KEY_LENGTH) return `Tag must be at most ${MAX_KEY_LENGTH} characters`;
-  if (!SAFE_VALUE_REGEX.test(val)) return "Tag must contain only letters, numbers, spaces, hyphens, slashes, dots, colons";
+  if (val.length > MAX_KEY_LENGTH) return t("flag.tagMaxLength", { max: MAX_KEY_LENGTH });
+  if (!SAFE_VALUE_REGEX.test(val)) return t("flag.tagInvalidChars");
   return "";
-});
-
-const toggleInnerConfigCard = computed(() => {
-  if (!showMdEditor.value && !flag.value.notes) {
-    return "flag-inner-config-card";
-  } else {
-    return "";
-  }
 });
 
 function deleteFlag() {
   execDeleteFlag(() => Axios.delete(`${API_URL}/flags/${flagId.value}`), {
     onSuccess() {
       router.replace({ name: "home" });
-      ElMessage.success("Flag deleted");
+      ElMessage.success(t("flag.flagDeleted"));
     }
   });
 }
 
-function putFlag(f) {
-  execSaveFlag(() => Axios.put(`${API_URL}/flags/${flagId.value}`, {
+function putFlag(f, { silent = false } = {}) {
+  return execSaveFlag(() => Axios.put(`${API_URL}/flags/${flagId.value}`, {
     description: f.description,
     dataRecordsEnabled: f.dataRecordsEnabled,
     key: f.key || "",
@@ -1231,17 +1348,53 @@ function putFlag(f) {
     notes: f.notes || ""
   }), {
     onSuccess() {
-      ElMessage.success("Flag updated");
-      nextTick(() => takeSnapshot());
+      if (!silent) ElMessage.success(t("flag.flagUpdated"));
+      captureFlagBaseline();
     }
   });
+}
+
+// Persist every unsaved change on the page in one action: flag fields, then each
+// dirty variant, segment and constraint. Saves run sequentially (the per-type
+// loading guards block concurrent calls), each failure is collected rather than
+// aborting the rest, and invalid constraints are skipped so we never persist a
+// bad value. One summary toast at the end.
+async function saveAll() {
+  if (savingAll.value || !anyDirty.value) return;
+  savingAll.value = true;
+  let failed = 0;
+  let skipped = 0;
+  const run = async (fn) => { try { await fn(); } catch { failed++; } };
+  try {
+    if (flagDirty.value) await run(() => putFlag(flag.value, { silent: true }));
+    for (const v of flag.value.variants || []) {
+      if (isVariantDirty(v)) await run(() => putVariant(v, { silent: true }));
+    }
+    for (const s of flag.value.segments || []) {
+      if (isSegmentDirty(s)) await run(() => putSegment(s, { silent: true }));
+      for (const c of s.constraints || []) {
+        if (!isConstraintDirty(c)) continue;
+        if (constraintValueHint(c.operator, c.value)) { skipped++; continue; }
+        await run(() => putConstraint(s, c, { silent: true }));
+      }
+    }
+    if (skipped) {
+      ElMessage.warning(t("flag.savedSkipped", { n: skipped }, skipped));
+    } else if (failed) {
+      ElMessage.error(t("flag.savedErrors", { n: failed }, failed));
+    } else {
+      ElMessage.success(t("flag.allChangesSaved"));
+    }
+  } finally {
+    savingAll.value = false;
+  }
 }
 
 function setFlagEnabled(checked) {
   Axios.put(`${API_URL}/flags/${flagId.value}/enabled`, {
     enabled: checked
   }).then(() => {
-    ElMessage.success(`Flag ${checked ? "enabled" : "disabled"}`);
+    ElMessage.success(t(checked ? "flag.flagEnabled" : "flag.flagDisabled"));
   }, (err) => {
     flag.value.enabled = !checked;
     handleErr(err);
@@ -1266,6 +1419,11 @@ const checkedVariantIds = computed(() => {
 });
 
 function applyPreset(preset) {
+  // On a fresh distribution no variant is selected yet; a preset should still do
+  // something useful, so include all variants first instead of silently no-op'ing.
+  if (checkedVariantIds.value.length === 0) {
+    flag.value.variants.forEach((v) => selectVariant(true, v));
+  }
   const ids = checkedVariantIds.value;
   if (ids.length === 0) return;
 
@@ -1331,7 +1489,7 @@ function saveDistribution(segment) {
       let updatedDistributions = response.data;
       selectedSegment.value.distributions = updatedDistributions;
       dialogEditDistributionOpen.value = false;
-      ElMessage.success("Distribution updated");
+      ElMessage.success(t("flag.distributionUpdated"));
     }
   });
 }
@@ -1345,7 +1503,8 @@ function createVariant() {
       let variant = response.data;
       newVariant.value = structuredClone(DEFAULT_VARIANT);
       flag.value.variants.push(variant);
-      ElMessage.success("Variant created");
+      captureVariantBaseline(variant);
+      ElMessage.success(t("flag.variantCreated"));
     }
   });
 }
@@ -1359,31 +1518,31 @@ function deleteVariant(variant) {
 
   if (isVariantInUse) {
     ElMessageBox.alert(
-      "This variant is being used by a segment distribution. Please remove the segment or edit the distribution in order to remove this variant.",
-      "Cannot delete variant",
+      t("flag.variantInUse"),
+      t("flag.cannotDeleteVariant"),
       { type: "warning" }
     );
     return;
   }
 
   ElMessageBox.confirm(
-    `Delete variant '${variant.key}'?`,
-    "Delete variant",
-    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
+    t("flag.deleteVariantConfirm", { key: variant.key }),
+    t("flag.deleteVariantTitle"),
+    { confirmButtonText: t("common.delete"), cancelButtonText: t("common.cancel"), type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/variants/${variant.id}`
     ).then(() => {
-      ElMessage.success("Variant deleted");
+      ElMessage.success(t("flag.variantDeleted"));
       fetchFlag();
     }, handleErr);
   }).catch(() => {});
 }
 
-function putVariant(variant) {
+function putVariant(variant, { silent = false } = {}) {
   if (variant.attachmentValid === false) {
-    ElMessage.error("variant attachment is not valid");
-    return;
+    ElMessage.error(t("flag.variantAttachmentInvalid"));
+    return Promise.reject(new Error("invalid attachment"));
   }
 
   // Prepare payload - parse attachment if it's a string (from text mode editor)
@@ -1392,16 +1551,19 @@ function putVariant(variant) {
     try {
       payload.attachment = JSON.parse(payload.attachment);
     } catch {
-      ElMessage.error("variant attachment is not valid JSON");
-      return;
+      ElMessage.error(t("flag.variantAttachmentInvalidJson"));
+      return Promise.reject(new Error("invalid json"));
     }
   }
 
-  execSaveVariant(() => Axios.put(
+  return execSaveVariant(() => Axios.put(
     `${API_URL}/flags/${flagId.value}/variants/${variant.id}`,
     payload
   ), {
-    onSuccess() { ElMessage.success("Variant updated"); }
+    onSuccess() {
+      if (!silent) ElMessage.success(t("flag.variantUpdated"));
+      captureVariantBaseline(variant);
+    }
   });
 }
 
@@ -1416,7 +1578,7 @@ function createTag() {
       newTag.value = structuredClone(DEFAULT_TAG);
       if (!flag.value.tags.map(tag => tag.value).includes(tag.value)) {
         flag.value.tags.push(tag);
-        ElMessage.success("Tag created");
+        ElMessage.success(t("flag.tagCreated"));
       }
       tagInputVisible.value = false;
       loadAllTags();
@@ -1428,6 +1590,17 @@ function createTag() {
 function cancelCreateTag() {
   newTag.value = structuredClone(DEFAULT_TAG);
   tagInputVisible.value = false;
+}
+
+// Dismiss an accidentally-opened, still-empty tag input when the user clicks
+// away. If they typed something we keep it open (a blur also fires when they
+// click a suggestion, which must still complete via @select).
+function onTagInputBlur() {
+  if (!newTag.value.value.trim()) {
+    setTimeout(() => {
+      if (!newTag.value.value.trim()) cancelCreateTag();
+    }, 120);
+  }
 }
 
 function queryTags(queryString, cb) {
@@ -1455,13 +1628,13 @@ function showTagInput() {
 
 function deleteTag(tag) {
   ElMessageBox.confirm(
-    `Delete tag '${tag.value}'?`,
-    "Delete tag",
-    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
+    t("flag.deleteTagConfirm", { value: tag.value }),
+    t("flag.deleteTagTitle"),
+    { confirmButtonText: t("common.delete"), cancelButtonText: t("common.cancel"), type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(`${API_URL}/flags/${flagId.value}/tags/${tag.id}`).then(
       () => {
-        ElMessage.success("Tag deleted");
+        ElMessage.success(t("flag.tagDeleted"));
         fetchFlag();
         loadAllTags();
       },
@@ -1479,27 +1652,29 @@ function createConstraint(segment) {
   ).then(response => {
     let constraint = response.data;
     segment.constraints.push(constraint);
+    captureConstraintBaseline(constraint);
     segment.newConstraint = structuredClone(DEFAULT_CONSTRAINT);
-    ElMessage.success("Constraint created");
+    ElMessage.success(t("flag.constraintCreated"));
   }, handleErr);
 }
 
-function putConstraint(segment, constraint) {
+function putConstraint(segment, constraint, { silent = false } = {}) {
   constraint.property = constraint.property.trim();
   constraint.value = constraint.value.trim();
-  Axios.put(
+  return Axios.put(
     `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints/${constraint.id}`,
     constraint
   ).then(() => {
-    ElMessage.success("Constraint updated");
-  }, handleErr);
+    captureConstraintBaseline(constraint);
+    if (!silent) ElMessage.success(t("flag.constraintUpdated"));
+  }, (err) => { handleErr(err); throw err; });
 }
 
 function deleteConstraint(segment, constraint) {
   ElMessageBox.confirm(
-    `Delete constraint '${constraint.property} ${constraint.operator}'?`,
-    "Delete constraint",
-    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
+    t("flag.deleteConstraintConfirm", { property: constraint.property, operator: constraint.operator }),
+    t("flag.deleteConstraintTitle"),
+    { confirmButtonText: t("common.delete"), cancelButtonText: t("common.cancel"), type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/segments/${segment.id}/constraints/${constraint.id}`
@@ -1508,17 +1683,20 @@ function deleteConstraint(segment, constraint) {
         c => c.id === constraint.id
       );
       segment.constraints.splice(index, 1);
-      ElMessage.success("Constraint deleted");
+      ElMessage.success(t("flag.constraintDeleted"));
     }, handleErr);
   }).catch(() => {});
 }
 
-function putSegment(segment) {
-  execSaveSegment(() => Axios.put(`${API_URL}/flags/${flagId.value}/segments/${segment.id}`, {
+function putSegment(segment, { silent = false } = {}) {
+  return execSaveSegment(() => Axios.put(`${API_URL}/flags/${flagId.value}/segments/${segment.id}`, {
     description: segment.description,
     rolloutPercent: parseInt(segment.rolloutPercent, 10)
   }), {
-    onSuccess() { ElMessage.success("Segment updated"); }
+    onSuccess() {
+      if (!silent) ElMessage.success(t("flag.segmentUpdated"));
+      captureSegmentBaseline(segment);
+    }
   });
 }
 
@@ -1526,22 +1704,22 @@ function putSegmentsReorder(segments) {
   execReorderSegments(() => Axios.put(`${API_URL}/flags/${flagId.value}/segments/reorder`, {
     segmentIDs: pluck(segments, "id")
   }), {
-    onSuccess() { ElMessage.success("Segment reordered"); }
+    onSuccess() { ElMessage.success(t("flag.segmentReordered")); }
   });
 }
 
 function deleteSegment(segment) {
   ElMessageBox.confirm(
-    "Delete segment? Constraints and distributions will be removed.",
-    "Delete segment",
-    { confirmButtonText: "Delete", cancelButtonText: "Cancel", type: "warning", confirmButtonClass: "el-button--danger" }
+    t("flag.deleteSegmentConfirm"),
+    t("flag.deleteSegmentTitle"),
+    { confirmButtonText: t("common.delete"), cancelButtonText: t("common.cancel"), type: "warning", confirmButtonClass: "el-button--danger" }
   ).then(() => {
     Axios.delete(
       `${API_URL}/flags/${flagId.value}/segments/${segment.id}`
     ).then(() => {
       const index = flag.value.segments.findIndex(el => el.id === segment.id);
       flag.value.segments.splice(index, 1);
-      ElMessage.success("Segment deleted");
+      ElMessage.success(t("flag.segmentDeleted"));
     }, handleErr);
   }).catch(() => {});
 }
@@ -1573,7 +1751,8 @@ function createSegment() {
       segment.constraints = [];
       newSegment.value = structuredClone(DEFAULT_SEGMENT);
       flag.value.segments.push(segment);
-      ElMessage.success("Segment created");
+      captureSegmentBaseline(segment);
+      ElMessage.success(t("flag.segmentCreated"));
       dialogCreateSegmentOpen.value = false;
     }
   });
@@ -1586,7 +1765,7 @@ function fetchFlag() {
     f.variants.forEach(variant => processVariant(variant));
     flag.value = f;
     loaded.value = true;
-    nextTick(() => takeSnapshot());
+    nextTick(() => captureBaselines());
   }, handleErr);
   fetchEntityTypes();
 }
@@ -1623,18 +1802,18 @@ function toggleShowMdEditor() {
 }
 
 function handleHistoryTabClick(tab) {
-  if (tab.props.label == "History" && !historyLoaded.value) {
+  if (tab.props.name === "history" && !historyLoaded.value) {
     historyLoaded.value = true;
   }
 }
 
 onBeforeRouteLeave(async () => {
-  if (isDirty.value) {
+  if (anyDirty.value) {
     try {
       await ElMessageBox.confirm(
-        "You have unsaved changes. Leave anyway?",
-        "Unsaved changes",
-        { confirmButtonText: "Leave", cancelButtonText: "Stay", type: "warning" }
+        t("flag.leaveConfirm"),
+        t("flag.leaveTitle"),
+        { confirmButtonText: t("flag.leave"), cancelButtonText: t("flag.stay"), type: "warning" }
       );
       return true;
     } catch {
@@ -1645,7 +1824,7 @@ onBeforeRouteLeave(async () => {
 });
 
 function onBeforeUnload(e) {
-  if (isDirty.value) {
+  if (anyDirty.value) {
     e.preventDefault();
     e.returnValue = "";
   }
@@ -1655,56 +1834,128 @@ function onBeforeUnload(e) {
 function onSaveShortcut(e) {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') {
     e.preventDefault();
-    if (isDirty.value) {
-      putFlag(flag.value);
-    }
+    saveAll();
   }
 }
 
 // ── Config section navigation (sticky pills + scroll-spy) ──
-const sectionNav = [
-  { id: "sec-flag", label: "Flag" },
-  { id: "sec-variants", label: "Variants" },
-  { id: "sec-segments", label: "Segments" },
-  { id: "sec-debug", label: "Debug" },
-  { id: "sec-settings", label: "Settings" },
-];
+const sectionNav = computed(() => [
+  { id: "sec-flag", label: t("flag.navFlag") },
+  { id: "sec-variants", label: t("flag.navVariants") },
+  { id: "sec-segments", label: t("flag.navSegments") },
+  { id: "sec-debug", label: t("flag.navDebug") },
+  { id: "sec-settings", label: t("flag.navSettings") },
+]);
 const activeSection = ref("sec-flag");
 // Combined height of the stuck navbar + flag header + section nav, so a clicked
 // section lands just below the sticky bars rather than under them.
-const SECTION_SCROLL_OFFSET = 158;
-let sectionObserver = null;
+const SECTION_SCROLL_OFFSET = 172;
+let scrollSpyRaf = null;
+// While a click-triggered smooth scroll is in flight, pin the clicked section
+// and suppress the position-based spy: short trailing sections (Debug/Settings)
+// can't actually reach the trigger line, so the scroll clamps at the page bottom
+// and the spy would otherwise snap the highlight to a later section the instant
+// you click them.
+let clickScrolling = false;
+let clickScrollTimer = null;
 
 function scrollToSection(id) {
   const el = document.getElementById(id);
   if (!el) return;
+  activeSection.value = id;
+  clickScrolling = true;
+  if (clickScrollTimer) clearTimeout(clickScrollTimer);
+  // Safety release if the target is already in place and no scroll events fire.
+  clickScrollTimer = setTimeout(() => {
+    clickScrolling = false;
+  }, 1000);
   const y = el.getBoundingClientRect().top + window.scrollY - SECTION_SCROLL_OFFSET;
-  window.scrollTo({ top: y, behavior: "smooth" });
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.scrollTo({ top: y, behavior: reduceMotion ? "auto" : "smooth" });
+}
+
+// Scroll-position scroll-spy. Each section has an "activation" scroll position —
+// where its top would reach the trigger line just below the sticky bars. The
+// active section is the last one whose activation has been passed.
+//
+// Short trailing sections (Debug, Settings) can sit entirely below the line at
+// max scroll, so their natural activation is beyond what the page can scroll to
+// and they would never highlight. We detect those and distribute them evenly
+// across the leftover scroll between the last reachable section and the bottom,
+// so each still lights up on the way down.
+function updateActiveSection() {
+  const line = SECTION_SCROLL_OFFSET + 8;
+  const scrollY = window.scrollY;
+  const vh = window.innerHeight;
+  const maxScroll = Math.max(0, document.documentElement.scrollHeight - vh);
+
+  const items = sectionNav.value
+    .map((s) => ({ id: s.id, el: document.getElementById(s.id) }))
+    .filter((x) => x.el);
+  if (!items.length) return;
+
+  // top + scrollY is the element's offset from the document top (scroll-invariant).
+  const activations = items.map(
+    (x) => x.el.getBoundingClientRect().top + scrollY - line
+  );
+
+  let lastReachable = 0;
+  activations.forEach((a, i) => {
+    if (a <= maxScroll) lastReachable = i;
+  });
+  const unreachable = items.length - 1 - lastReachable;
+  if (unreachable > 0) {
+    const zoneStart = activations[lastReachable];
+    const zone = Math.max(1, maxScroll - zoneStart);
+    for (let k = 1; k <= unreachable; k++) {
+      activations[lastReachable + k] = zoneStart + (zone * k) / (unreachable + 1);
+    }
+  }
+
+  let idx = 0;
+  activations.forEach((a, i) => {
+    if (scrollY >= a - 1) idx = i;
+  });
+  if (scrollY >= maxScroll - 2) idx = items.length - 1;
+  activeSection.value = items[idx].id;
+}
+
+function onScrollSpy() {
+  // During a click-driven scroll, hold the clicked section and just keep
+  // extending the lock until the scroll settles (150ms after the last event).
+  if (clickScrolling) {
+    if (clickScrollTimer) clearTimeout(clickScrollTimer);
+    clickScrollTimer = setTimeout(() => {
+      clickScrolling = false;
+    }, 150);
+    return;
+  }
+  if (scrollSpyRaf) return;
+  scrollSpyRaf = requestAnimationFrame(() => {
+    scrollSpyRaf = null;
+    updateActiveSection();
+  });
 }
 
 function setupScrollSpy() {
-  if (sectionObserver) sectionObserver.disconnect();
-  // Active zone runs from just below the sticky bars to ~45% of the viewport;
-  // the section nearest the top of that zone wins.
-  sectionObserver = new IntersectionObserver(
-    (entries) => {
-      const visible = entries.filter((e) => e.isIntersecting);
-      if (!visible.length) return;
-      visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-      activeSection.value = visible[0].target.id;
-    },
-    { rootMargin: "-150px 0px -55% 0px", threshold: 0 }
-  );
-  sectionNav.forEach((s) => {
-    const el = document.getElementById(s.id);
-    if (el) sectionObserver.observe(el);
-  });
+  window.addEventListener("scroll", onScrollSpy, { passive: true });
+  window.addEventListener("resize", onScrollSpy, { passive: true });
+  updateActiveSection();
 }
 
 // Sections only exist once the flag has loaded and rendered.
 watch(loaded, (isLoaded) => {
   if (isLoaded) nextTick(setupScrollSpy);
 });
+
+// Reflect the open flag in the browser tab title (like the breadcrumb does).
+watch(
+  () => (loaded.value && flag.value ? (flag.value.key || t("flag.flagN", { id: flagId.value })) : null),
+  (name) => {
+    if (name) document.title = `Flagr — ${name}`;
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   fetchFlag();
@@ -1716,7 +1967,11 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", onBeforeUnload);
   window.removeEventListener("keydown", onSaveShortcut);
-  if (sectionObserver) sectionObserver.disconnect();
+  window.removeEventListener("scroll", onScrollSpy);
+  window.removeEventListener("resize", onScrollSpy);
+  if (scrollSpyRaf) cancelAnimationFrame(scrollSpyRaf);
+  if (clickScrollTimer) clearTimeout(clickScrollTimer);
+  document.title = "Flagr";
 });
 </script>
 
@@ -1736,8 +1991,8 @@ h5 {
 
 .section-nav {
   position: sticky;
-  /* Stick just below the navbar + flag header (≈49 + 57). */
-  top: calc(var(--flagr-navbar-height, 49px) + 58px);
+  /* Stick flush below the navbar + sticky flag header (navbar height + ~57px). */
+  top: calc(var(--flagr-navbar-height, 67px) + 57px);
   z-index: 98;
   display: flex;
   flex-wrap: wrap;
@@ -1779,7 +2034,7 @@ h5 {
 
 .sticky-flag-header {
   position: sticky;
-  top: var(--flagr-navbar-height, 49px);
+  top: var(--flagr-navbar-height, 67px);
   z-index: 99;
   display: flex;
   align-items: center;
@@ -1796,6 +2051,31 @@ h5 {
   font-weight: var(--flagr-font-weight-semibold, 600);
   font-size: var(--flagr-text-md, 16px);
   color: var(--flagr-color-text);
+  /* A long flag key must truncate instead of pushing the Save action off-screen
+     on narrow viewports. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Breadcrumb: truncate a long flag key in the trailing item so it can't force
+   horizontal page scroll on mobile. */
+.flag-container > .el-breadcrumb {
+  display: flex;
+  min-width: 0;
+}
+.flag-container > .el-breadcrumb .el-breadcrumb__item:last-child {
+  min-width: 0;
+  overflow: hidden;
+}
+.flag-container > .el-breadcrumb .el-breadcrumb__item:last-child .el-breadcrumb__inner {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
 }
 
 .sticky-flag-header__status {
@@ -1847,17 +2127,12 @@ h5 {
   text-align: right;
 }
 
-.section-heading {
-  margin: var(--flagr-space-3, 10px);
-  h5 {
-    display: flex;
-    align-items: center;
-    gap: var(--flagr-space-3, 10px);
-  }
-}
-
-.section-heading__label {
-  /* no extra margin needed, gap handles spacing */
+/* Notes/Tags use the same .field grouping as the other form fields; this row
+   holds the label next to its inline action (e.g. Flag Notes + edit). */
+.field-head {
+  display: flex;
+  align-items: center;
+  gap: var(--flagr-space-3, 12px);
 }
 
 /* Copy buttons (Step 8a) */
@@ -1869,18 +2144,15 @@ h5 {
   border: none;
   padding: 4px;
   cursor: pointer;
+  /* Use the muted colour directly (no opacity dimming): opacity dropped the
+     effective icon contrast to ~2.3:1, below WCAG 1.4.11 (3:1) for UI graphics.
+     The muted token (~4.8:1) keeps it quiet but perceivable. */
   color: var(--flagr-color-text-muted);
-  opacity: 0.6;
-  transition: opacity var(--flagr-transition-fast, 150ms ease), color var(--flagr-transition-fast, 150ms ease);
+  transition: color var(--flagr-transition-fast, 150ms ease);
   border-radius: var(--flagr-radius-sm, 6px);
 
   &:hover {
-    opacity: 0.9;
     color: var(--flagr-color-primary);
-  }
-
-  &--inline {
-    opacity: 0.7;
   }
 }
 
@@ -1900,20 +2172,103 @@ h5 {
 }
 
 .segments-container-inner .segment {
-  transition: transform 0.3s;
+  transition: border-color var(--flagr-transition-fast, 150ms ease), transform 0.3s;
 }
 
-.flag-inner-config-card {
-  .el-card__body {
-    padding-bottom: 0px;
-  }
+/* Flat flag form — fields stacked with labels above, no card-in-card. */
+.flag-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--flagr-space-4, 16px);
+  padding-top: var(--flagr-space-1, 4px);
 }
 
-.segment-constraint .el-input-group__prepend {
-  min-width: 5em;
+.flag-fields__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
+.flag-id-caption,
+.entity-id-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--flagr-font-mono);
+  font-size: var(--flagr-text-sm, 13px);
+  color: var(--flagr-color-text-muted);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field__label {
+  /* flex so an inline info icon (e.g. Rollout %) centres with the text instead
+     of relying on vertical-align, which leaves it visibly off-centre */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--flagr-font-mono);
+  font-size: var(--flagr-text-xs, 12px);
+  font-weight: var(--flagr-font-weight-medium, 500);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--flagr-color-text-secondary);
+}
+
+.field-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--flagr-space-3, 12px) var(--flagr-space-6, 32px);
+}
+
+.entity-type-field {
+  display: flex;
+  align-items: center;
+  gap: var(--flagr-space-2, 8px);
+}
+
+/* Quiet one-line orientation under each section heading. Body font (not the
+   display grotesk) so it reads as supporting text, not a second title. */
+.section-subhead {
+  margin: 0 0 var(--flagr-space-4, 16px);
+  font-size: var(--flagr-text-sm, 13px);
+  color: var(--flagr-color-text-muted);
+  line-height: 1.4;
+}
+
+/* Small help icon next to a heading/label that carries an explanatory tooltip. */
+.section-info-icon {
+  font-size: 14px;
+  color: var(--flagr-color-text-muted);
+  cursor: help;
+}
+
+/* Distribution heading: flex so the info icon and edit button centre with the
+   "Distribution" label. */
+.segment-distributions h5 {
+  display: flex;
+  align-items: center;
+  gap: var(--flagr-space-2, 8px);
+}
+
+/* Flat segment block — matches variant/flag language (no card-in-card). The
+   drag handle provides the movable affordance. */
 .segment {
+  padding: var(--flagr-space-4, 16px);
+  margin-bottom: var(--flagr-space-3, 12px);
+  background-color: var(--flagr-color-bg-surface);
+  border: 1px solid var(--flagr-color-border);
+  border-radius: var(--flagr-radius-md, 10px);
+
+  &:hover {
+    border-color: var(--flagr-color-border-strong);
+  }
+
   .highlightable {
     padding: 4px;
     &:hover {
@@ -1966,12 +2321,31 @@ ol.constraints-inner {
 }
 
 .variants-container-inner {
-  .el-card {
-    margin-bottom: var(--flagr-space-4, 16px);
+  margin-bottom: var(--flagr-space-2, 8px);
+}
+
+/* Flat variant block — matches the flag form language (quiet #id, label above
+   the field) instead of the old card-in-card + grey prepend label. */
+.variant-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--flagr-space-3, 12px);
+  padding: var(--flagr-space-4, 16px);
+  margin-bottom: var(--flagr-space-3, 12px);
+  background-color: var(--flagr-color-bg-surface);
+  border: 1px solid var(--flagr-color-border);
+  border-radius: var(--flagr-radius-md, 10px);
+  transition: border-color var(--flagr-transition-fast, 150ms ease);
+
+  &:hover {
+    border-color: var(--flagr-color-border-strong);
   }
-  .el-input-group__prepend {
-    width: 2em;
-  }
+}
+
+.variant-item__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .segment-order-hint {
@@ -1987,15 +2361,104 @@ ol.constraints-inner {
   margin-right: var(--flagr-space-2, 8px);
 }
 
-.segment-rollout-row {
+/* Flag-level roll-up of segment warnings, shown at the top of Config so
+   misconfigured segments are visible without scrolling. */
+.flag-warnings-summary {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--flagr-space-2, 8px);
+  margin-bottom: var(--flagr-space-4, 16px);
+  padding: var(--flagr-space-3, 12px) var(--flagr-space-4, 16px);
+  background-color: var(--flagr-color-warning-bg);
+  border-left: 3px solid var(--flagr-color-warning);
+  border-radius: var(--flagr-radius-md, 10px);
+  font-size: var(--flagr-text-sm, 13px);
+  line-height: 1.5;
+
+  > .el-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--flagr-color-warning);
+  }
+
+  ul {
+    margin: var(--flagr-space-1, 4px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li + li {
+    margin-top: 2px;
+  }
 }
 
-.segment-rollout-label {
+.flag-warnings-summary__link {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-family: var(--flagr-font-mono);
+  color: var(--flagr-color-text);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: var(--flagr-color-primary);
+  }
+
+  &:focus-visible {
+    box-shadow: var(--flagr-shadow-focus);
+    outline: none;
+    border-radius: 2px;
+  }
+}
+
+/* Prominent warning banner for silent segment misconfigurations (0% rollout,
+   no distribution). */
+.segment-warnings {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--flagr-space-2, 8px);
+  margin-bottom: var(--flagr-space-3, 12px);
+  padding: var(--flagr-space-2, 8px) var(--flagr-space-3, 12px);
+  background-color: var(--flagr-color-warning-bg);
+  border-left: 3px solid var(--flagr-color-warning);
+  border-radius: var(--flagr-radius-sm, 6px);
   font-size: var(--flagr-text-sm, 13px);
-  white-space: nowrap;
+  line-height: 1.4;
+
+  .el-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--flagr-color-warning);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li + li {
+    margin-top: 2px;
+  }
+}
+
+.segment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--flagr-space-3, 12px) var(--flagr-space-4, 16px);
+  margin-bottom: var(--flagr-space-3, 12px);
+}
+
+.segment-desc-field {
+  flex: 1 1 240px;
+}
+
+.segment-rollout-field {
+  flex: 0 0 auto;
 }
 
 .segment-description-rollout {
@@ -2023,6 +2486,28 @@ ol.constraints-inner {
   margin-top: var(--flagr-space-2, 8px);
 }
 
+/* Variant rows in the Edit distribution dialog mirror the bar legend: a colour
+   swatch (same palette as the bar) + the key, instead of a red "danger" tag
+   that made every variant read as an error. */
+.dist-variant-row {
+  display: flex;
+  align-items: center;
+  gap: var(--flagr-space-2, 8px);
+}
+
+.dist-variant-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.dist-variant-key {
+  font-family: var(--flagr-font-mono);
+  font-size: var(--flagr-text-sm, 13px);
+  color: var(--flagr-color-text);
+}
+
 .el-form-item {
   margin-bottom: var(--flagr-space-1, 4px);
 }
@@ -2032,13 +2517,6 @@ ol.constraints-inner {
 }
 
 .flag-config-card {
-  .flag-content {
-    margin-top: var(--flagr-space-2, 8px);
-    margin-bottom: calc(-1 * var(--flagr-space-2, 8px));
-    .el-input-group__prepend {
-      width: 8em;
-    }
-  }
   .data-records-group {
     display: flex;
     align-items: center;
@@ -2047,6 +2525,9 @@ ol.constraints-inner {
   }
 
   .data-records-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: var(--flagr-text-xs, 0.75rem);
     white-space: nowrap;
   }
@@ -2066,26 +2547,72 @@ ol.constraints-inner {
 }
 
 .variant-key-input {
-  margin-left: var(--flagr-space-2, 8px);
-  flex: 1;
+  width: 100%;
 }
 
 .save-remove-variant-row {
-  padding-bottom: var(--flagr-space-1, 4px);
+  display: flex;
+  align-items: center;
+  gap: var(--flagr-space-2, 8px);
 }
 
-.tag-key-input {
-  margin: 2.5px;
-  width: 40%;
-  min-width: 200px;
+.variant-attachment-collapse {
+  border-top: 1px solid var(--flagr-color-border);
 }
 
 .tags-container-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--flagr-space-2, 8px);
   margin-bottom: var(--flagr-space-2, 8px);
 }
 
+/* The global `#app .el-tag` margin (2.5px) breaks the flex gap rhythm here, so
+   reset it and let the container's gap own the spacing. */
+#app .tags-container-inner .el-tag {
+  margin: 0;
+}
+
+.tag-key-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 260px;
+  max-width: 100%;
+}
+
+.tag-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--flagr-color-border);
+  border-radius: var(--flagr-radius-sm, 6px);
+  background: transparent;
+  color: var(--flagr-color-text-muted);
+  cursor: pointer;
+  transition: background-color var(--flagr-transition-fast, 150ms ease),
+    color var(--flagr-transition-fast, 150ms ease),
+    border-color var(--flagr-transition-fast, 150ms ease);
+
+  &:hover {
+    background-color: var(--flagr-color-bg-muted);
+    border-color: var(--flagr-color-border-strong);
+    color: var(--flagr-color-text);
+  }
+
+  &:focus-visible {
+    box-shadow: var(--flagr-shadow-focus);
+    outline: none;
+  }
+}
+
 .button-new-tag {
-  margin: 2.5px;
+  margin: 0;
 }
 
 .input-error-msg {
@@ -2121,22 +2648,13 @@ ol.constraints-inner {
   }
 }
 
-/* Below the Element Plus `sm` breakpoint (<768px) the fixed-span el-col rows
-   (flag config, segment constraints, segment description + rollout) squash and
-   clip their contents. Stack those columns to full width so labels, the
-   operator select and the Save/Delete buttons stay legible on small screens.
-   The data-records group also left-aligns instead of hugging the right edge. */
+/* Below the Element Plus `sm` breakpoint (<768px) the fixed-span constraint
+   columns (Property / operator / Value / Save / Delete) squash and clip. Stack
+   them to full width so each input and button stays legible on small screens. */
 @media (max-width: 767.98px) {
-  .flag-config-card .flag-content > .el-col,
-  .segment-constraint > .el-col,
-  .id-row > .el-col {
+  .segment-constraint > .el-col {
     flex: 0 0 100%;
     max-width: 100%;
-  }
-
-  .flag-config-card .flag-content .data-records-group {
-    justify-content: flex-start;
-    margin-top: var(--flagr-space-1, 4px);
   }
 }
 

@@ -32,7 +32,7 @@ test.describe('Flag History', () => {
     await page.waitForTimeout(1000)
     const snapshots = page.locator('.snapshot-container')
     await expect(snapshots.first()).toBeVisible({ timeout: 5000 })
-    await expect(snapshots.first()).toContainText('Snapshot ID')
+    await expect(snapshots.first().locator('.snapshot-id').first()).toBeVisible()
   })
 
   test('Diff between snapshots', async ({ page }) => {

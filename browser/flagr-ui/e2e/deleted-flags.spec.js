@@ -35,7 +35,7 @@ test.describe('Deleted Flags', () => {
     await deleteBtn.click()
 
     // Get the flag key from the input and type it to confirm
-    const flagKeyInput = page.locator('.flag-config-card .variant-key-input input, .flag-config-card .flag-content input').first()
+    const flagKeyInput = page.locator('.flag-config-card .variant-key-input input, .flag-config-card .flag-fields input').first()
     const flagKey = await flagKeyInput.inputValue()
     const deleteDialog = page.locator('.el-dialog').filter({ hasText: 'Delete feature flag' })
     await deleteDialog.locator('input[placeholder="Type flag key to confirm"]').fill(flagKey)

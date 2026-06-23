@@ -61,8 +61,13 @@ test.describe('Flag Constraints', () => {
 
   test('Save constraint', async ({ page }) => {
     const segment = page.locator('.segment').first()
-    const saveBtn = segment.locator('.segment-constraint button').filter({ hasText: 'Save' }).first()
-    if (await saveBtn.isVisible().catch(() => false)) {
+    const row = segment.locator('.segment-constraint').first()
+    const saveBtn = row.locator('button').filter({ hasText: 'Save' }).first()
+    if (await saveBtn.count() > 0) {
+      // Save is disabled until the constraint is dirty (and valid), so edit the
+      // value first — keep it quoted so it stays valid.
+      await row.locator('.el-input input').last().fill('"updated"')
+      await page.waitForTimeout(200)
       await saveBtn.click()
       await expect(page.locator('.el-message')).toContainText('Constraint updated')
     }

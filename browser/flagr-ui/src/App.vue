@@ -1,10 +1,10 @@
 <template>
-  <el-config-provider :locale="en">
+  <el-config-provider :locale="elementLocale">
     <div id="app">
       <a
         href="#main-content"
         class="sr-only"
-      >Skip to content</a>
+      >{{ t('nav.skipToContent') }}</a>
       <div class="navbar">
         <el-row>
           <el-col
@@ -25,20 +25,50 @@
                 </router-link>
               </el-col>
               <el-col
-                :span="4"
-                :offset="14"
+                :span="18"
                 class="nav-links"
               >
-                <router-link :to="{ name: 'docs', params: { section: 'api' } }">
-                  <h3>API</h3>
+                <router-link
+                  :to="{ name: 'docs', params: { section: 'api' } }"
+                  :class="{ 'is-active': apiNavActive }"
+                >
+                  <h3>{{ t('nav.api') }}</h3>
                 </router-link>
-                <router-link :to="{ name: 'docs' }">
-                  <h3>Docs</h3>
+                <router-link
+                  :to="{ name: 'docs' }"
+                  :class="{ 'is-active': docsNavActive }"
+                >
+                  <h3>{{ t('nav.docs') }}</h3>
                 </router-link>
+                <el-dropdown
+                  class="lang-switcher"
+                  trigger="click"
+                  @command="setLocale"
+                >
+                  <button
+                    class="lang-trigger"
+                    :aria-label="t('nav.language')"
+                  >
+                    {{ locale.toUpperCase() }}
+                    <el-icon :size="12"><ArrowDown /></el-icon>
+                  </button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item
+                        v-for="l in locales"
+                        :key="l"
+                        :command="l"
+                        :class="{ 'lang-item--active': l === locale }"
+                      >
+                        {{ localeNames[l] }}
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
                 <button
                   class="theme-toggle"
                   data-testid="theme-toggle"
-                  aria-label="Toggle dark mode"
+                  :aria-label="t('nav.toggleDarkMode')"
                   @click="toggle"
                 >
                   <el-icon :size="18">
@@ -69,12 +99,25 @@
 </template>
 
 <script setup>
-import en from 'element-plus/es/locale/lang/en'
-import { Moon, Sunny } from '@element-plus/icons-vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { Moon, Sunny, ArrowDown } from '@element-plus/icons-vue'
 import { useTheme } from './composables/useTheme'
+import { useLocale, LOCALE_NAMES } from './composables/useLocale'
 
+const { t } = useI18n({ useScope: 'global' })
 const version = import.meta.env.VITE_VERSION;
 const { theme, toggle } = useTheme()
+const { locale, elementLocale, setLocale, locales } = useLocale()
+const localeNames = LOCALE_NAMES
+
+// Both nav links resolve to the `docs` route, so router-link's inclusive active
+// class lights both on /docs/api. Drive the highlight off the section param so
+// exactly one is active.
+const route = useRoute()
+const apiNavActive = computed(() => route.name === 'docs' && route.params.section === 'api')
+const docsNavActive = computed(() => route.name === 'docs' && route.params.section !== 'api')
 </script>
 
 <style lang="less">
@@ -195,7 +238,7 @@ ol {
     }
 
     /* Active route pill indicator (Step 7) — scoped to nav links only */
-    .nav-links .router-link-active h3 {
+    .nav-links .is-active h3 {
       background: var(--flagr-color-primary-light);
       color: var(--flagr-color-primary);
       padding: 2px 12px;
@@ -220,6 +263,39 @@ ol {
       border-radius: var(--flagr-radius-sm);
       background: transparent;
       color: var(--flagr-color-text-secondary);
+      cursor: pointer;
+      transition: background-color var(--flagr-transition-fast), border-color var(--flagr-transition-fast), color var(--flagr-transition-fast);
+
+      &:hover {
+        background-color: var(--flagr-color-bg-muted);
+        border-color: var(--flagr-color-border-strong);
+        color: var(--flagr-color-text);
+      }
+
+      &:focus-visible {
+        box-shadow: var(--flagr-shadow-focus);
+        outline: none;
+      }
+    }
+
+    .lang-switcher {
+      line-height: 1;
+    }
+
+    .lang-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--flagr-color-border);
+      border-radius: var(--flagr-radius-sm);
+      background: transparent;
+      color: var(--flagr-color-text-secondary);
+      font-family: var(--flagr-font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
       cursor: pointer;
       transition: background-color var(--flagr-transition-fast), border-color var(--flagr-transition-fast), color var(--flagr-transition-fast);
 
@@ -375,6 +451,18 @@ ol {
     transition: box-shadow var(--flagr-transition-fast), border-color var(--flagr-transition-fast);
   }
 
+  /* Grouped inputs (prepend/append labels, e.g. constraint Property/Value,
+     variant attachment Key): ring the whole group as one rounded unit. Without
+     this, the focus glow wraps only the inner wrapper and leaves the grey
+     prepend/append box outside a half-rounded ring (broken seam). */
+  .el-input-group:focus-within {
+    border-radius: var(--flagr-radius-sm);
+    box-shadow: 0 0 0 1px var(--flagr-color-border-focus), var(--flagr-shadow-focus);
+  }
+  .el-input-group:focus-within .el-input__wrapper {
+    box-shadow: 0 0 0 1px var(--flagr-color-border-focus) inset !important;
+  }
+
   /* ── Focus-visible for all interactive elements (Step 5) ─── */
   .el-button:focus-visible,
   .el-switch:focus-visible,
@@ -390,6 +478,19 @@ ol {
     color: #fff;
     border-color: var(--flagr-color-danger);
   }
+
+  /* Table column headers use Element Plus's default secondary grey (#909399,
+     ~3:1 — fails WCAG AA for 14px text). Use our secondary text colour so the
+     header labels are readable. */
+  .el-table th .cell {
+    color: var(--flagr-color-text-secondary);
+  }
+}
+
+/* Language switcher dropdown teleports to <body>, so this lives outside #app */
+.el-dropdown-menu__item.lang-item--active {
+  color: var(--flagr-color-primary);
+  font-weight: 600;
 }
 
 .sr-only {

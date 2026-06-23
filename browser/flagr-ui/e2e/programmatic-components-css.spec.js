@@ -16,7 +16,7 @@ test.describe('Programmatic Components CSS', () => {
 
   test('ElMessageBox "Unsaved changes" dialog is styled', async ({ page }) => {
     // Change description to trigger isDirty
-    const descInput = page.locator('.flag-content input[placeholder="Description"]')
+    const descInput = page.locator('.flag-fields input[placeholder="Description"]')
     await descInput.fill('changed-' + Date.now())
     await page.waitForTimeout(500)
 
@@ -51,7 +51,8 @@ test.describe('Programmatic Components CSS', () => {
   })
 
   test('ElMessage toast "Flag updated" is styled', async ({ page }) => {
-    // Use .last() to get the inner card button (sticky header button is disabled when no changes)
+    // Save buttons are disabled until there's a change, so edit a field first.
+    await page.locator('.flag-fields input[placeholder="Description"]').fill('css-toast-' + Date.now())
     await page.locator('button').filter({ hasText: 'Save Flag' }).last().click()
 
     const message = page.locator('.el-message')

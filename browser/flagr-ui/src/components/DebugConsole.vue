@@ -2,12 +2,15 @@
   <el-card class="dc-container">
     <template #header>
       <div class="el-card-header">
-        <h2>Debug Console</h2>
+        <h2>{{ t('debug.title') }}</h2>
       </div>
     </template>
+    <p class="section-subhead">
+      {{ t('debug.subhead') }}
+    </p>
     <el-collapse v-model="activeCollapseItems">
       <el-collapse-item
-        title="Evaluation"
+        :title="t('debug.evaluation')"
         name="evaluation"
       >
         <template v-if="activeCollapseItems.includes('evaluation')">
@@ -17,7 +20,7 @@
               :sm="12"
             >
               <div class="dc-pane-head">
-                <span>Request</span>
+                <span>{{ t('debug.request') }}</span>
                 <el-button
                   size="small"
                   type="primary"
@@ -41,7 +44,7 @@
               :sm="12"
             >
               <div class="dc-pane-head">
-                <span>Response</span>
+                <span>{{ t('debug.response') }}</span>
               </div>
               <JsonEditorVue
                 v-model="evalResult"
@@ -57,7 +60,7 @@
       </el-collapse-item>
 
       <el-collapse-item
-        title="Batch Evaluation"
+        :title="t('debug.batchEvaluation')"
         name="batch"
       >
         <template v-if="activeCollapseItems.includes('batch')">
@@ -67,7 +70,7 @@
               :sm="12"
             >
               <div class="dc-pane-head">
-                <span>Request</span>
+                <span>{{ t('debug.request') }}</span>
                 <el-button
                   size="small"
                   type="primary"
@@ -91,7 +94,7 @@
               :sm="12"
             >
               <div class="dc-pane-head">
-                <span>Response</span>
+                <span>{{ t('debug.response') }}</span>
               </div>
               <JsonEditorVue
                 v-model="batchEvalResult"
@@ -111,9 +114,12 @@
 
 <script setup>
 import { ref, defineAsyncComponent } from "vue";
+import { useI18n } from "vue-i18n";
 import Axios from "axios";
 import { ElMessage } from "element-plus";
 import constants from "@/constants";
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   flag: {
@@ -167,11 +173,11 @@ const batchEvalResult = ref({});
 function postEvaluation(evalCtx) {
   Axios.post(`${API_URL}/evaluation`, evalCtx).then(
     response => {
-      ElMessage.success("Evaluation completed");
+      ElMessage.success(t("debug.evalCompleted"));
       evalResult.value = response.data;
     },
     () => {
-      ElMessage({ message: "Evaluation failed", type: "error", duration: 5000 });
+      ElMessage({ message: t("debug.evalFailed"), type: "error", duration: 5000 });
     }
   );
 }
@@ -179,11 +185,11 @@ function postEvaluation(evalCtx) {
 function postEvaluationBatch(batchEvalCtx) {
   Axios.post(`${API_URL}/evaluation/batch`, batchEvalCtx).then(
     response => {
-      ElMessage.success("Evaluation completed");
+      ElMessage.success(t("debug.evalCompleted"));
       batchEvalResult.value = response.data;
     },
     () => {
-      ElMessage({ message: "Evaluation failed", type: "error", duration: 5000 });
+      ElMessage({ message: t("debug.evalFailed"), type: "error", duration: 5000 });
     }
   );
 }

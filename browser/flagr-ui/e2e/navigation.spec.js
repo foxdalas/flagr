@@ -33,7 +33,8 @@ test.describe('Navigation and Layout', () => {
     await page.goto('/#/flags/1')
     await page.waitForSelector('.el-breadcrumb')
     await expect(page.locator('.el-breadcrumb')).toContainText('Flags')
-    await expect(page.locator('.el-breadcrumb')).toContainText('Flag ID: 1')
+    // Second crumb shows the flag's key (or "Flag <id>" while loading), not the raw ID label.
+    await expect(page.locator('.el-breadcrumb__item')).toHaveCount(2)
     // Click Home page breadcrumb
     await page.locator('.el-breadcrumb__item').first().locator('a, .el-breadcrumb__inner').first().click()
     await expect(page).toHaveURL(/\/#\/$/)

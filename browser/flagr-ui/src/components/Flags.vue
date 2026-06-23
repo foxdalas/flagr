@@ -13,11 +13,8 @@
               <el-input
                 v-model="newFlag.description"
                 class="create-flag-input"
-                placeholder="Describe the new flag"
+                :placeholder="t('flagsList.newFlagPlaceholder')"
               >
-                <template #prepend>
-                  <el-icon><Plus /></el-icon>
-                </template>
                 <template #append>
                   <el-dropdown
                     split-button
@@ -26,14 +23,14 @@
                     @command="onCommandDropdown"
                     @click="createFlag"
                   >
-                    Create New Flag
+                    {{ t('flagsList.createFlag') }}
                     <template #dropdown>
                       <el-dropdown-menu>
                         <el-dropdown-item
                           command="simple_boolean_flag"
                           :disabled="!newFlag.description"
                         >
-                          Create Simple Boolean Flag
+                          {{ t('flagsList.createBooleanFlag') }}
                         </el-dropdown-item>
                       </el-dropdown-menu>
                     </template>
@@ -48,8 +45,8 @@
               ref="searchInput"
               v-model="searchTerm"
               v-focus
-              placeholder="Search a flag"
-              aria-label="Search flags"
+              :placeholder="t('flagsList.searchPlaceholder')"
+              :aria-label="t('flagsList.searchAria')"
               clearable
               :prefix-icon="Search"
             />
@@ -57,8 +54,8 @@
 
           <div class="flags-meta">
             <span class="flags-count">
-              {{ filteredFlags.length }} {{ filteredFlags.length === 1 ? 'flag' : 'flags' }}
-              <span v-if="searchTerm">of {{ flags.length }} total</span>
+              {{ t('flagsList.count', { n: filteredFlags.length }, filteredFlags.length) }}
+              <span v-if="searchTerm">{{ t('flagsList.ofTotal', { total: flags.length }) }}</span>
             </span>
           </div>
 
@@ -71,10 +68,10 @@
               <el-icon><Search /></el-icon>
             </div>
             <div class="empty-title">
-              {{ searchTerm ? 'No flags match your search' : 'No feature flags yet' }}
+              {{ searchTerm ? t('flagsList.emptyNoMatch') : t('flagsList.emptyNone') }}
             </div>
             <div class="empty-hint">
-              {{ searchTerm ? 'Try a different search term' : 'Create your first flag above' }}
+              {{ searchTerm ? t('flagsList.emptyHintSearch') : t('flagsList.emptyHintCreate') }}
             </div>
           </div>
 
@@ -91,20 +88,20 @@
             <el-table-column
               prop="id"
               align="center"
-              label="Flag ID"
+              :label="t('flagsList.colId')"
               sortable
               :fixed="isNarrow ? false : 'left'"
               :width="isNarrow ? 72 : 95"
             />
             <el-table-column
               prop="description"
-              label="Description"
+              :label="t('flagsList.colDescription')"
               :min-width="isNarrow ? 130 : 300"
             />
             <el-table-column
               v-if="!isNarrow"
               prop="tags"
-              label="Tags"
+              :label="t('flagsList.colTags')"
               min-width="150"
             >
               <template #default="scope">
@@ -120,14 +117,14 @@
             <el-table-column
               v-if="!isNarrow"
               prop="updatedBy"
-              label="Last Updated By"
+              :label="t('flagsList.colUpdatedBy')"
               sortable
               width="160"
             />
             <el-table-column
               v-if="!isNarrow"
               prop="updatedAt"
-              label="Updated At (UTC)"
+              :label="t('flagsList.colUpdatedAt')"
               sortable
               width="170"
             >
@@ -145,12 +142,12 @@
             </el-table-column>
             <el-table-column
               prop="enabled"
-              label="Enabled"
+              :label="t('flagsList.colEnabled')"
               sortable
               align="center"
               :fixed="isNarrow ? false : 'right'"
               :width="isNarrow ? 84 : 140"
-              :filters="[{ text: 'Enabled', value: true }, { text: 'Disabled', value: false }]"
+              :filters="[{ text: t('flagsList.filterEnabled'), value: true }, { text: t('flagsList.filterDisabled'), value: false }]"
               :filter-method="filterStatus"
             >
               <template #default="scope">
@@ -159,7 +156,7 @@
                   :type="scope.row.enabled ? 'primary' : 'danger'"
                   disable-transitions
                 >
-                  {{ scope.row.enabled ? "on" : "off" }}
+                  {{ scope.row.enabled ? t('flagsList.statusOn') : t('flagsList.statusOff') }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -173,7 +170,7 @@
               <template #default="scope">
                 <el-icon
                   class="flag-actions-icon"
-                  title="Open in new tab"
+                  :title="t('flagsList.openInNewTab')"
                   @click.stop="openFlagInNewTab(scope.row.id)"
                 >
                   <TopRight />
@@ -199,7 +196,7 @@
             class="deleted-flags-table"
             @change="fetchDeletedFlags"
           >
-            <el-collapse-item title="Deleted Flags">
+            <el-collapse-item :title="t('flagsList.deletedFlags')">
               <el-table
                 :data="deletedFlags"
                 :stripe="true"
@@ -210,19 +207,19 @@
                 <el-table-column
                   prop="id"
                   align="center"
-                  label="Flag ID"
+                  :label="t('flagsList.colId')"
                   sortable
                   fixed
                   width="95"
                 />
                 <el-table-column
                   prop="description"
-                  label="Description"
+                  :label="t('flagsList.colDescription')"
                   min-width="300"
                 />
                 <el-table-column
                   prop="tags"
-                  label="Tags"
+                  :label="t('flagsList.colTags')"
                   min-width="200"
                 >
                   <template #default="scope">
@@ -237,20 +234,20 @@
                 </el-table-column>
                 <el-table-column
                   prop="updatedBy"
-                  label="Last Updated By"
+                  :label="t('flagsList.colUpdatedBy')"
                   sortable
                   width="200"
                 />
                 <el-table-column
                   prop="updatedAt"
-                  label="Updated At (UTC)"
+                  :label="t('flagsList.colUpdatedAt')"
                   :formatter="datetimeFormatter"
                   sortable
                   width="180"
                 />
                 <el-table-column
                   prop="action"
-                  label="Action"
+                  :label="t('flagsList.colAction')"
                   align="center"
                   fixed="right"
                   width="100"
@@ -261,7 +258,7 @@
                       size="small"
                       @click="restoreFlag(scope.row)"
                     >
-                      Restore
+                      {{ t('flagsList.restore') }}
                     </el-button>
                   </template>
                 </el-table-column>
@@ -277,8 +274,9 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import Axios from "axios";
-import { Search, Plus, TopRight } from "@element-plus/icons-vue";
+import { Search, TopRight } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 import constants from "@/constants";
@@ -288,6 +286,7 @@ import helpers from "@/helpers/helpers";
 const { handleErr, timeAgo, formatDateUTC } = helpers;
 const { API_URL } = constants;
 
+const { t } = useI18n({ useScope: "global" });
 const router = useRouter();
 
 const loaded = ref(false);
@@ -397,20 +396,20 @@ function createFlag(params) {
   }).then(response => {
     let flag = response.data;
     newFlag.value.description = "";
-    ElMessage.success("Flag created");
+    ElMessage.success(t('flagsList.flagCreated'));
     router.push({ name: "flag", params: { flagId: flag.id } });
   }, handleErr);
 }
 
 function restoreFlag(row) {
-  ElMessageBox.confirm('This will recover the deleted flag. Continue?', 'Warning', {
-    confirmButtonText: 'OK',
-    cancelButtonText: 'Cancel',
+  ElMessageBox.confirm(t('flagsList.restoreConfirm'), t('common.warning'), {
+    confirmButtonText: t('common.ok'),
+    cancelButtonText: t('common.cancel'),
     type: 'warning'
   }).then(() => {
     Axios.put(`${API_URL}/flags/${row.id}/restore`).then(response => {
       let flag = response.data;
-      ElMessage.success(`Flag updated`);
+      ElMessage.success(t('flagsList.flagUpdated'));
       flags.value.push(flag);
       deletedFlags.value = deletedFlags.value.filter(function(el) {
         return el.id != flag.id;

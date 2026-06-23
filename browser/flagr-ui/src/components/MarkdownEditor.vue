@@ -21,8 +21,8 @@
             v-model="input"
             type="textarea"
             :autosize="{ minRows: 6, maxRows: 24 }"
-            placeholder="Write notes using Markdown and KaTeX math…"
-            aria-label="Flag notes — markdown editor"
+            :placeholder="t('notes.placeholder')"
+            :aria-label="t('notes.ariaEditor')"
             @input="syncMarkdown"
             @focus="isFocused = true"
             @blur="isFocused = false"
@@ -37,7 +37,7 @@
         <div
           class="markdown-editor__preview markdown-body"
           role="document"
-          aria-label="Rendered markdown preview"
+          :aria-label="t('notes.ariaPreview')"
           aria-live="polite"
           v-html="compiledMarkdown"
         />
@@ -48,21 +48,26 @@
       v-if="showEditor"
       class="markdown-editor__status"
     >
-      <span>Markdown + KaTeX. Ctrl+B bold, Ctrl+I italic, Ctrl+K link</span>
-      <span>{{ input.length }} chars</span>
+      <span>{{ t('notes.status') }}</span>
+      <span>{{ t('notes.chars', { n: input.length }, input.length) }}</span>
     </div>
   </div>
 
-  <div
+  <i18n-t
     v-else
+    keypath="notes.empty"
+    tag="div"
     class="markdown-editor__empty"
   >
-    No notes yet. Click <strong>edit</strong> to add notes.
-  </div>
+    <template #edit>
+      <strong>{{ t('flag.edit') }}</strong>
+    </template>
+  </i18n-t>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from "vue"
+import { useI18n } from "vue-i18n"
 import MarkdownIt from "markdown-it"
 import mk from "@vscode/markdown-it-katex"
 import taskLists from "markdown-it-task-lists"
@@ -83,6 +88,8 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(["update:markdown"])
+
+const { t } = useI18n({ useScope: "global" })
 
 // Default preset (not "commonmark") so GFM tables and ~~strikethrough~~ render —
 // the toolbar exposes both. task-lists adds read-only "- [x]" checkboxes.
@@ -215,9 +222,9 @@ function syncMarkdown(val) {
 }
 
 .markdown-editor__empty {
-  padding: 16px;
+  padding: 2px 0;
   color: var(--flagr-color-text-muted);
-  font-size: 14px;
+  font-size: var(--flagr-text-sm, 13px);
 }
 
 /* Responsive: stack on small screens */
