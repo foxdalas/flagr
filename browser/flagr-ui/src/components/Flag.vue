@@ -765,14 +765,14 @@
                                     :gutter="6"
                                     class="segment-constraint"
                                   >
-                                    <el-col :span="8">
+                                    <el-col :span="5">
                                       <el-input
                                         v-model="constraint.property"
                                         size="small"
                                         :placeholder="t('flag.propertyPlaceholder')"
                                       />
                                     </el-col>
-                                    <el-col :span="6">
+                                    <el-col :span="4">
                                       <el-select
                                         v-model="constraint.operator"
                                         class="width--full"
@@ -790,7 +790,7 @@
                                         </el-option>
                                       </el-select>
                                     </el-col>
-                                    <el-col :span="6">
+                                    <el-col :span="11">
                                       <el-input
                                         v-model="constraint.value"
                                         size="small"
@@ -859,14 +859,14 @@
                                   :gutter="6"
                                   class="segment-constraint"
                                 >
-                                  <el-col :span="8">
+                                  <el-col :span="5">
                                     <el-input
                                       v-model="segment.newConstraint.property"
                                       size="small"
                                       :placeholder="t('flag.propertyPlaceholder')"
                                     />
                                   </el-col>
-                                  <el-col :span="6">
+                                  <el-col :span="4">
                                     <el-select
                                       v-model="segment.newConstraint.operator"
                                       class="width--full"
@@ -884,7 +884,7 @@
                                       </el-option>
                                     </el-select>
                                   </el-col>
-                                  <el-col :span="6">
+                                  <el-col :span="11">
                                     <el-input
                                       v-model="segment.newConstraint.value"
                                       size="small"
