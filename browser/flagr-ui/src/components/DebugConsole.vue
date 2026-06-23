@@ -170,8 +170,13 @@ const batchEvalContext = ref({
 });
 const batchEvalResult = ref({});
 
+// The JSON editor is in text mode, so evalCtx is a JSON *string*. Axios sends a
+// string body as application/x-www-form-urlencoded by default, which Flagr
+// rejects with 415 — force application/json so the raw JSON is parsed correctly.
+const JSON_HEADERS = { headers: { "Content-Type": "application/json" } };
+
 function postEvaluation(evalCtx) {
-  Axios.post(`${API_URL}/evaluation`, evalCtx).then(
+  Axios.post(`${API_URL}/evaluation`, evalCtx, JSON_HEADERS).then(
     response => {
       ElMessage.success(t("debug.evalCompleted"));
       evalResult.value = response.data;
@@ -183,7 +188,7 @@ function postEvaluation(evalCtx) {
 }
 
 function postEvaluationBatch(batchEvalCtx) {
-  Axios.post(`${API_URL}/evaluation/batch`, batchEvalCtx).then(
+  Axios.post(`${API_URL}/evaluation/batch`, batchEvalCtx, JSON_HEADERS).then(
     response => {
       ElMessage.success(t("debug.evalCompleted"));
       batchEvalResult.value = response.data;
