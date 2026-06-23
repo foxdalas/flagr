@@ -73,7 +73,11 @@ import mk from "@vscode/markdown-it-katex"
 import taskLists from "markdown-it-task-lists"
 import xss from "xss"
 
-import "github-markdown-css/github-markdown.css"
+// Light-only base (no prefers-color-scheme media query): in Safari with a dark
+// OS but the app in light theme, the combined file flipped the notes preview to
+// a dark background. Dark mode is handled by the html.dark .markdown-body token
+// overrides in tokens.css. Mirrors the Docs.vue fix.
+import "github-markdown-css/github-markdown-light.css"
 import "katex/dist/katex.min.css"
 
 import MarkdownToolbar from "./markdown/MarkdownToolbar.vue"
@@ -209,6 +213,40 @@ function syncMarkdown(val) {
   font-size: var(--flagr-text-base, 14px);
   line-height: 1.7;
   overflow-y: auto;
+  /* github-markdown's light file hardcodes light colors, so drive the preview
+     from app tokens instead — it then follows the app theme (light AND dark)
+     rather than the OS appearance. Same approach as Docs.vue. */
+  background: transparent;
+  color: var(--flagr-color-text);
+
+  :deep(a) { color: var(--flagr-color-primary); }
+  :deep(h1),
+  :deep(h2) { border-bottom-color: var(--flagr-color-border); }
+  :deep(hr) { background-color: var(--flagr-color-border); }
+  :deep(blockquote) {
+    color: var(--flagr-color-text-muted);
+    border-left-color: var(--flagr-color-border);
+  }
+  :deep(code),
+  :deep(tt) {
+    background-color: var(--flagr-color-bg-muted);
+    color: var(--flagr-color-text);
+  }
+  :deep(pre) {
+    background-color: var(--flagr-color-bg-subtle);
+    color: var(--flagr-color-text);
+  }
+  :deep(pre code) {
+    background-color: transparent;
+    color: var(--flagr-color-text);
+  }
+  :deep(table th),
+  :deep(table td) { border-color: var(--flagr-color-border); }
+  :deep(table tr) {
+    background-color: transparent;
+    border-top-color: var(--flagr-color-border);
+  }
+  :deep(table tr:nth-child(2n)) { background-color: var(--flagr-color-bg-subtle); }
 }
 
 .markdown-editor__status {
