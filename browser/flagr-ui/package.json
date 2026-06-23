@@ -17,7 +17,7 @@
         "@vscode/markdown-it-katex": "^1.1.2",
         "axios": "^1.18.0",
         "diff": "^9.0.0",
-        "element-plus": "^2.14.0",
+        "element-plus": "^2.14.2",
         "github-markdown-css": "^5.9.0",
         "highlight.js": "^11.11.1",
         "json-editor-vue": "^0.18.0",
