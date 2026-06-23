@@ -185,11 +185,13 @@ export default {
     warnNoDistribution: "No distribution set — matched entities won't receive a variant.",
     // constraint value hints
     hintValueRequired: 'Value is required',
-    hintJsonArrayExample: 'Must be a JSON array, e.g. ["a","b"]',
-    hintJsonArrayValid: 'Must be a valid JSON array',
-    hintMustBeNumber: 'Must be a number',
+    hintInList: 'Put values in a list, e.g. ["CA","NY"] — or use {eqOp} for a single value',
+    hintJsonArrayValid: 'Use a bracketed list of quoted values, e.g. ["CA","NY"]',
+    hintMustBeNumber: 'Must be a number, e.g. 18',
+    hintNumberNoQuotes: 'Numbers don\'t need quotes — use 18, not "18"',
     hintInvalidRegex: 'Invalid regex pattern',
     hintQuoteText: 'Wrap text in quotes, e.g. "CA" (numbers don\'t need quotes)',
+    hintUseInForList: 'This looks like a list — use {op} (not {sym}) to match any of several values',
     hintQuoteContains: 'Wrap text in quotes, e.g. "premium"',
     // key/tag validation
     keyMaxLength: 'Key must be at most {max} characters',

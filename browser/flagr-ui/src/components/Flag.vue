@@ -1141,16 +1141,31 @@ function scrollToSegment(segId) {
 function constraintValueHint(operator, value) {
   if (!value || !value.trim()) return t("flag.hintValueRequired");
   const v = value.trim();
+  const isQuoted = /^".*"$/.test(v);
+  // Heuristic: the value is really a list of several values, not a single one
+  // — a bracketed array, `"a","b"`, or a bare comma-separated list.
+  const looksLikeList =
+    /^\[.*\]$/.test(v) || /",\s*"/.test(v) || (!isQuoted && v.includes(","));
+
   switch (operator) {
     case "IN":
-    case "NOTIN":
-      try { const arr = JSON.parse(v); if (!Array.isArray(arr)) return t("flag.hintJsonArrayExample"); }
+    case "NOTIN": {
+      let arr;
+      try { arr = JSON.parse(v); }
       catch { return t("flag.hintJsonArrayValid"); }
+      // A single value (e.g. "CA" or 5) given to a list operator: point to the
+      // list form, or to the single-value operator (== / !=).
+      if (!Array.isArray(arr))
+        return t("flag.hintInList", { eqOp: operator === "IN" ? "==" : "!=" });
       break;
+    }
     case "LT":
     case "LTE":
     case "GT":
     case "GTE":
+      // Quoting the number ("18") is the usual slip — comparisons want a bare number.
+      if (isQuoted && v.length > 2 && !isNaN(Number(v.slice(1, -1))))
+        return t("flag.hintNumberNoQuotes");
       if (isNaN(Number(v))) return t("flag.hintMustBeNumber");
       break;
     case "EREG":
@@ -1159,19 +1174,27 @@ function constraintValueHint(operator, value) {
       catch { return t("flag.hintInvalidRegex"); }
       break;
     case "EQ":
-    case "NEQ": {
+    case "NEQ":
+      // A list value with ==/!= silently never matches a scalar — suggest IN.
+      if (looksLikeList)
+        return t("flag.hintUseInForList", {
+          op: operator === "EQ" ? "IN" : "NOT IN",
+          sym: operator === "EQ" ? "==" : "!=",
+        });
       // Text must be quoted ("CA"); an unquoted word parses as a variable and
       // silently never matches. Numbers and true/false/null are fine unquoted.
-      const quoted = /^".*"$/.test(v);
-      const numeric = v !== "" && !isNaN(Number(v));
-      const literal = v === "true" || v === "false" || v === "null";
-      if (!quoted && !numeric && !literal)
+      if (!isQuoted && isNaN(Number(v)) && v !== "true" && v !== "false" && v !== "null")
         return t("flag.hintQuoteText");
       break;
-    }
     case "CONTAINS":
     case "NOTCONTAINS":
-      if (!/^".*"$/.test(v)) return t("flag.hintQuoteContains");
+      // CONTAINS checks one substring; a list almost certainly wants IN.
+      if (looksLikeList)
+        return t("flag.hintUseInForList", {
+          op: "IN",
+          sym: operator === "CONTAINS" ? "CONTAINS" : "NOT CONTAINS",
+        });
+      if (!isQuoted) return t("flag.hintQuoteContains");
       break;
   }
   return "";
