@@ -24,7 +24,7 @@ require (
 	github.com/go-openapi/runtime v0.32.3
 	github.com/go-openapi/spec v0.22.5
 	github.com/go-openapi/strfmt v0.26.3
-	github.com/go-openapi/validate v0.25.3
+	github.com/go-openapi/validate v0.26.0
 	github.com/gohttp/pprof v0.0.0-20141119085724-c9d246cbb3ba
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/jpillora/backoff v1.0.0 // indirect
