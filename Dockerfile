@@ -1,7 +1,7 @@
 ######################################
 # Prepare npm_builder
 ######################################
-FROM node:20-alpine as npm_builder
+FROM node:26-alpine as npm_builder
 WORKDIR /go/src/github.com/foxdalas/flagr
 ADD . .
 ARG FLAGR_UI_POSSIBLE_ENTITY_TYPES=null
