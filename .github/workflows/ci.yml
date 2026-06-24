@@ -13,7 +13,7 @@ jobs:
       GOEXPERIMENT: greenteagc
     steps:
       - name: Check out source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - uses: actions/setup-node@v6
         with:
           node-version-file: browser/flagr-ui/package.json
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - run: cd integration_tests && make build-image
       - run: cd integration_tests && make down
       - run: cd integration_tests && make up
@@ -52,7 +52,7 @@ jobs:
       FLAGR_DB_DBCONNECTIONSTR: /tmp/flagr_e2e.db
       FLAGR_RECORDER_ENABLED: false
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-go@v6
         with:
