@@ -52,8 +52,8 @@ require (
 require (
 	github.com/glebarez/sqlite v1.6.0
 	gorm.io/driver/mysql v1.4.5
-	gorm.io/driver/postgres v1.4.6
-	gorm.io/gorm v1.24.3 // we will need to fix unscoped preload before upgrading gorm
+	gorm.io/driver/postgres v1.6.0
+	gorm.io/gorm v1.25.10 // we will need to fix unscoped preload before upgrading gorm
 )
 
 require (
