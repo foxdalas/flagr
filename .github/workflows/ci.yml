@@ -29,7 +29,7 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: browser/flagr-ui/package.json
       - run: cd browser/flagr-ui && npm install
@@ -69,7 +69,7 @@ jobs:
           done
           echo "Server failed to start" && exit 1
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version-file: browser/flagr-ui/package.json
       - run: cd browser/flagr-ui && npm install
